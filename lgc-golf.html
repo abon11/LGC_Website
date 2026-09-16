@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LGC">
+<meta name="theme-color" content="#1a3a1a">
+<title>LGC — Lifelong Golf Commitment</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+// Inject PWA manifest with trophy icon
+const mf = {
+  name:"LGC — Lifelong Golf Commitment",short_name:"LGC",start_url:".",
+  display:"standalone",background_color:"#1a3a1a",theme_color:"#1a3a1a",
+  icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%231a3a1a'/%3E%3Cellipse cx='90' cy='72' rx='32' ry='36' fill='white'/%3E%3Crect x='78' y='104' width='24' height='18' rx='2' fill='white'/%3E%3Crect x='62' y='120' width='56' height='10' rx='5' fill='white'/%3E%3Cpath d='M58 75 Q40 75 40 90 Q40 105 58 102' stroke='white' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3Cpath d='M122 75 Q140 75 140 90 Q140 105 122 102' stroke='white' stroke-width='7' fill='none' stroke-linecap='round'/%3E%3C/svg%3E",sizes:"180x180",type:"image/svg+xml"}]
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  const b=new Blob([JSON.stringify(mf)],{type:'application/json'});
+  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
+  document.head.appendChild(l);
+});
+</script>
+<style>
+:root{
+  --gd:#1a3a1a;--gm:#2d5a27;--gl:#4a8c3f;--gp:#e8f0e4;
+  --gold:#c9a84c;--cream:#faf7f0;
+  --td:#1a1a14;--tm:#4a4a3a;--ts:#8a8a7a;
+  --cb:#ffffff;--border:rgba(0,0,0,0.08);
+  --shadow:0 2px 16px rgba(26,58,26,0.08);--r:16px;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);min-height:100dvh;padding-bottom:calc(72px + var(--sb));overscroll-behavior:none;}
+
+/* HEADER */
+.hdr{background:var(--gd);padding:calc(var(--st) + 16px) 20px 16px;position:sticky;top:0;z-index:100;}
+.hdr-in{display:flex;align-items:center;justify-content:space-between;}
+.lgc{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--gold);letter-spacing:4px;}
+.lgc-sub{font-size:9px;letter-spacing:2.5px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:2px;}
+.yr-btn{background:var(--gold);color:var(--gd);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;border:none;}
+
+/* NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--gd);display:flex;padding-bottom:var(--sb);z-index:100;border-top:1px solid rgba(255,255,255,0.08);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0 7px;cursor:pointer;gap:3px;border:none;background:none;color:rgba(255,255,255,0.4);font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:0.2px;transition:color .15s;}
+.ni svg{width:21px;height:21px;}
+.ni.active{color:var(--gold);}
+
+/* PAGES */
+.pg{display:none;padding:18px 18px 8px;}
+.pg.active{display:block;}
+
+/* CARDS */
+.card{background:var(--cb);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);padding:15px;margin-bottom:12px;}
+.ct{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ts);margin-bottom:10px;font-weight:500;}
+
+/* STAT CARDS */
+.sc{background:var(--gd);border-radius:var(--r);padding:14px;color:white;}
+.sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:.5;margin-bottom:4px;}
+.sv{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--gold);line-height:1;}
+.sd{font-size:11px;opacity:.6;margin-top:3px;}
+
+/* LB */
+.lbr{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:12px;}
+.lbr:last-child{border-bottom:none;}
+.rk{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--ts);min-width:22px;text-align:center;}
+.rk.g{color:var(--gold);}.rk.s{color:#9a9a9a;}.rk.b{color:#c07840;}
+.pn{font-size:14px;font-weight:500;color:var(--td);}
+.ps{font-size:11px;color:var(--ts);margin-top:1px;}
+.sr{text-align:right;}
+.sm{font-size:17px;font-weight:600;color:var(--gd);}
+.ss{font-size:11px;color:var(--ts);}
+.ss.u{color:#c0392b;}.ss.o{color:var(--gl);}
+
+/* TABS */
+.tbr{display:flex;background:white;border-radius:12px;padding:4px;margin-bottom:14px;border:1px solid var(--border);gap:3px;}
+.tbb{flex:1;padding:8px 4px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--ts);border-radius:9px;cursor:pointer;transition:all .15s;}
+.tbb.active{background:var(--gd);color:white;}
+
+/* BTNS */
+.bp{background:var(--gd);color:white;border:none;border-radius:12px;padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;width:100%;cursor:pointer;}
+.bo{background:transparent;color:var(--gd);border:1.5px solid var(--gd);border-radius:12px;padding:11px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;width:100%;}
+.bo:active{background:var(--gp);}
+
+/* FORMS */
+.fg{margin-bottom:13px;}
+.fl{display:block;font-size:12px;color:var(--tm);margin-bottom:5px;font-weight:500;}
+.fi{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--td);background:white;outline:none;-webkit-appearance:none;}
+.fi:focus{border-color:var(--gl);}
+
+/* TEAM */
+.tc{background:var(--gd);border-radius:var(--r);padding:15px;margin-bottom:10px;color:white;}
+.tl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:500;}
+.tps{display:flex;gap:10px;align-items:center;}
+.tp{flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;}
+.tpr{font-size:9px;opacity:.5;letter-spacing:.5px;text-transform:uppercase;}
+.tpn{font-size:13px;font-weight:500;margin-top:2px;}
+.tpsc{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-top:4px;}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.mo.open{display:flex;}
+.ms{background:var(--cream);border-radius:24px 24px 0 0;padding:20px 18px calc(20px + var(--sb));width:100%;max-height:90vh;overflow-y:auto;animation:su .22s ease-out;}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:38px;height:4px;background:rgba(0,0,0,.12);border-radius:2px;margin:0 auto 18px;}
+.mt{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--gd);margin-bottom:18px;}
+
+/* RULES */
+.rs{margin-bottom:16px;}
+.rst{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gd);margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--gp);}
+.ri{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--tm);line-height:1.55;}
+.ri:last-child{border-bottom:none;}
+.rb{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px;}
+.rn{background:var(--gp);border-radius:10px;padding:11px 13px;font-size:12px;color:var(--tm);line-height:1.6;margin-top:7px;}
+.pr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--tm);}
+.pr:last-child{border-bottom:none;}
+.pp{font-weight:600;color:var(--gd);}
+
+/* EMPTY */
+.es{text-align:center;padding:32px 16px;color:var(--ts);}
+.ei{font-size:40px;margin-bottom:10px;opacity:.4;}
+.et{font-size:15px;font-weight:500;color:var(--tm);margin-bottom:5px;}
+.esub{font-size:13px;}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(82px + var(--sb));right:18px;width:50px;height:50px;border-radius:50%;background:var(--gold);color:var(--gd);border:none;font-size:26px;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(201,168,76,.4);cursor:pointer;z-index:99;transition:transform .15s;}
+.fab:active{transform:scale(.92);}
+
+/* TRIP */
+.ir{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.ir:last-child{border-bottom:none;}
+.ii{width:34px;height:34px;border-radius:9px;background:var(--gp);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.il{font-size:10px;letter-spacing:.5px;color:var(--ts);margin-bottom:2px;font-weight:500;text-transform:uppercase;}
+.iv{font-size:14px;color:var(--td);}
+.ie{margin-left:auto;font-size:12px;color:var(--gl);padding:4px 10px;border:1px solid var(--gl);border-radius:8px;background:none;font-family:'DM Sans',sans-serif;cursor:pointer;flex-shrink:0;}
+
+/* YEAR ROW */
+.yr{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;cursor:pointer;}
+.yr:last-child{border-bottom:none;}
+.yt{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gd);min-width:50px;}
+
+/* MONEY */
+.np{color:#2d7a2d;font-weight:600;}.nn{color:#c0392b;font-weight:600;}.nz{color:var(--ts);}
+
+/* TABLE */
+.ht{width:100%;border-collapse:collapse;font-size:13px;}
+.ht th{background:var(--gd);color:rgba(255,255,255,.7);padding:8px 10px;text-align:left;font-weight:500;font-size:11px;letter-spacing:.5px;}
+.ht th:not(:first-child){text-align:center;}
+.ht td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--td);}
+.ht td:not(:first-child){text-align:center;font-weight:500;}
+.ht tr:last-child td{border-bottom:none;}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div><div class="lgc">LGC</div><div class="lgc-sub">Lifelong Golf Commitment</div></div>
+    <button class="yr-btn" onclick="openYearPicker()">
+      <span id="active-year-label">2026</span>
+      <svg viewBox="0 0 16 16" width="11" fill="currentColor"><path d="M8 11L2 5h12z"/></svg>
+    </button>
+  </div>
+</header>
+
+<nav class="bnav">
+  <button class="ni active" onclick="showPage('home',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="ni" onclick="showPage('rules',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Rules
+  </button>
+  <button class="ni" onclick="showPage('standings',this)">
+    <!-- Trophy silhouette -->
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 2C9.5 2 8 4 8 6.5V11c0 2.8 1.8 5 4 5.3V18h-2.5c-.5 0-1 .4-1 1v.5h7V19c0-.6-.5-1-1-1H12v-1.7c2.2-.3 4-2.5 4-5.3V6.5C16 4 14.5 2 12 2z"/>
+      <path d="M6.5 4.5H5C4.2 4.5 3.5 5.2 3.5 6v2c0 2 1.4 3.6 3 4V10.5C5.6 10.1 5 9.1 5 8V6.5h1.5v-2z"/>
+      <path d="M17.5 4.5H19c.8 0 1.5.7 1.5 1.5v2c0 2-1.4 3.6-3 4V10.5c.9-.4 1.5-1.4 1.5-2.5V6.5h-1.5v-2z"/>
+      <rect x="8" y="20" width="8" height="2.5" rx="1.2"/>
+    </svg>
+    Standings
+  </button>
+  <button class="ni" onclick="showPage('stats',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Stats
+  </button>
+  <button class="ni" onclick="showPage('photos',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+    Photos
+  </button>
+  <button class="ni" onclick="showPage('trip',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Trip
+  </button>
+</nav>
+
+<!-- HOME -->
+<main id="page-home" class="pg active">
+  <div class="sc" style="margin-bottom:12px;">
+    <div class="sl">Course — <span id="home-yr-label">2026</span></div>
+    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:white;line-height:1.2;" id="home-course">—</div>
+    <div class="sd" id="home-loc"></div>
+  </div>
+  <div class="card"><div class="ct">Day 1 Leader</div><div id="home-d1"></div></div>
+  <div class="card"><div class="ct">Scramble Champions</div><div id="home-scram"></div></div>
+  <div class="card"><div class="ct">Past Champions</div><div id="home-champs"></div></div>
+  <div class="card"><div class="ct">All-Time Records</div><div id="home-at"></div></div>
+  <div class="card"><div class="ct">All-Time Money</div><div id="home-money"></div></div>
+</main>
+
+<!-- RULES -->
+<main id="page-rules" class="pg">
+  <div class="card">
+    <div class="rs">
+      <div class="rst">The Format</div>
+      <div class="ri"><div class="rb"></div><div><strong>Friday</strong> — Practice round. No scores recorded.</div></div>
+      <div class="ri"><div class="rb"></div><div><strong>Saturday</strong> — Individual stroke play. Both gross and net score count. Gross seeds Sunday teams. Net determines your buy-in.</div></div>
+      <div class="ri"><div class="rb"></div><div><strong>Sunday</strong> — 2-man scramble. Captain &amp; Crew. Best Saturday gross pairs with worst (1+12, 2+11, etc.). Lowest team score wins the pot.</div></div>
+    </div>
+    <div class="rs">
+      <div class="rst">Ground Rules</div>
+      <div class="ri"><div class="rb"></div><div>Lift, clean, and place between the trees.</div></div>
+      <div class="ri"><div class="rb"></div><div>Play the white tees.</div></div>
+      <div class="ri"><div class="rb"></div><div>Standing water in a bunker — pull your ball out on the line it went in.</div></div>
+      <div class="ri"><div class="rb"></div><div>All other bunker conditions are group discretion. If it's bad, free relief.</div></div>
+      <div class="ri"><div class="rb"></div><div>Everything else is played as a hazard (drop on line of entry).</div></div>
+      <div class="ri"><div class="rb"></div><div>Hazard / rugged terrain: play it as it lies unless there's danger of hitting a root or rock. Move to nearest point of relief, no closer to hole, staying in the same terrain. Free relief.</div></div>
+      <div class="ri"><div class="rb"></div><div>No gimmes for birdie or better.</div></div>
+      <div class="ri"><div class="rb"></div><div>Par or worse: gimme if any part of the ball is closer than the start of your putter grip. Place putter head in hole — if the ball is before the grip, it's good.</div></div>
+      <div class="ri"><div class="rb"></div><div>Have fun — it's just a game.</div></div>
+    </div>
+    <div class="rs">
+      <div class="rst">Handicaps &amp; Payouts</div>
+      <div class="rn" style="margin-bottom:12px;">Net score (gross − handicap) determines your contribution. Pay in $3 increments — lowest net pays $3, up to $37 for last. Add $1 flat for trophy engraving.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+        <div class="pr"><span class="pp">1st</span><span>$4</span></div><div class="pr"><span class="pp">2nd</span><span>$7</span></div>
+        <div class="pr"><span class="pp">3rd</span><span>$10</span></div><div class="pr"><span class="pp">4th</span><span>$13</span></div>
+        <div class="pr"><span class="pp">5th</span><span>$16</span></div><div class="pr"><span class="pp">6th</span><span>$19</span></div>
+        <div class="pr"><span class="pp">7th</span><span>$22</span></div><div class="pr"><span class="pp">8th</span><span>$25</span></div>
+        <div class="pr"><span class="pp">9th</span><span>$28</span></div><div class="pr"><span class="pp">10th</span><span>$31</span></div>
+        <div class="pr"><span class="pp">11th</span><span>$34</span></div><div class="pr"><span class="pp">12th</span><span>$37</span></div>
+      </div>
+      <div class="rn" style="margin-top:10px;">Ties: split the total between tied positions (e.g. 1st + 2nd = $11 → both pay $5.50).</div>
+    </div>
+    <div class="rs">
+      <div class="rst">Team Making</div>
+      <div class="rn" style="margin-bottom:10px;">Based on <strong>gross scores</strong>. Rank 1–12 and pair: 1&amp;12, 2&amp;11, 3&amp;10, 4&amp;9, 5&amp;8, 6&amp;7.</div>
+      <div class="ct" style="margin-bottom:6px;">Tiebreakers</div>
+      <div class="ri"><div class="rb"></div><div>Better handicap gets higher seed.</div></div>
+      <div class="ri"><div class="rb"></div><div>Better front 9 gets higher seed.</div></div>
+      <div class="ri"><div class="rb"></div><div>Better score on #1 handicap hole, then #2, and so on.</div></div>
+      <div class="ri"><div class="rb"></div><div>If still tied: first to back out gets lower seed.</div></div>
+    </div>
+    <div class="rs">
+      <div class="rst">Solo Round Exception</div>
+      <div class="ri"><div class="rb"></div><div>If 10+ players complete a full 18-hole round, up to 2 players who didn't will be placed with a net score one stroke better than 8th place (locking them into 7th). They pay in normally, and their gross for team ranking is that "fake" net + handicap.</div></div>
+    </div>
+    <div class="rs" style="margin-bottom:0;">
+      <div class="rst">Rain Rules</div>
+      <div class="ct" style="margin-bottom:6px;">Friday Rain</div>
+      <div class="ri"><div class="rb"></div><div>Practice round canceled. Move on.</div></div>
+      <div class="ct" style="margin:10px 0 6px;">Saturday Rain</div>
+      <div class="ri"><div class="rb"></div><div>If all 12 finished 9+ holes Friday, use Friday scores for the solo round.</div></div>
+      <div class="ri"><div class="rb"></div><div>If 10+ completed full 18 on Friday, use the solo round exception rule.</div></div>
+      <div class="ri"><div class="rb"></div><div>If neither: try to reschedule. If not possible, teams selected by handicap. Everyone pays the same.</div></div>
+      <div class="ct" style="margin:10px 0 6px;">Sunday Rain</div>
+      <div class="ri"><div class="rb"></div><div>Try to reschedule for Monday AM (any course).</div></div>
+      <div class="ri"><div class="rb"></div><div>If Monday not possible: top 2 net scores crowned champions (asterisk on trophy). No payouts — everyone refunded.</div></div>
+      <div class="ct" style="margin:10px 0 6px;">Both Days Rained Out</div>
+      <div class="ri"><div class="rb"></div><div>If all 12 finished 18 Friday, use Friday as the solo round.</div></div>
+      <div class="ri" style="border-bottom:none;"><div class="rb"></div><div>If no valid round exists and no makeup possible, the tournament is canceled. A Beer Dye Tournament will be held instead — winners still get engraved.</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- STANDINGS -->
+<main id="page-standings" class="pg">
+  <div class="tbr">
+    <button class="tbb active" onclick="showStTab('day1',this)">Day 1</button>
+    <button class="tbb" onclick="showStTab('day2',this)">Day 2</button>
+    <button class="tbb" onclick="showStTab('money',this)">Money</button>
+  </div>
+  <div id="st-day1"></div>
+  <div id="st-day2" style="display:none;"></div>
+  <div id="st-money" style="display:none;"></div>
+  <button class="fab" id="st-fab" onclick="openAddScoreModal()">+</button>
+</main>
+
+<!-- STATS -->
+<main id="page-stats" class="pg">
+  <div class="es" style="padding-top:60px;">
+    <div class="ei">📊</div>
+    <div class="et">Stats coming soon</div>
+    <div class="esub">Detailed individual and all-time stats will live here.</div>
+  </div>
+</main>
+
+<!-- PHOTOS -->
+<main id="page-photos" class="pg">
+  <div class="es" style="padding-top:60px;">
+    <div class="ei">📸</div>
+    <div class="et">Photo Album coming soon</div>
+    <div class="esub">Year-by-year photos and memories will live here.</div>
+  </div>
+</main>
+
+<!-- TRIP -->
+<main id="page-trip" class="pg">
+  <div class="card">
+    <div class="ct" id="trip-yr-lbl">2026 Trip</div>
+    <div class="ir"><div class="ii">📅</div><div style="flex:1;"><div class="il">Dates</div><div class="iv" id="tf-dates">Not set</div></div><button class="ie" onclick="editTrip('dates')">Edit</button></div>
+    <div class="ir"><div class="ii">🏠</div><div style="flex:1;"><div class="il">Host / Airbnb</div><div class="iv" id="tf-airbnb">Not set</div></div><button class="ie" onclick="editTrip('airbnb')">Edit</button></div>
+    <div class="ir"><div class="ii">📍</div><div style="flex:1;"><div class="il">Address</div><div class="iv" id="tf-address">Not set</div></div><button class="ie" onclick="editTrip('address')">Edit</button></div>
+    <div class="ir"><div class="ii">🔑</div><div style="flex:1;"><div class="il">Airbnb Code</div><div class="iv" id="tf-code">Not set</div></div><button class="ie" onclick="editTrip('code')">Edit</button></div>
+    <div class="ir"><div class="ii">⛳</div><div style="flex:1;"><div class="il">Course</div><div class="iv" id="tf-course">Not set</div></div><button class="ie" onclick="editTrip('course')">Edit</button></div>
+    <div class="ir"><div class="ii">⏰</div><div style="flex:1;"><div class="il">Tee Times</div><div class="iv" id="tf-teetimes">Not set</div></div><button class="ie" onclick="editTrip('teetimes')">Edit</button></div>
+    <div class="ir" style="border-bottom:none;"><div class="ii">📝</div><div style="flex:1;"><div class="il">Notes</div><div class="iv" id="tf-notes">Not set</div></div><button class="ie" onclick="editTrip('notes')">Edit</button></div>
+  </div>
+</main>
+
+<!-- MODALS -->
+<div class="mo" id="mod-year"><div class="ms"><div class="mh"></div><div class="mt">Select Year</div><div id="yr-list"></div><div style="height:10px;"></div><button class="bo" onclick="closeM('mod-year')">Close</button></div></div>
+
+<div class="mo" id="mod-add-year"><div class="ms"><div class="mh"></div><div class="mt">Add Year</div>
+  <div class="fg"><label class="fl">Year</label><input type="number" class="fi" id="ny-yr" placeholder="e.g. 2027"></div>
+  <div class="fg"><label class="fl">Course</label><input type="text" class="fi" id="ny-course" placeholder="e.g. Pebble Beach"></div>
+  <div class="fg"><label class="fl">Winning Team</label><input type="text" class="fi" id="ny-winner" placeholder="e.g. Bon & Baker"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-add-year')">Cancel</button><button class="bp" style="flex:2;" onclick="saveNewYear()">Add</button></div>
+</div></div>
+
+<div class="mo" id="mod-score"><div class="ms"><div class="mh"></div><div class="mt">Enter Score</div>
+  <div class="fg"><label class="fl">Player</label><select class="fi" id="sc-player"><option value="">Select…</option></select></div>
+  <div class="fg"><label class="fl">Day</label><select class="fi" id="sc-day"><option value="1">Day 1 — Stroke Play</option><option value="2">Day 2 — Scramble</option></select></div>
+  <div class="fg"><label class="fl">Gross Score</label><input type="number" class="fi" id="sc-gross" placeholder="e.g. 84"></div>
+  <div class="fg"><label class="fl">Net Score</label><input type="number" class="fi" id="sc-net" placeholder="e.g. 71"></div>
+  <div class="fg"><label class="fl">Birdies</label><input type="number" class="fi" id="sc-birds" placeholder="0"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-score')">Cancel</button><button class="bp" style="flex:2;" onclick="saveScore()">Save</button></div>
+</div></div>
+
+<div class="mo" id="mod-player"><div class="ms"><div class="mh"></div><div class="mt">Add Player</div>
+  <div class="fg"><label class="fl">Name</label><input type="text" class="fi" id="pl-name"></div>
+  <div class="fg"><label class="fl">Handicap</label><input type="number" class="fi" id="pl-hcp"></div>
+  <div class="fg"><label class="fl">Buy-in ($)</label><input type="number" class="fi" id="pl-buyin"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-player')">Cancel</button><button class="bp" style="flex:2;" onclick="savePlayer()">Add</button></div>
+</div></div>
+
+<div class="mo" id="mod-trip"><div class="ms"><div class="mh"></div><div class="mt" id="trip-edit-lbl">Edit</div>
+  <div class="fg"><input type="text" class="fi" id="trip-edit-val"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-trip')">Cancel</button><button class="bp" style="flex:2;" onclick="saveTripF()">Save</button></div>
+</div></div>
+
+<div class="mo" id="mod-money"><div class="ms"><div class="mh"></div><div class="mt">Money Info</div>
+  <div class="fg"><label class="fl">Total Pot ($)</label><input type="number" class="fi" id="m-pot"></div>
+  <div class="fg"><label class="fl">Engraving Fee ($)</label><input type="number" class="fi" id="m-eng"></div>
+  <div class="fg"><label class="fl">Each Winner Earns ($)</label><input type="number" class="fi" id="m-win"></div>
+  <div class="fg"><label class="fl">Winning Team</label><input type="text" class="fi" id="m-winners" placeholder="e.g. Bon & Baker"></div>
+  <div class="fg"><label class="fl">Notes</label><input type="text" class="fi" id="m-notes"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-money')">Cancel</button><button class="bp" style="flex:2;" onclick="saveMoney()">Save</button></div>
+</div></div>
+
+<div class="mo" id="mod-team-score"><div class="ms"><div class="mh"></div><div class="mt">Team Score</div>
+  <div class="fg"><label class="fl">Team</label><select class="fi" id="ts-team"></select></div>
+  <div class="fg"><label class="fl">Score</label><input type="number" class="fi" id="ts-score" placeholder="e.g. 67"></div>
+  <div class="fg"><label class="fl">vs Par (e.g. -5)</label><input type="number" class="fi" id="ts-rel"></div>
+  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-team-score')">Cancel</button><button class="bp" style="flex:2;" onclick="saveTeamScore()">Save</button></div>
+</div></div>
+
+<script>
+// DB
+const DB={
+  get(k){try{return JSON.parse(localStorage.getItem('lgc_'+k))||null;}catch{return null;}},
+  set(k,v){localStorage.setItem('lgc_'+k,JSON.stringify(v));}
+};
+
+let AY=2026, players=[], scores={}, teams=[], tripInfo={}, editTripKey='';
+const TLABELS={dates:'Dates',airbnb:'Host / Airbnb',address:'Address',code:'Airbnb Code',course:'Course',teetimes:'Tee Times',notes:'Notes'};
+
+// NAV
+function showPage(n,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  btn.classList.add('active');
+  if(n==='home')      renderHome();
+  if(n==='standings') renderStandings();
+  if(n==='trip')      renderTrip();
+}
+
+// YEAR
+function loadYear(yr){
+  AY=yr; DB.set('activeYear',yr);
+  players =DB.get('players_'+yr) ||[];
+  scores  =DB.get('scores_'+yr)  ||{};
+  teams   =DB.get('teams_'+yr)   ||[];
+  tripInfo=DB.get('trip_'+yr)    ||{};
+  document.getElementById('active-year-label').textContent=yr;
+}
+
+function openYearPicker(){
+  const all=DB.get('years')||[];
+  document.getElementById('yr-list').innerHTML=
+    all.map(y=>`<div class="yr" onclick="switchYear(${y.year});closeM('mod-year');">
+      <span class="yt">${y.year}</span>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">${y.course||'Course TBD'}</div>
+      <div style="font-size:12px;color:var(--gold);">${y.winner?'🏆 '+y.winner:'In progress'}</div></div>
+      ${y.year===AY?'<span style="color:var(--gold);">✓</span>':'<span style="color:var(--ts);">›</span>'}
+    </div>`).join('')
+    +`<div style="height:12px;"></div><button class="bo" onclick="closeM('mod-year');openM('mod-add-year');">+ Add Year</button>`;
+  openM('mod-year');
+}
+
+function switchYear(yr){loadYear(yr);renderHome();}
+
+function saveNewYear(){
+  const yr=parseInt(document.getElementById('ny-yr').value);
+  if(!yr)return;
+  const all=DB.get('years')||[];
+  if(!all.find(y=>y.year===yr)){
+    all.push({year:yr,course:document.getElementById('ny-course').value.trim(),winner:document.getElementById('ny-winner').value.trim()});
+    all.sort((a,b)=>b.year-a.year);
+    DB.set('years',all);
+  }
+  closeM('mod-add-year');
+}
+
+// PLAYERS
+function savePlayer(){
+  const name=document.getElementById('pl-name').value.trim();
+  if(!name)return;
+  if(!players.find(p=>p.name===name)){
+    players.push({name,hcp:parseFloat(document.getElementById('pl-hcp').value)||0,buyin:parseFloat(document.getElementById('pl-buyin').value)||0});
+    DB.set('players_'+AY,players);
+  }
+  ['pl-name','pl-hcp','pl-buyin'].forEach(id=>document.getElementById(id).value='');
+  closeM('mod-player'); renderStandings();
+}
+
+// SCORES
+function openAddScoreModal(){
+  document.getElementById('sc-player').innerHTML='<option value="">Select…</option>'+
+    players.map(p=>`<option value="${p.name}">${p.name} (HCP ${p.hcp})</option>`).join('');
+  openM('mod-score');
+}
+
+function saveScore(){
+  const name=document.getElementById('sc-player').value;
+  const day =document.getElementById('sc-day').value;
+  const gross=parseInt(document.getElementById('sc-gross').value)||0;
+  const net  =parseInt(document.getElementById('sc-net').value)||0;
+  const birds=parseInt(document.getElementById('sc-birds').value)||0;
+  if(!name||!gross)return;
+  const p=players.find(pl=>pl.name===name);
+  if(!scores[name])scores[name]={};
+  scores[name]['day'+day]={total:gross,net,hcp:p?p.hcp:0,birdies:birds,holes:[]};
+  DB.set('scores_'+AY,scores);
+  ['sc-gross','sc-net','sc-birds'].forEach(id=>document.getElementById(id).value='');
+  closeM('mod-score'); renderStandings(); renderHome();
+}
+
+// TEAMS
+function generateTeams(){
+  const d1=players.map(p=>({name:p.name,hcp:p.hcp,total:scores[p.name]?.day1?.total||999}))
+    .filter(p=>p.total<999).sort((a,b)=>a.total-b.total);
+  if(d1.length<2){alert('Need Day 1 scores first.');return;}
+  teams=[];
+  const n=Math.floor(d1.length/2);
+  for(let i=0;i<n;i++) teams.push({captain:d1[i].name,crew:d1[d1.length-1-i].name,captainScore:d1[i].total,crewScore:d1[d1.length-1-i].total,teamScore:null,scrambleRel:null});
+  if(d1.length%2!==0) teams[teams.length-1].extra=d1[Math.floor(d1.length/2)].name;
+  DB.set('teams_'+AY,teams); renderStandings();
+}
+
+function openTeamScoreModal(){
+  document.getElementById('ts-team').innerHTML=teams.map((t,i)=>`<option value="${i}">T${i+1}: ${t.captain} & ${t.crew}</option>`).join('');
+  openM('mod-team-score');
+}
+
+function saveTeamScore(){
+  const i=parseInt(document.getElementById('ts-team').value);
+  const s=parseInt(document.getElementById('ts-score').value)||0;
+  const r=parseInt(document.getElementById('ts-rel').value)||0;
+  if(!s)return;
+  teams[i].teamScore=s; teams[i].scrambleRel=r;
+  DB.set('teams_'+AY,teams); closeM('mod-team-score'); renderStandings();
+}
+
+// STANDINGS
+function showStTab(tab,btn){
+  document.querySelectorAll('#page-standings .tbb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['day1','day2','money'].forEach(t=>document.getElementById('st-'+t).style.display=t===tab?'':'none');
+  const fab=document.getElementById('st-fab');
+  if(fab) fab.style.display=(tab==='day1'||tab==='day2')?'':'none';
+}
+
+function renderStandings(){
+  renderStDay1(); renderStDay2(); renderStMoney();
+}
+
+function renderStDay1(){
+  const el=document.getElementById('st-day1');
+  const hasScores=players.some(p=>scores[p.name]?.day1);
+  if(!hasScores){
+    const prev=DB.get('players_'+(AY-1))||players;
+    if(!prev.length){el.innerHTML=`<div class="es"><div class="ei">🏌️</div><div class="et">No players yet</div></div>`;return;}
+    el.innerHTML=`<div class="card"><div class="ct">${AY} Roster &amp; Handicaps</div>
+      <table class="ht"><thead><tr><th>Player</th><th>HCP</th></tr></thead>
+      <tbody>${prev.map(p=>`<tr><td>${p.name}</td><td>${p.hcp}</td></tr>`).join('')}</tbody></table></div>
+      <button class="bo" style="margin-top:4px;" onclick="openAddScoreModal()">+ Enter Scores</button>
+      <div style="height:10px;"></div><button class="bo" onclick="openM('mod-player')">+ Add Player</button>
+      <div style="height:70px;"></div>`;
+    return;
+  }
+  const sorted=players.map(p=>({name:p.name,hcp:p.hcp,d:scores[p.name]?.day1})).filter(e=>e.d).sort((a,b)=>a.d.total-b.d.total);
+  el.innerHTML=`<div class="card"><div class="ct">Day 1 — Stroke Play · ${AY}</div>
+    <table class="ht"><thead><tr><th>#</th><th>Player</th><th>HCP</th><th>Gross</th><th>Net</th></tr></thead>
+    <tbody>${sorted.map((e,i)=>{
+      const rc=i===0?'var(--gold)':i===1?'#9a9a9a':i===2?'#c07840':'var(--ts)';
+      return `<tr><td style="font-weight:700;color:${rc};font-family:'Playfair Display',serif;">${i+1}</td>
+        <td style="font-weight:${i<3?'600':'400'}">${e.name}</td><td>${e.hcp}</td><td>${e.d.total}</td><td>${e.d.net}</td></tr>`;
+    }).join('')}</tbody></table></div>
+    <button class="bo" style="margin-top:4px;" onclick="openAddScoreModal()">+ Add / Edit Score</button>
+    <div style="height:70px;"></div>`;
+}
+
+function renderStDay2(){
+  const el=document.getElementById('st-day2');
+  if(!teams.length){
+    el.innerHTML=`<div class="es"><div class="ei">⛳</div><div class="et">See you Sunday ⛳</div>
+      <div class="esub">Come back after Day 1 wraps — teams get set and the real tournament begins.</div></div>
+      <div style="height:12px;"></div><button class="bp" onclick="generateTeams()">Generate Teams from Day 1</button>
+      <div style="height:70px;"></div>`;
+    return;
+  }
+  const sorted=[...teams].sort((a,b)=>(a.teamScore||999)-(b.teamScore||999));
+  const rc=['var(--gold)','#9a9a9a','#c07840'];
+  el.innerHTML=`<div class="card"><div class="ct">Day 2 — Scramble · ${AY}</div>
+    ${sorted.map((t,i)=>{
+      const rel=t.scrambleRel!=null?(t.scrambleRel===0?'E':t.scrambleRel>0?'+'+t.scrambleRel:t.scrambleRel):'—';
+      const relCls=t.scrambleRel<0?' u':t.scrambleRel>0?' o':'';
+      return `<div class="lbr">
+        <div class="rk" style="color:${rc[i]||'var(--ts)'};">${i+1}</div>
+        <div style="flex:1;"><div class="pn">${t.captain} &amp; ${t.crew}</div></div>
+        <div class="sr"><div class="sm">${t.teamScore||'—'}</div><div class="ss${relCls}">${rel}</div></div>
+      </div>`;
+    }).join('')}</div>
+    <button class="bo" style="margin-top:4px;" onclick="openTeamScoreModal()">+ Add Team Score</button>
+    <div style="height:70px;"></div>`;
+}
+
+function renderStMoney(){
+  const el=document.getElementById('st-money');
+  const m=DB.get('money_'+AY);
+  const pl=DB.get('players_'+AY)||[];
+  if(!m||!m.totalPot){
+    el.innerHTML=`<div class="es"><div class="ei">💰</div><div class="et">No money info yet</div></div>
+      <div style="height:12px;"></div><button class="bo" onclick="openMoneyModal()">+ Add Money Info</button>
+      <div style="height:70px;"></div>`;
+    return;
+  }
+  const wn=(m.winners||[]).join(' & ');
+  const rows=pl.filter(p=>p.buyin||(m.winners||[]).includes(p.name)).map(p=>{
+    const isW=(m.winners||[]).includes(p.name);
+    const earned=isW?(m.perWinner||0):0;
+    return{...p,isW,earned,net:earned-p.buyin};
+  }).sort((a,b)=>b.net-a.net);
+
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+    <div class="sc"><div class="sl">Total Pot</div><div class="sv">$${m.totalPot}</div></div>
+    <div class="sc"><div class="sl">Each Winner</div><div class="sv">$${m.perWinner||'—'}</div><div class="sd">${wn}</div></div>
+  </div>
+  ${wn?`<div style="display:flex;align-items:center;gap:12px;background:var(--gold);border-radius:14px;padding:13px 15px;margin-bottom:12px;">
+    <span style="font-size:22px;">🏆</span>
+    <div><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);opacity:.65;margin-bottom:2px;">Champions</div>
+    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gd);">${wn}</div></div>
+  </div>`:''}
+  <div class="card"><div class="ct">Paid In / Earnings</div>
+    <div style="display:grid;grid-template-columns:1fr auto auto;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);">Player</div>
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;padding-right:10px;">Paid</div>
+      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;">Net</div>
+    </div>
+    ${rows.map(r=>{
+      const nc=r.net>0?'np':r.net<0?'nn':'nz';
+      const ns=r.net>0?'+$'+r.net.toFixed(2):r.net<0?'-$'+Math.abs(r.net).toFixed(2):'$0';
+      return `<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:9px 0;border-top:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:${r.isW?'600':'400'};color:var(--td);">${r.name}${r.isW?' 🏆':''}</div>
+        <div style="font-size:12px;color:var(--ts);text-align:right;padding-right:10px;">-$${r.buyin.toFixed(2)}</div>
+        <div style="font-size:13px;text-align:right;min-width:62px;" class="${nc}">${ns}</div>
+      </div>`;
+    }).join('')}
+  </div>
+  ${m.notes?`<div style="font-size:12px;color:var(--ts);padding:6px 0;">${m.notes}</div>`:''}
+  <button class="bo" style="margin-top:8px;" onclick="openMoneyModal()">✏️ Edit Money Info</button>
+  <div style="height:70px;"></div>`;
+}
+
+// HOME
+function renderHome(){
+  const yr=AY;
+  const trip=DB.get('trip_'+yr)||{};
+  const sc  =DB.get('scores_'+yr)||{};
+  const tm  =DB.get('teams_'+yr)||[];
+  const pl  =DB.get('players_'+yr)||[];
+  const yrs =DB.get('years')||[];
+  const yrObj=yrs.find(y=>y.year===yr)||{};
+
+  document.getElementById('home-yr-label').textContent=yr;
+  document.getElementById('home-course').textContent=trip.course||yrObj.course||'Course TBD';
+  document.getElementById('home-loc').textContent=trip.address||'';
+
+  // Day 1 leader
+  const d1el=document.getElementById('home-d1');
+  const d1=pl.map(p=>({name:p.name,d:sc[p.name]?.day1})).filter(e=>e.d).sort((a,b)=>a.d.total-b.d.total);
+  if(!d1.length){d1el.innerHTML=`<div class="esub" style="padding:8px 0;">No scores yet</div>`;}
+  else{const t=d1[0];d1el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:26px;">🥇</span>
+    <div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gd);">${t.name}</div>
+    <div style="font-size:13px;color:var(--ts);">Gross ${t.d.total} · Net ${t.d.net}</div></div></div>`;}
+
+  // Scramble champ
+  const scel=document.getElementById('home-scram');
+  const wt=[...tm].filter(t=>t.teamScore).sort((a,b)=>a.teamScore-b.teamScore)[0];
+  if(!wt){scel.innerHTML=`<div class="esub" style="padding:8px 0;">${tm.length?'Scores not entered yet':'Teams not set yet'}</div>`;}
+  else{
+    const rel=wt.scrambleRel!=null?(wt.scrambleRel===0?'E':wt.scrambleRel>0?'+'+wt.scrambleRel:wt.scrambleRel):'';
+    scel.innerHTML=`<div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:26px;">🏆</span>
+      <div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gd);">${wt.captain} &amp; ${wt.crew}</div>
+      <div style="font-size:13px;color:var(--ts);">${wt.teamScore}${rel?' ('+rel+')':''}</div></div></div>`;
+  }
+
+  // Past champs
+  const chel=document.getElementById('home-champs');
+  const past=yrs.filter(y=>y.winner&&y.year!==yr).sort((a,b)=>b.year-a.year);
+  if(!past.length){chel.innerHTML=`<div class="esub" style="padding:8px 0;">No past champions yet</div>`;}
+  else{chel.innerHTML=past.map(y=>{
+    const t2=(DB.get('teams_'+y.year)||[]).filter(t=>t.teamScore).sort((a,b)=>a.teamScore-b.teamScore)[0];
+    const s=t2?(` · ${t2.teamScore}`+(t2.scrambleRel!=null?' ('+(t2.scrambleRel===0?'E':t2.scrambleRel>0?'+'+t2.scrambleRel:t2.scrambleRel)+')':'')):'';
+    return `<div class="lbr">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ts);min-width:44px;">${y.year}</div>
+      <div style="flex:1;"><div class="pn">🏆 ${y.winner}</div><div class="ps">${y.course||''}${s}</div></div>
+    </div>`;
+  }).join('');}
+
+  // All-time records
+  const atel=document.getElementById('home-at');
+  const rec=DB.get('alltime_records');
+  const atp=DB.get('alltime_players')||[];
+  const topG=atp.length?[...atp].sort((a,b)=>a.allTimeScore-b.allTimeScore)[0]:null;
+  const topB=atp.length?[...atp].sort((a,b)=>b.birdies-a.birdies)[0]:null;
+  const topW=atp.length?[...atp].sort((a,b)=>b.wins-a.wins)[0]:null;
+  if(!rec){atel.innerHTML=`<div class="esub" style="padding:8px 0;">No records yet</div>`;}
+  else{
+    atel.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Gross</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestGross.score}</div>
+        <div style="font-size:11px;color:var(--ts);">${rec.lowestGross.player} · ${rec.lowestGross.year}</div>
+      </div>
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Net</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestNet.score}</div>
+        <div style="font-size:11px;color:var(--ts);">${rec.lowestNet.player} · ${rec.lowestNet.year}</div>
+      </div>
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Team</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestTeamScore.score}</div>
+        <div style="font-size:11px;color:var(--ts);">${rec.lowestTeamScore.players} · ${rec.lowestTeamScore.year}</div>
+      </div>
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">LGC Birdies</div>
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);">${rec.totalLGCBirdies} 🐦</div>
+        <div style="font-size:11px;color:var(--ts);">all time</div>
+      </div>
+    </div>
+    ${topG?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div style="background:var(--gd);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Most Wins</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topW.wins}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topW.name}</div>
+      </div>
+      <div style="background:var(--gd);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Top Birdies</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topB.birdies}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topB.name}</div>
+      </div>
+      <div style="background:var(--gd);border-radius:10px;padding:11px;">
+        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Best Scorer</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topG.allTimeScore}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topG.name}</div>
+      </div>
+    </div>`:''}`;
+  }
+
+  // All-time money
+  const mel=document.getElementById('home-money');
+  const mYrs=[2023,2024,2025];
+  const ledger={};
+  mYrs.forEach(y=>{
+    const m=DB.get('money_'+y); const p2=DB.get('players_'+y)||[];
+    if(!m)return;
+    p2.forEach(p=>{
+      if(!p.buyin&&!(m.winners||[]).includes(p.name))return;
+      if(!ledger[p.name])ledger[p.name]={paid:0,earned:0,wins:0};
+      const isW=(m.winners||[]).includes(p.name);
+      ledger[p.name].paid+=(p.buyin||0);
+      ledger[p.name].earned+=isW?(m.perWinner||0):0;
+      if(isW)ledger[p.name].wins++;
+    });
+  });
+  const mrows=Object.entries(ledger).map(([n,d])=>({name:n,...d,net:d.earned-d.paid})).sort((a,b)=>b.net-a.net);
+  const bw=mrows[0]; const bl=[...mrows].sort((a,b)=>a.net-b.net)[0];
+  const tot=mYrs.reduce((s,y)=>{const m=DB.get('money_'+y);return s+(m?m.totalPot:0);},0);
+
+  mel.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+    ${bw?`<div style="background:var(--gold);border-radius:10px;padding:11px;">
+      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gd);opacity:.65;margin-bottom:3px;">All-Time Winner</div>
+      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--gd);">${bw.name}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--gd);">+$${bw.net.toFixed(2)}</div>
+    </div>`:''}
+    ${bl?`<div style="background:var(--gd);border-radius:10px;padding:11px;">
+      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">All-Time Loser</div>
+      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--gold);">${bl.name}</div>
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.6);">-$${Math.abs(bl.net).toFixed(2)}</div>
+    </div>`:''}
+  </div>
+  <div style="background:var(--gp);border-radius:10px;padding:11px;margin-bottom:10px;">
+    <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Total Wagered</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">$${tot}</div>
+    <div style="font-size:11px;color:var(--ts);">across all years</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr auto auto;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border);">
+    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);">Player</div>
+    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;padding-right:10px;">Paid In</div>
+    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;">Net</div>
+  </div>
+  ${mrows.map(r=>{
+    const nc=r.net>0?'np':r.net<0?'nn':'nz';
+    const ns=r.net>0?'+$'+r.net.toFixed(2):r.net<0?'-$'+Math.abs(r.net).toFixed(2):'$0';
+    return `<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:${r.wins?'600':'400'};color:var(--td);">${r.name}${r.wins?(' 🏆').repeat(Math.min(r.wins,3)):''}</div>
+      <div style="font-size:12px;color:var(--ts);text-align:right;padding-right:10px;">-$${r.paid.toFixed(2)}</div>
+      <div style="font-size:13px;text-align:right;min-width:62px;" class="${nc}">${ns}</div>
+    </div>`;
+  }).join('')}`;
+}
+
+// TRIP
+function renderTrip(){
+  const t=DB.get('trip_'+AY)||{};
+  document.getElementById('trip-yr-lbl').textContent=AY+' Trip';
+  Object.keys(TLABELS).forEach(f=>{const el=document.getElementById('tf-'+f);if(el)el.textContent=t[f]||'Not set';});
+}
+
+function editTrip(f){
+  editTripKey=f;
+  document.getElementById('trip-edit-lbl').textContent='Edit '+TLABELS[f];
+  document.getElementById('trip-edit-val').value=(DB.get('trip_'+AY)||{})[f]||'';
+  openM('mod-trip');
+}
+
+function saveTripF(){
+  const t=DB.get('trip_'+AY)||{};
+  t[editTripKey]=document.getElementById('trip-edit-val').value.trim();
+  DB.set('trip_'+AY,t); tripInfo=t;
+  if(editTripKey==='course'){
+    const all=DB.get('years')||[];
+    const y=all.find(y=>y.year===AY);
+    if(y){y.course=t.course;DB.set('years',all);}
+  }
+  closeM('mod-trip'); renderTrip(); renderHome();
+}
+
+// MONEY
+function openMoneyModal(){
+  const m=DB.get('money_'+AY)||{};
+  document.getElementById('m-pot').value=m.totalPot||'';
+  document.getElementById('m-eng').value=m.engraving||'';
+  document.getElementById('m-win').value=m.perWinner||'';
+  document.getElementById('m-winners').value=(m.winners||[]).join(' & ');
+  document.getElementById('m-notes').value=m.notes||'';
+  openM('mod-money');
+}
+
+function saveMoney(){
+  const m=DB.get('money_'+AY)||{};
+  m.totalPot =parseFloat(document.getElementById('m-pot').value)||0;
+  m.engraving=parseFloat(document.getElementById('m-eng').value)||0;
+  m.perWinner=parseFloat(document.getElementById('m-win').value)||0;
+  const ws=document.getElementById('m-winners').value.trim();
+  m.winners=ws?ws.split(/[&,]/).map(s=>s.trim()).filter(Boolean):[];
+  m.notes=document.getElementById('m-notes').value.trim();
+  DB.set('money_'+AY,m);
+  const all=DB.get('years')||[];
+  const y=all.find(y=>y.year===AY);
+  if(y&&m.winners.length){y.winner=m.winners.join(' & ');DB.set('years',all);}
+  closeM('mod-money'); renderStMoney(); renderHome();
+}
+
+// MODALS
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// SEED
+function seed(){
+  if(DB.get('lgc_v3'))return;
+  DB.set('years',[
+    {year:2026,course:'',winner:''},
+    {year:2025,course:'Pocono Manor Golf Course',winner:'Bon & Baker'},
+    {year:2024,course:'Amsterdam Municipal',winner:'James & Raymond'},
+    {year:2023,course:'Rogues Roost East',winner:'Bon & Maycock'}
+  ]);
+  DB.set('trip_2026',{dates:'',airbnb:'',address:'',code:'',course:'',teetimes:'',notes:''});
+  DB.set('trip_2025',{dates:'August 8–11, 2025',airbnb:'Giorgi',address:'Poconos, PA',code:'',course:'Pocono Manor Golf Course',teetimes:'',notes:'First year staying till Monday'});
+  DB.set('trip_2024',{dates:'August 9–11, 2024',airbnb:'Sam',address:'Amsterdam, NY',code:'',course:'Amsterdam Municipal',teetimes:'',notes:'First year with the Trophy!'});
+  DB.set('trip_2023',{dates:'August 11–13, 2023',airbnb:'Brody',address:'Syracuse, NY',code:'',course:'Rogues Roost East',teetimes:'',notes:''});
+  const r26=[{name:'James',hcp:5,buyin:0},{name:'Carp',hcp:8,buyin:0},{name:'Bon',hcp:8,buyin:0},{name:'Brody',hcp:13,buyin:0},{name:'Tom',hcp:17,buyin:0},{name:'Raymond',hcp:18,buyin:0},{name:'Johnson',hcp:22,buyin:0},{name:'Sam',hcp:13,buyin:0},{name:'Maycock',hcp:19,buyin:0},{name:'Baker',hcp:19,buyin:0},{name:'Milici',hcp:20,buyin:0},{name:'Brett',hcp:27,buyin:0}];
+  DB.set('players_2026',r26);
+  DB.set('players_2025',[{name:'James',hcp:5,buyin:0},{name:'Carp',hcp:8,buyin:0},{name:'Bon',hcp:8,buyin:0},{name:'Brody',hcp:13,buyin:0},{name:'Tom',hcp:17,buyin:0},{name:'Raymond',hcp:18,buyin:0},{name:'Johnson',hcp:22,buyin:0},{name:'Sam',hcp:13,buyin:0},{name:'Maycock',hcp:19,buyin:0},{name:'Baker',hcp:19,buyin:0},{name:'Milici',hcp:20,buyin:0},{name:'Brett',hcp:27,buyin:0}]);
+  DB.set('scores_2025',{'James':{day1:{total:82,net:77,hcp:5,birdies:7,holes:[]}},'Carp':{day1:{total:82,net:74,hcp:8,birdies:5,holes:[]}},'Bon':{day1:{total:84,net:76,hcp:8,birdies:7,holes:[]}},'Brody':{day1:{total:84,net:71,hcp:13,birdies:6,holes:[]}},'Tom':{day1:{total:88,net:71,hcp:17,birdies:5,holes:[]}},'Raymond':{day1:{total:88,net:70,hcp:18,birdies:1,holes:[]}},'Johnson':{day1:{total:92,net:70,hcp:22,birdies:1,holes:[]}},'Sam':{day1:{total:95,net:82,hcp:13,birdies:5,holes:[]}},'Maycock':{day1:{total:95,net:76,hcp:19,birdies:5,holes:[]}},'Baker':{day1:{total:96,net:77,hcp:19,birdies:7,holes:[]}},'Milici':{day1:{total:109,net:89,hcp:20,birdies:3,holes:[]}},'Brett':{day1:{total:113,net:86,hcp:27,birdies:5,holes:[]}}});
+  DB.set('teams_2025',[{captain:'Bon',crew:'Baker',captainScore:84,crewScore:96,teamScore:67,scrambleRel:-5},{captain:'James',crew:'Brett',captainScore:82,crewScore:113,teamScore:70,scrambleRel:-2},{captain:'Brody',crew:'Maycock',captainScore:84,crewScore:95,teamScore:75,scrambleRel:3},{captain:'Tom',crew:'Sam',captainScore:88,crewScore:95,teamScore:76,scrambleRel:4},{captain:'Raymond',crew:'Johnson',captainScore:88,crewScore:92,teamScore:77,scrambleRel:5},{captain:'Carp',crew:'Milici',captainScore:82,crewScore:109,teamScore:77,scrambleRel:5}]);
+  DB.set('money_2025',{totalPot:246,engraving:12,perWinner:117,winners:['Bon','Baker'],notes:'Bon & Baker split $234 pot. $12 engraving fee.'});
+  DB.set('players_2024',[{name:'Carp',hcp:9,buyin:4},{name:'James',hcp:6,buyin:7},{name:'Bon',hcp:9,buyin:16},{name:'Brody',hcp:12,buyin:11.5},{name:'Sam',hcp:8,buyin:26.5},{name:'Tom',hcp:16,buyin:26.5},{name:'Maycock',hcp:18,buyin:22},{name:'Johnson',hcp:20,buyin:19},{name:'Milici',hcp:26,buyin:11.5},{name:'Baker',hcp:21,buyin:34},{name:'Raymond',hcp:18,buyin:37},{name:'Brett',hcp:26,buyin:31}]);
+  DB.set('scores_2024',{'Carp':{day1:{total:77,net:68,hcp:9,birdies:3,holes:[]}},'James':{day1:{total:79,net:73,hcp:6,birdies:5,holes:[]}},'Bon':{day1:{total:87,net:78,hcp:9,birdies:5,holes:[]}},'Brody':{day1:{total:89,net:77,hcp:12,birdies:2,holes:[]}},'Sam':{day1:{total:92,net:84,hcp:8,birdies:0,holes:[]}},'Tom':{day1:{total:100,net:84,hcp:16,birdies:0,holes:[]}},'Maycock':{day1:{total:100,net:82,hcp:18,birdies:0,holes:[]}},'Johnson':{day1:{total:101,net:81,hcp:20,birdies:1,holes:[]}},'Milici':{day1:{total:103,net:77,hcp:26,birdies:2,holes:[]}},'Baker':{day1:{total:110,net:89,hcp:21,birdies:3,holes:[]}},'Raymond':{day1:{total:113,net:95,hcp:18,birdies:3,holes:[]}},'Brett':{day1:{total:114,net:88,hcp:26,birdies:1,holes:[]}}});
+  DB.set('teams_2024',[{captain:'James',crew:'Raymond',captainScore:79,crewScore:113,teamScore:69,scrambleRel:-2},{captain:'Bon',crew:'Baker',captainScore:87,crewScore:110,teamScore:73,scrambleRel:2},{captain:'Sam',crew:'Johnson',captainScore:92,crewScore:101,teamScore:77,scrambleRel:6},{captain:'Carp',crew:'Brett',captainScore:77,crewScore:114,teamScore:78,scrambleRel:7},{captain:'Tom',crew:'Maycock',captainScore:100,crewScore:100,teamScore:80,scrambleRel:9},{captain:'Brody',crew:'Milici',captainScore:89,crewScore:103,teamScore:82,scrambleRel:11}]);
+  DB.set('money_2024',{totalPot:246,engraving:12,perWinner:117,winners:['James','Raymond'],notes:'James & Raymond split $234 pot. First year with the Trophy!'});
+  DB.set('players_2023',[{name:'Brody',hcp:11,buyin:3},{name:'Bon',hcp:10,buyin:6},{name:'James',hcp:6,buyin:10.5},{name:'Carp',hcp:8,buyin:15},{name:'Tom',hcp:17,buyin:21},{name:'Sam',hcp:18,buyin:24},{name:'Johnson',hcp:16,buyin:28.5},{name:'Raymond',hcp:16,buyin:28.5},{name:'Baker',hcp:28,buyin:10.5},{name:'Brett',hcp:28,buyin:18},{name:'Maycock',hcp:16,buyin:34.5},{name:'Milici',hcp:26,buyin:34.5}]);
+  DB.set('scores_2023',{'Brody':{day1:{total:81,net:70,hcp:11,birdies:2,holes:[]}},'Bon':{day1:{total:83,net:73,hcp:10,birdies:4,holes:[]}},'James':{day1:{total:84,net:78,hcp:6,birdies:2,holes:[]}},'Carp':{day1:{total:89,net:81,hcp:8,birdies:0,holes:[]}},'Tom':{day1:{total:100,net:83,hcp:17,birdies:1,holes:[]}},'Sam':{day1:{total:104,net:86,hcp:18,birdies:3,holes:[]}},'Johnson':{day1:{total:104,net:88,hcp:16,birdies:2,holes:[]}},'Raymond':{day1:{total:104,net:88,hcp:16,birdies:1,holes:[]}},'Baker':{day1:{total:106,net:78,hcp:28,birdies:0,holes:[]}},'Brett':{day1:{total:110,net:82,hcp:28,birdies:2,holes:[]}},'Maycock':{day1:{total:113,net:97,hcp:16,birdies:4,holes:[]}},'Milici':{day1:{total:123,net:97,hcp:26,birdies:1,holes:[]}}});
+  DB.set('teams_2023',[{captain:'Bon',crew:'Maycock',captainScore:83,crewScore:113,teamScore:73,scrambleRel:2},{captain:'James',crew:'Brett',captainScore:84,crewScore:110,teamScore:74,scrambleRel:3},{captain:'Carp',crew:'Baker',captainScore:89,crewScore:106,teamScore:78,scrambleRel:7},{captain:'Sam',crew:'Johnson',captainScore:104,crewScore:104,teamScore:78,scrambleRel:7},{captain:'Tom',crew:'Raymond',captainScore:100,crewScore:104,teamScore:83,scrambleRel:12},{captain:'Brody',crew:'Milici',captainScore:81,crewScore:123,teamScore:84,scrambleRel:13}]);
+  DB.set('money_2023',{totalPot:234,engraving:0,perWinner:117,winners:['Bon','Maycock'],notes:'Bon & Maycock split $234 pot. No trophy yet.'});
+  DB.set('alltime_records',{lowestTeamScore:{score:'67 (-5)',year:2025,players:'Bon & Baker'},lowestGross:{score:77,year:2024,player:'Carp'},lowestNet:{score:68,year:2024,player:'Carp'},lowestHole:{score:2,years:'2023–2025',players:'Sam, Johnson, Tom'},highestHole:{score:11,years:'2023–2024',players:'Sam, Baker'},mostGroupBirdies:{count:57,year:2025},totalLGCBirdies:85});
+  DB.set('alltime_players',[{name:'Bon',bestGross:83,bestNet:73,wins:2,birdies:16,allTimeScore:254},{name:'Brett',bestGross:110,bestNet:82,wins:0,birdies:8,allTimeScore:337},{name:'Brody',bestGross:81,bestNet:70,wins:0,birdies:10,allTimeScore:254},{name:'Carp',bestGross:77,bestNet:68,wins:0,birdies:8,allTimeScore:248},{name:'James',bestGross:79,bestNet:73,wins:1,birdies:14,allTimeScore:245},{name:'Baker',bestGross:96,bestNet:77,wins:1,birdies:10,allTimeScore:312},{name:'Johnson',bestGross:92,bestNet:70,wins:0,birdies:4,allTimeScore:297},{name:'Milici',bestGross:103,bestNet:77,wins:0,birdies:6,allTimeScore:335},{name:'Maycock',bestGross:95,bestNet:76,wins:1,birdies:9,allTimeScore:308},{name:'Raymond',bestGross:88,bestNet:70,wins:1,birdies:5,allTimeScore:305},{name:'Sam',bestGross:92,bestNet:82,wins:0,birdies:8,allTimeScore:291},{name:'Tom',bestGross:88,bestNet:71,wins:0,birdies:6,allTimeScore:288}]);
+  DB.set('lgc_v3',true);
+}
+
+// INIT
+seed();
+loadYear(DB.get('activeYear')||2026);
+renderHome();
+</script>
+</body>
+</html>

@@ -862,35 +862,169 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // SEED
-function seed(){
-  if(DB.get('lgc_v3'))return;
-  DB.set('years',[
-    {year:2026,course:'Tarry Brae Golf Course',winner:'Bon & DJ'},
-    {year:2025,course:'Pocono Manor Golf Course',winner:'Bon & Baker'},
-    {year:2024,course:'Amsterdam Municipal',winner:'James & Raymond'},
-    {year:2023,course:'Rogues Roost East',winner:'Bon & Maycock'}
-  ]);
-  DB.set('trip_2026',{dates:'August 7-10, 2026',airbnb:'Farid',address:'Catskills, NY',code:'',course:'Tarry Brae Golf Course',teetimes:'',notes:''});
-  DB.set('trip_2025',{dates:'August 8-11, 2025',airbnb:'Giorgi',address:'Poconos, PA',code:'',course:'Pocono Manor Golf Course',teetimes:'',notes:'First year staying till Monday'});
-  DB.set('trip_2024',{dates:'August 9-11, 2024',airbnb:'Sam',address:'Amsterdam, NY',code:'',course:'Amsterdam Municipal',teetimes:'',notes:'First year with the Trophy!'});
-  DB.set('trip_2023',{dates:'August 11-13, 2023',airbnb:'Brody',address:'Syracuse, NY',code:'',course:'Rogues Roost East',teetimes:'',notes:''});
-  const r26=[{name:'James',hcp:5,buyin:0},{name:'Carp',hcp:8,buyin:0},{name:'Bon',hcp:8,buyin:0},{name:'Brody',hcp:13,buyin:0},{name:'Tom',hcp:17,buyin:0},{name:'Raymond',hcp:18,buyin:0},{name:'Johnson',hcp:22,buyin:0},{name:'Sam',hcp:13,buyin:0},{name:'Maycock',hcp:19,buyin:0},{name:'Baker',hcp:19,buyin:0},{name:'Milici',hcp:20,buyin:0},{name:'Brett',hcp:27,buyin:0}];
-  DB.set('players_2026',r26);
-  DB.set('players_2025',[{name:'James',hcp:5,buyin:0},{name:'Carp',hcp:8,buyin:0},{name:'Bon',hcp:8,buyin:0},{name:'Brody',hcp:13,buyin:0},{name:'Tom',hcp:17,buyin:0},{name:'Raymond',hcp:18,buyin:0},{name:'Johnson',hcp:22,buyin:0},{name:'Sam',hcp:13,buyin:0},{name:'Maycock',hcp:19,buyin:0},{name:'Baker',hcp:19,buyin:0},{name:'Milici',hcp:20,buyin:0},{name:'Brett',hcp:27,buyin:0}]);
-  DB.set('scores_2025',{'James':{day1:{total:82,net:77,hcp:5,birdies:7,holes:[]}},'Carp':{day1:{total:82,net:74,hcp:8,birdies:5,holes:[]}},'Bon':{day1:{total:84,net:76,hcp:8,birdies:7,holes:[]}},'Brody':{day1:{total:84,net:71,hcp:13,birdies:6,holes:[]}},'Tom':{day1:{total:88,net:71,hcp:17,birdies:5,holes:[]}},'Raymond':{day1:{total:88,net:70,hcp:18,birdies:1,holes:[]}},'Johnson':{day1:{total:92,net:70,hcp:22,birdies:1,holes:[]}},'Sam':{day1:{total:95,net:82,hcp:13,birdies:5,holes:[]}},'Maycock':{day1:{total:95,net:76,hcp:19,birdies:5,holes:[]}},'Baker':{day1:{total:96,net:77,hcp:19,birdies:7,holes:[]}},'Milici':{day1:{total:109,net:89,hcp:20,birdies:3,holes:[]}},'Brett':{day1:{total:113,net:86,hcp:27,birdies:5,holes:[]}}});
-  DB.set('teams_2025',[{captain:'Bon',crew:'Baker',captainScore:84,crewScore:96,teamScore:67,scrambleRel:-5},{captain:'James',crew:'Brett',captainScore:82,crewScore:113,teamScore:70,scrambleRel:-2},{captain:'Brody',crew:'Maycock',captainScore:84,crewScore:95,teamScore:75,scrambleRel:3},{captain:'Tom',crew:'Sam',captainScore:88,crewScore:95,teamScore:76,scrambleRel:4},{captain:'Raymond',crew:'Johnson',captainScore:88,crewScore:92,teamScore:77,scrambleRel:5},{captain:'Carp',crew:'Milici',captainScore:82,crewScore:109,teamScore:77,scrambleRel:5}]);
-  DB.set('money_2025',{totalPot:246,engraving:12,perWinner:117,winners:['Bon','Baker'],notes:'Bon & Baker split $234 pot. $12 engraving fee.'});
-  DB.set('players_2024',[{name:'Carp',hcp:9,buyin:4},{name:'James',hcp:6,buyin:7},{name:'Bon',hcp:9,buyin:16},{name:'Brody',hcp:12,buyin:11.5},{name:'Sam',hcp:8,buyin:26.5},{name:'Tom',hcp:16,buyin:26.5},{name:'Maycock',hcp:18,buyin:22},{name:'Johnson',hcp:20,buyin:19},{name:'Milici',hcp:26,buyin:11.5},{name:'Baker',hcp:21,buyin:34},{name:'Raymond',hcp:18,buyin:37},{name:'Brett',hcp:26,buyin:31}]);
-  DB.set('scores_2024',{'Carp':{day1:{total:77,net:68,hcp:9,birdies:3,holes:[]}},'James':{day1:{total:79,net:73,hcp:6,birdies:5,holes:[]}},'Bon':{day1:{total:87,net:78,hcp:9,birdies:5,holes:[]}},'Brody':{day1:{total:89,net:77,hcp:12,birdies:2,holes:[]}},'Sam':{day1:{total:92,net:84,hcp:8,birdies:0,holes:[]}},'Tom':{day1:{total:100,net:84,hcp:16,birdies:0,holes:[]}},'Maycock':{day1:{total:100,net:82,hcp:18,birdies:0,holes:[]}},'Johnson':{day1:{total:101,net:81,hcp:20,birdies:1,holes:[]}},'Milici':{day1:{total:103,net:77,hcp:26,birdies:2,holes:[]}},'Baker':{day1:{total:110,net:89,hcp:21,birdies:3,holes:[]}},'Raymond':{day1:{total:113,net:95,hcp:18,birdies:3,holes:[]}},'Brett':{day1:{total:114,net:88,hcp:26,birdies:1,holes:[]}}});
-  DB.set('teams_2024',[{captain:'James',crew:'Raymond',captainScore:79,crewScore:113,teamScore:69,scrambleRel:-2},{captain:'Bon',crew:'Baker',captainScore:87,crewScore:110,teamScore:73,scrambleRel:2},{captain:'Sam',crew:'Johnson',captainScore:92,crewScore:101,teamScore:77,scrambleRel:6},{captain:'Carp',crew:'Brett',captainScore:77,crewScore:114,teamScore:78,scrambleRel:7},{captain:'Tom',crew:'Maycock',captainScore:100,crewScore:100,teamScore:80,scrambleRel:9},{captain:'Brody',crew:'Milici',captainScore:89,crewScore:103,teamScore:82,scrambleRel:11}]);
-  DB.set('money_2024',{totalPot:246,engraving:12,perWinner:117,winners:['James','Raymond'],notes:'James & Raymond split $234 pot. First year with the Trophy!'});
-  DB.set('players_2023',[{name:'Brody',hcp:11,buyin:3},{name:'Bon',hcp:10,buyin:6},{name:'James',hcp:6,buyin:10.5},{name:'Carp',hcp:8,buyin:15},{name:'Tom',hcp:17,buyin:21},{name:'Sam',hcp:18,buyin:24},{name:'Johnson',hcp:16,buyin:28.5},{name:'Raymond',hcp:16,buyin:28.5},{name:'Baker',hcp:28,buyin:10.5},{name:'Brett',hcp:28,buyin:18},{name:'Maycock',hcp:16,buyin:34.5},{name:'Milici',hcp:26,buyin:34.5}]);
-  DB.set('scores_2023',{'Brody':{day1:{total:81,net:70,hcp:11,birdies:2,holes:[]}},'Bon':{day1:{total:83,net:73,hcp:10,birdies:4,holes:[]}},'James':{day1:{total:84,net:78,hcp:6,birdies:2,holes:[]}},'Carp':{day1:{total:89,net:81,hcp:8,birdies:0,holes:[]}},'Tom':{day1:{total:100,net:83,hcp:17,birdies:1,holes:[]}},'Sam':{day1:{total:104,net:86,hcp:18,birdies:3,holes:[]}},'Johnson':{day1:{total:104,net:88,hcp:16,birdies:2,holes:[]}},'Raymond':{day1:{total:104,net:88,hcp:16,birdies:1,holes:[]}},'Baker':{day1:{total:106,net:78,hcp:28,birdies:0,holes:[]}},'Brett':{day1:{total:110,net:82,hcp:28,birdies:2,holes:[]}},'Maycock':{day1:{total:113,net:97,hcp:16,birdies:4,holes:[]}},'Milici':{day1:{total:123,net:97,hcp:26,birdies:1,holes:[]}}});
-  DB.set('teams_2023',[{captain:'Bon',crew:'Maycock',captainScore:83,crewScore:113,teamScore:73,scrambleRel:2},{captain:'James',crew:'Brett',captainScore:84,crewScore:110,teamScore:74,scrambleRel:3},{captain:'Carp',crew:'Baker',captainScore:89,crewScore:106,teamScore:78,scrambleRel:7},{captain:'Sam',crew:'Johnson',captainScore:104,crewScore:104,teamScore:78,scrambleRel:7},{captain:'Tom',crew:'Raymond',captainScore:100,crewScore:104,teamScore:83,scrambleRel:12},{captain:'Brody',crew:'Milici',captainScore:81,crewScore:123,teamScore:84,scrambleRel:13}]);
-  DB.set('money_2023',{totalPot:234,engraving:0,perWinner:117,winners:['Bon','Maycock'],notes:'Bon & Maycock split $234 pot. No trophy yet.'});
-  DB.set('alltime_records',{lowestTeamScore:{score:'67 (-5)',year:2025,players:'Bon & Baker'},lowestGross:{score:76,year:2026,player:'Bon'},lowestNet:{score:68,year:2024,player:'Carp'},lowestHole:{score:2,years:'2023–2025',players:'Sam, Johnson, Tom'},highestHole:{score:11,years:'2023–2024',players:'Sam, Baker'},mostGroupBirdies:{count:57,year:2025},totalLGCBirdies:85});
-  DB.set('alltime_players',[{name:'Bon',bestGross:76,bestNet:70,wins:3,birdies:0,allTimeScore:0},{name:'Brett',bestGross:110,bestNet:82,wins:0,birdies:8,allTimeScore:337},{name:'Brody',bestGross:81,bestNet:70,wins:0,birdies:10,allTimeScore:254},{name:'Carp',bestGross:77,bestNet:68,wins:0,birdies:8,allTimeScore:248},{name:'James',bestGross:79,bestNet:73,wins:1,birdies:14,allTimeScore:245},{name:'Baker',bestGross:96,bestNet:77,wins:1,birdies:10,allTimeScore:312},{name:'Johnson',bestGross:92,bestNet:70,wins:0,birdies:4,allTimeScore:297},{name:'Milici',bestGross:103,bestNet:77,wins:0,birdies:6,allTimeScore:335},{name:'Maycock',bestGross:95,bestNet:76,wins:1,birdies:9,allTimeScore:308},{name:'Raymond',bestGross:88,bestNet:70,wins:1,birdies:5,allTimeScore:305},{name:'Sam',bestGross:92,bestNet:82,wins:0,birdies:8,allTimeScore:291},{name:'Tom',bestGross:88,bestNet:71,wins:0,birdies:6,allTimeScore:288}]);
-  DB.set('lgc_v3',true);
+function lowestBy(players, field) {
+  const valid = players.filter(
+    player => player[field] != null
+  );
+
+  if (!valid.length) return [];
+
+  const best = Math.min(
+    ...valid.map(player => Number(player[field]))
+  );
+
+  return valid.filter(
+    player => Number(player[field]) === best
+  );
+}
+
+function highestBy(players, field) {
+  const valid = players.filter(
+    player => player[field] != null
+  );
+
+  if (!valid.length) return [];
+
+  const best = Math.max(
+    ...valid.map(player => Number(player[field]))
+  );
+
+  return valid.filter(
+    player => Number(player[field]) === best
+  );
+}
+
+function playerNames(players) {
+  return players.length
+    ? players.map(player => player.player).join(' & ')
+    : '—';
+}
+
+async function renderAllTimeRecords() {
+  const element = document.getElementById('home-at');
+
+  try {
+    const playersResponse = await fetch(
+      'stats/players.json',
+      { cache: 'no-store' }
+    );
+
+    if (!playersResponse.ok) {
+      throw new Error('Could not load players.json');
+    }
+
+    const playerList = await playersResponse.json();
+
+    const playerStats = await Promise.all(
+      playerList.map(async player => {
+        const response = await fetch(
+          `stats/${encodeURIComponent(player.folder)}/all_time_stats.json`,
+          { cache: 'no-store' }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Could not load ${player.name}'s stats`);
+        }
+
+        return response.json();
+      })
+    );
+
+    const bestGrossPlayers = lowestBy(
+      playerStats,
+      'best_gross_score'
+    );
+
+    const bestNetPlayers = lowestBy(
+      playerStats,
+      'best_net_score'
+    );
+
+    const bestAverageGrossPlayers = lowestBy(
+      playerStats,
+      'average_gross_score'
+    );
+
+    const mostWinsPlayers = highestBy(
+      playerStats,
+      'team_wins'
+    );
+
+    const mostBirdiesPlayers = highestBy(
+      playerStats,
+      'total_birdies'
+    );
+
+    const totalBirdies = playerStats.reduce(
+      (total, player) =>
+        total + (Number(player.total_birdies) || 0),
+      0
+    );
+
+    element.innerHTML = `
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div class="stat-box-label">Best Gross</div>
+        <div class="stat-box-value">
+          ${bestGrossPlayers[0]?.best_gross_score ?? '—'}
+        </div>
+        <div class="ps">
+          ${playerNames(bestGrossPlayers)}
+        </div>
+      </div>
+
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div class="stat-box-label">Best Net</div>
+        <div class="stat-box-value">
+          ${bestNetPlayers[0]?.best_net_score ?? '—'}
+        </div>
+        <div class="ps">
+          ${playerNames(bestNetPlayers)}
+        </div>
+      </div>
+
+      <div style="background:var(--gp);border-radius:10px;padding:11px;">
+        <div class="stat-box-label">Best Average Gross</div>
+        <div class="stat-box-value">
+          ${bestAverageGrossPlayers[0]?.average_gross_score ?? '—'}
+        </div>
+        <div class="ps">
+          ${playerNames(bestAverageGrossPlayers)}
+        </div>
+      </div>
+
+      <div style="background:var(--gd);border-radius:10px;padding:11px;">
+        <div class="stat-box-label" style="color:white;">
+          Most Wins
+        </div>
+        <div class="stat-box-value" style="color:var(--gold);">
+          ${mostWinsPlayers[0]?.team_wins ?? '—'} 🏆
+        </div>
+        <div style="font-size:11px;color:white;">
+          ${playerNames(mostWinsPlayers)}
+        </div>
+      </div>
+
+      <div style="background:var(--gd);border-radius:10px;padding:11px;">
+        <div class="stat-box-label" style="color:white;">
+          Most Birdies
+        </div>
+        <div class="stat-box-value" style="color:var(--gold);">
+          ${mostBirdiesPlayers[0]?.total_birdies ?? '—'} 🐦
+        </div>
+        <div style="font-size:11px;color:white;">
+          ${playerNames(mostBirdiesPlayers)}
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error('All-time records error:', error);
+
+    element.innerHTML = `
+      <div class="esub" style="padding:8px 0;">
+        Record book unavailable
+      </div>
+    `;
+  }
 }
 
 let statsPlayers = [];
@@ -1145,9 +1279,10 @@ function parseCSV(text) {
   });
 }
 // INIT
-seed();
+// seed();
 loadYear(DB.get('activeYear')||2026);
 renderHome();
+renderAllTimeRecords();
 loadStatsPlayers();
 </script>
 </body>

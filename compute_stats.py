@@ -327,7 +327,7 @@ def write_outputs(output_dir, yearly, players, winning_rounds):
             "par5_average": round(summary["par5_strokes"] / summary["par5_holes"], 2) if summary["par5_holes"] else None,
         }
         all_time["birdie_percentage"] = round(
-            summary["total_birdies"] / (solo_rounds * 18) * 100, 2
+            (summary["total_birdies"] + summary["total_eagles"]) / (solo_rounds * 18) * 100, 2
         ) if solo_rounds else None
 
         with (player_dir / "all_time_stats.json").open("w", encoding="utf-8") as file:

@@ -995,7 +995,7 @@ function renderPlayerStats(playerName, allTime, yearly) {
         font-weight:700;
         color:white;
       ">
-        ${playerName}
+        ${playerName} ${playerAwards(allTime)}
       </div>
     </div>
 
@@ -1039,10 +1039,14 @@ function renderPlayerStats(playerName, allTime, yearly) {
               <th>HCP</th>
               <th>Gross</th>
               <th>Net</th>
+              <th>Eagles</th>
               <th>Birdies</th>
-              <th>Solo</th>
-              <th>Net</th>
-              <th>Team</th>
+              <th>Pars</th>
+              <th>Bogeys</th>
+              <th>Doubles+</th>
+              <th>Solo Rank</th>
+              <th>Net Rank</th>
+              <th>Team Rank</th>
             </tr>
           </thead>
           <tbody>
@@ -1052,7 +1056,11 @@ function renderPlayerStats(playerName, allTime, yearly) {
                 <td>${row.handicap || '—'}</td>
                 <td>${row.gross_score || '—'}</td>
                 <td>${row.net_score || '—'}</td>
+                <td>${row.eagles || 0}</td>
                 <td>${row.birdies || 0}</td>
+                <td>${row.pars || 0}</td>
+                <td>${row.bogeys || 0}</td>
+                <td>${row.double_bogeys || 0}</td>
                 <td>${row.solo_placement || '—'}</td>
                 <td>${row.net_placement || '—'}</td>
                 <td>${row.team_placement || '—'}</td>
@@ -1063,6 +1071,13 @@ function renderPlayerStats(playerName, allTime, yearly) {
       </div>
     </div>
   `;
+}
+
+function playerAwards(allTime) {
+  const trophies = '🏆'.repeat(Number(allTime.team_wins) || 0);
+  const medals = '🥇'.repeat(Number(allTime.solo_first_places) || 0);
+
+  return `${trophies}${medals}`;
 }
 
 function statBox(label, value) {

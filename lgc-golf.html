@@ -150,6 +150,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .ht td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--td);}
 .ht td:not(:first-child){text-align:center;font-weight:500;}
 .ht tr:last-child td{border-bottom:none;}
+
+/* STATS */
+.stats-grid {
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:8px;
+}
+
+.stat-box {
+  background:var(--gp);
+  border-radius:10px;
+  padding:11px;
+}
+
+.stat-box-label {
+  font-size:9px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  color:var(--ts);
+  margin-bottom:4px;
+}
+
+.stat-box-value {
+  font-family:'Playfair Display',serif;
+  font-size:20px;
+  font-weight:700;
+  color:var(--gd);
+}
+
+@media (min-width:700px) {
+  .stats-grid {
+    grid-template-columns:repeat(4, 1fr);
+  }
+}
 </style>
 </head>
 <body>
@@ -300,10 +334,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 
 <!-- STATS -->
 <main id="page-stats" class="pg">
-  <div class="es" style="padding-top:60px;">
-    <div class="ei">📊</div>
-    <div class="et">Stats coming soon</div>
-    <div class="esub">Detailed individual and all-time stats will live here.</div>
+  <div class="card">
+    <div class="ct">Select Player</div>
+
+    <select id="stats-player-select" class="fi"
+            onchange="loadPlayerStats(this.value)">
+      <option value="">Select a player...</option>
+    </select>
+  </div>
+
+  <div id="stats-content">
+    <div class="es" style="padding-top:40px;">
+      <div class="ei">📊</div>
+      <div class="et">Choose a player</div>
+      <div class="esub">
+        Select a player to view their record book.
+      </div>
+    </div>
   </div>
 </main>
 
@@ -846,10 +893,247 @@ function seed(){
   DB.set('lgc_v3',true);
 }
 
+let statsPlayers = [];
+
+async function loadStatsPlayers() {
+  try {
+    const response = await fetch('stats/players.json', {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error('Could not load stats/players.json');
+    }
+
+    statsPlayers = await response.json();
+
+    const select = document.getElementById('stats-player-select');
+
+    select.innerHTML =
+      '<option value="">Select a player...</option>' +
+      statsPlayers
+        .map(player =>
+          `<option value="${player.folder}">
+             ${player.name}
+           </option>`
+        )
+        .join('');
+  } catch (error) {
+    console.error(error);
+
+    document.getElementById('stats-content').innerHTML = `
+      <div class="es">
+        <div class="ei">⚠️</div>
+        <div class="et">Stats unavailable</div>
+        <div class="esub">
+          Make sure the stats folder is beside the HTML file.
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function loadPlayerStats(folder) {
+  const content = document.getElementById('stats-content');
+
+  if (!folder) {
+    content.innerHTML = `
+      <div class="es" style="padding-top:40px;">
+        <div class="ei">📊</div>
+        <div class="et">Choose a player</div>
+        <div class="esub">
+          Select a player to view their record book.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const player = statsPlayers.find(p => p.folder === folder);
+
+  try {
+    const [jsonResponse, csvResponse] = await Promise.all([
+      fetch(`stats/${folder}/all_time_stats.json`, {
+        cache: 'no-store'
+      }),
+      fetch(`stats/${folder}/yearly_stats.csv`, {
+        cache: 'no-store'
+      })
+    ]);
+
+    if (!jsonResponse.ok || !csvResponse.ok) {
+      throw new Error('Could not load player statistics');
+    }
+
+    const allTime = await jsonResponse.json();
+    const yearlyText = await csvResponse.text();
+    const yearly = parseCSV(yearlyText);
+
+    renderPlayerStats(player.name, allTime, yearly);
+  } catch (error) {
+    console.error('Player stats error:', error);
+
+    content.innerHTML = `
+      <div class="es">
+        <div class="ei">⚠️</div>
+        <div class="et">Could not load ${player.name}'s stats</div>
+        <div class="esub">${error.message}</div>
+      </div>
+    `;
+  }
+}
+
+function renderPlayerStats(playerName, allTime, yearly) {
+  const content = document.getElementById('stats-content');
+
+  content.innerHTML = `
+    <div class="sc" style="margin-bottom:12px;">
+      <div class="sl">Player Record Book</div>
+      <div style="
+        font-family:'Playfair Display',serif;
+        font-size:26px;
+        font-weight:700;
+        color:white;
+      ">
+        ${playerName}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Career Summary</div>
+
+      <div class="stats-grid">
+        ${statBox('Years Played', allTime.years_played?.join(', ') || '—')}
+        ${statBox('Solo Rounds', allTime.solo_rounds)}
+        ${statBox('Team Wins', allTime.team_wins)}
+        ${statBox('Solo 1st Places', allTime.solo_first_places)}
+        ${statBox('Avg Solo Place', allTime.average_solo_placement)}
+        ${statBox('Avg Net Place', allTime.average_net_placement)}
+        ${statBox('Avg Team Place', allTime.average_team_placement)}
+        ${statBox('Total Gross', allTime.total_gross_score)}
+        ${statBox('Avg Gross', allTime.average_gross_score)}
+        ${statBox('Best Gross', allTime.best_gross_score)}
+        ${statBox('Total Net', allTime.total_net_score)}
+        ${statBox('Avg Net', allTime.average_net_score)}
+        ${statBox('Best Net', allTime.best_net_score)}
+        ${statBox('Birdies', allTime.total_birdies)}
+        ${statBox('Eagles', allTime.total_eagles)}
+        ${statBox('Pars', allTime.total_pars)}
+        ${statBox('Bogeys', allTime.total_bogeys)}
+        ${statBox('Double Bogeys', allTime.total_dbl_bogeys)}
+        ${statBox('Birdie %', formatPercent(allTime.birdie_percentage))}
+        ${statBox('Par 3 Avg', allTime.par3_average)}
+        ${statBox('Par 4 Avg', allTime.par4_average)}
+        ${statBox('Par 5 Avg', allTime.par5_average)}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Year-by-Year</div>
+
+      <div style="overflow-x:auto;">
+        <table class="ht">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>HCP</th>
+              <th>Gross</th>
+              <th>Net</th>
+              <th>Birdies</th>
+              <th>Solo</th>
+              <th>Net</th>
+              <th>Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${yearly.map(row => `
+              <tr>
+                <td>${row.year}</td>
+                <td>${row.handicap || '—'}</td>
+                <td>${row.gross_score || '—'}</td>
+                <td>${row.net_score || '—'}</td>
+                <td>${row.birdies || 0}</td>
+                <td>${row.solo_placement || '—'}</td>
+                <td>${row.net_placement || '—'}</td>
+                <td>${row.team_placement || '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function statBox(label, value) {
+  return `
+    <div class="stat-box">
+      <div class="stat-box-label">${label}</div>
+      <div class="stat-box-value">${value ?? '—'}</div>
+    </div>
+  `;
+}
+
+function formatPercent(value) {
+  return value == null ? '—' : `${value}%`;
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let value = '';
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      value += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === ',' && !insideQuotes) {
+      row.push(value.trim());
+      value = '';
+    } else if ((char === '\n' || char === '\r') && !insideQuotes) {
+      if (char === '\r' && next === '\n') i++;
+
+      row.push(value.trim());
+
+      if (row.some(cell => cell !== '')) {
+        rows.push(row);
+      }
+
+      row = [];
+      value = '';
+    } else {
+      value += char;
+    }
+  }
+
+  if (value || row.length) {
+    row.push(value.trim());
+    rows.push(row);
+  }
+
+  const headers = rows.shift();
+
+  return rows.map(values => {
+    const result = {};
+
+    headers.forEach((header, index) => {
+      result[header] = values[index] ?? '';
+    });
+
+    return result;
+  });
+}
 // INIT
 seed();
 loadYear(DB.get('activeYear')||2026);
 renderHome();
+loadStatsPlayers();
 </script>
 </body>
 </html>

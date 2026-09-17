@@ -283,10 +283,16 @@ def rank_items(items, key):
 
 def write_outputs(output_dir, yearly, players, winning_rounds):
     output_dir.mkdir(parents=True, exist_ok=True)
+    player_manifest = []
 
     for player in sorted(players):
         player_dir = output_dir / player.lower().replace(" ", "_")
         player_dir.mkdir(exist_ok=True)
+
+        player_manifest.append({
+            "name": player,
+            "folder": player.lower().replace(" ", "_")
+        })
 
         yearly_path = player_dir / "yearly_stats.csv"
         yearly_fields = [
@@ -333,6 +339,9 @@ def write_outputs(output_dir, yearly, players, winning_rounds):
 
         with (player_dir / "all_time_stats.json").open("w", encoding="utf-8") as file:
             json.dump(all_time, file, indent=2)
+            
+    with (output_dir / "players.json").open("w", encoding="utf-8") as file:
+        json.dump(player_manifest, file, indent=2)
 
     with (output_dir / "winning_teams.json").open("w", encoding="utf-8") as file:
         json.dump({

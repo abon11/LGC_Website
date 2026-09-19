@@ -235,6 +235,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   background: #eeeeee;
   color: #a0a0a0;
 }
+
+.stat-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s, color .15s;
+}
+
+.stat-header:hover {
+  background: var(--gm);
+  color: white;
+}
+
+.stat-header.active {
+  background: var(--gold);
+  color: var(--gd);
+}
+
+.yearly-chart-card {
+  margin-top: 12px;
+}
+
+.yearly-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -478,6 +504,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 
 <script>
 let scoringChart = null;
+let yearlyChart = null;
 
 // DB
 const DB={
@@ -1157,7 +1184,7 @@ async function loadPlayerStats(folder) {
     const yearlyText = await csvResponse.text();
     const yearly = parseCSV(yearlyText);
 
-    renderPlayerStats(player.name, allTime, yearly);
+    renderPlayerStats(player.name, folder, allTime, yearly);
   } catch (error) {
     console.error('Player stats error:', error);
 
@@ -1171,7 +1198,7 @@ async function loadPlayerStats(folder) {
   }
 }
 
-function renderPlayerStats(playerName, allTime, yearly) {
+function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
   const content = document.getElementById('stats-content');
 
   content.innerHTML = `
@@ -1234,24 +1261,24 @@ function renderPlayerStats(playerName, allTime, yearly) {
 
       <div style="overflow-x:auto;">
         <table class="ht">
-          <thead>
-            <tr>
-              <th>Year</th>
-              <th>HCP</th>
-              <th>Gross</th>
-              <th>Net</th>
-              <th>Eagles</th>
-              <th>Birdies</th>
-              <th>Pars</th>
-              <th>Bogeys</th>
-              <th>Doubles</th>
-              <th>Triples</th>
-              <th>Quads+</th>
-              <th>Solo Rank</th>
-              <th>Net Rank</th>
-              <th>Team Rank</th>
-            </tr>
-          </thead>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th class="stat-header" data-stat="handicap">HDCP</th>
+            <th class="stat-header" data-stat="gross_score">Gross</th>
+            <th class="stat-header" data-stat="net_score">Net</th>
+            <th class="stat-header" data-stat="eagles">Eagles</th>
+            <th class="stat-header" data-stat="birdies">Birdies</th>
+            <th class="stat-header" data-stat="pars">Pars</th>
+            <th class="stat-header" data-stat="bogeys">Bogeys</th>
+            <th class="stat-header" data-stat="double_bogeys">Doubles</th>
+            <th class="stat-header" data-stat="triple_bogeys">Triples</th>
+            <th class="stat-header" data-stat="quad_bogeys">Quads+</th>
+            <th class="stat-header" data-stat="solo_placement">Solo Rank</th>
+            <th class="stat-header" data-stat="net_placement">Net Rank</th>
+            <th class="stat-header" data-stat="team_placement">Team Rank</th>
+          </tr>
+        </thead>
           <tbody>
             ${yearly.map(row => `
               <tr>
@@ -1275,8 +1302,23 @@ function renderPlayerStats(playerName, allTime, yearly) {
         </table>
       </div>
     </div>
+
+    <div id="yearly-chart-container" class="card yearly-chart-card" style="display:none;">
+      <div class="ct" id="yearly-chart-title">Stat by Year</div>
+      <div class="yearly-chart-wrap">
+        <canvas id="yearly-chart"></canvas>
+      </div>
+    </div>
+
   `;
   renderYearsPlayed(allTime);
+
+  document.querySelectorAll('#stats-content .stat-header').forEach(button => {
+    button.addEventListener('click', () => {
+      showYearlyStat(button.dataset.stat, button, yearly);
+    });
+  });
+
   const chartCanvas = document.getElementById('scoring-chart');
 
   if (scoringChart) {
@@ -1491,6 +1533,143 @@ async function renderYearsPlayed(allTime) {
         Could not load tournament years.
       </div>
     `;
+  }
+}
+
+const yearlyStatLabels = {
+  handicap: 'Handicap',
+  gross_score: 'Gross Score',
+  net_score: 'Net Score',
+  eagles: 'Eagles',
+  birdies: 'Birdies',
+  pars: 'Pars',
+  bogeys: 'Bogeys',
+  double_bogeys: 'Double Bogeys',
+  triple_bogeys: 'Triple Bogeys',
+  quad_bogeys: 'Quadruple Bogeys+',
+  solo_placement: 'Solo Rank',
+  net_placement: 'Net Rank',
+  team_placement: 'Team Rank'
+};
+
+async function showYearlyStat(stat, button, yearly) {
+  const container = document.getElementById('yearly-chart-container');
+  const title = document.getElementById('yearly-chart-title');
+  const canvas = document.getElementById('yearly-chart');
+
+  // Highlight selected header
+  document.querySelectorAll('.stat-header').forEach(header => {
+    header.classList.remove('active');
+  });
+
+  button.classList.add('active');
+
+  // Destroy existing chart
+  if (yearlyChart) {
+    yearlyChart.destroy();
+    yearlyChart = null;
+  }
+
+  try {
+    // Get all tournament years
+    const allYears = await loadCourseYears();
+
+    // Map player's existing yearly data by year
+    const yearlyByYear = new Map(
+      yearly.map(row => [Number(row.year), row])
+    );
+
+    // Build values for every LGC year.
+    // null means the player did not play that year.
+    const values = allYears.map(year => {
+      const row = yearlyByYear.get(year);
+
+      if (!row) {
+        return null;
+      }
+
+      const value = Number(row[stat]);
+
+      return Number.isFinite(value) ? value : null;
+    });
+
+    title.textContent = `${yearlyStatLabels[stat]} by Year`;
+    container.style.display = '';
+
+    yearlyChart = new Chart(canvas, {
+      type: 'line',
+
+      data: {
+        labels: allYears,
+
+        datasets: [{
+          label: yearlyStatLabels[stat],
+          data: values,
+
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+
+          tension: 0.25,
+
+          // Do not connect across skipped years
+          spanGaps: false
+        }]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Year',
+              font: {
+                family: 'DM Sans'
+              }
+            }
+          },
+
+          y: {
+            title: {
+              display: true,
+              text: yearlyStatLabels[stat],
+              font: {
+                family: 'DM Sans'
+              }
+            },
+
+            ticks: {
+              precision: 0
+            },
+
+            reverse: stat.includes('placement')
+          }
+        },
+
+        plugins: {
+          legend: {
+            display: false
+          },
+
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${yearlyStatLabels[stat]}: ${context.raw}`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Yearly chart error:', error);
+
+    container.style.display = '';
+    title.textContent = 'Chart unavailable';
   }
 }
 

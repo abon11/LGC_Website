@@ -2,7 +2,7 @@
 """Build per-player LGC record books from courses.csv and rounds.csv.
 
 Usage:
-    python record_book.py courses.csv rounds.csv record_book
+    python3 compute_stats.py courses.csv rounds.csv stats
 
 The input CSVs remain raw. Generated files are safe to delete and recreate.
 """

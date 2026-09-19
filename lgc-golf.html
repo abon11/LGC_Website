@@ -184,7 +184,59 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     grid-template-columns:repeat(4, 1fr);
   }
 }
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.stats-chart-card {
+  background: var(--gp);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+@media (min-width:700px) {
+  .stats-overview {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+}
+
+.years-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 5px;
+}
+
+.year-pill {
+  text-align: center;
+  padding: 9px 4px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+.year-pill.played {
+  background: var(--gd);
+  color: white;
+}
+
+.year-pill.not-played {
+  background: #eeeeee;
+  color: #a0a0a0;
+}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -425,6 +477,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 </div></div>
 
 <script>
+let scoringChart = null;
+
 // DB
 const DB={
   get(k){try{return JSON.parse(localStorage.getItem('lgc_'+k))||null;}catch{return null;}},
@@ -1133,32 +1187,45 @@ function renderPlayerStats(playerName, allTime, yearly) {
       </div>
     </div>
 
+    <!-- LGC SEASONS -->
+    <div style="margin:0 2px 14px;">
+      <div id="years-played-bar" class="years-bar">
+        <div class="ps">Loading...</div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="ct">Career Summary</div>
 
-      <div class="stats-grid">
-        ${statBox('Years Played', allTime.years_played?.join(', ') || '—')}
-        ${statBox('Solo Rounds', allTime.solo_rounds)}
-        ${statBox('Team Wins', allTime.team_wins)}
-        ${statBox('Solo 1st Places', allTime.solo_first_places)}
-        ${statBox('Avg Solo Place', allTime.average_solo_placement)}
-        ${statBox('Avg Net Place', allTime.average_net_placement)}
-        ${statBox('Avg Team Place', allTime.average_team_placement)}
-        ${statBox('Total Gross', allTime.total_gross_score)}
-        ${statBox('Avg Gross', allTime.average_gross_score)}
-        ${statBox('Best Gross', allTime.best_gross_score)}
-        ${statBox('Total Net', allTime.total_net_score)}
-        ${statBox('Avg Net', allTime.average_net_score)}
-        ${statBox('Best Net', allTime.best_net_score)}
-        ${statBox('Birdies', allTime.total_birdies)}
-        ${statBox('Eagles', allTime.total_eagles)}
-        ${statBox('Pars', allTime.total_pars)}
-        ${statBox('Bogeys', allTime.total_bogeys)}
-        ${statBox('Double Bogeys', allTime.total_dbl_bogeys)}
-        ${statBox('Birdie %', formatPercent(allTime.birdie_percentage))}
-        ${statBox('Par 3 Avg', allTime.par3_average)}
-        ${statBox('Par 4 Avg', allTime.par4_average)}
-        ${statBox('Par 5 Avg', allTime.par5_average)}
+      <div class="stats-overview">
+
+        <div class="stats-grid">
+          ${statBox('Solo Rounds', allTime.solo_rounds)}
+          ${statBox('Team Wins', allTime.team_wins)}
+          ${statBox('Solo 1st Places', allTime.solo_first_places)}
+          ${statBox('Avg Solo Place', allTime.average_solo_placement)}
+          ${statBox('Avg Net Place', allTime.average_net_placement)}
+          ${statBox('Avg Team Place', allTime.average_team_placement)}
+          ${statBox('Total Gross', allTime.total_gross_score)}
+          ${statBox('Avg Gross', allTime.average_gross_score)}
+          ${statBox('Best Gross', allTime.best_gross_score)}
+          ${statBox('Total Net', allTime.total_net_score)}
+          ${statBox('Avg Net', allTime.average_net_score)}
+          ${statBox('Best Net', allTime.best_net_score)}
+          ${statBox('Birdie %', formatPercent(allTime.birdie_percentage))}
+          ${statBox('Par 3 Avg', allTime.par3_average)}
+          ${statBox('Par 4 Avg', allTime.par4_average)}
+          ${statBox('Par 5 Avg', allTime.par5_average)}
+        </div>
+
+        <div class="stats-chart-card">
+          <div class="stat-box-label">Scoring Distribution</div>
+
+          <div class="chart-wrap">
+            <canvas id="scoring-chart"></canvas>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1177,7 +1244,9 @@ function renderPlayerStats(playerName, allTime, yearly) {
               <th>Birdies</th>
               <th>Pars</th>
               <th>Bogeys</th>
-              <th>Doubles+</th>
+              <th>Doubles</th>
+              <th>Triples</th>
+              <th>Quads+</th>
               <th>Solo Rank</th>
               <th>Net Rank</th>
               <th>Team Rank</th>
@@ -1195,6 +1264,8 @@ function renderPlayerStats(playerName, allTime, yearly) {
                 <td>${row.pars || 0}</td>
                 <td>${row.bogeys || 0}</td>
                 <td>${row.double_bogeys || 0}</td>
+                <td>${row.triple_bogeys || 0}</td>
+                <td>${row.quad_bogeys || 0}</td>
                 <td>${row.solo_placement || '—'}</td>
                 <td>${row.net_placement || '—'}</td>
                 <td>${row.team_placement || '—'}</td>
@@ -1205,6 +1276,102 @@ function renderPlayerStats(playerName, allTime, yearly) {
       </div>
     </div>
   `;
+  renderYearsPlayed(allTime);
+  const chartCanvas = document.getElementById('scoring-chart');
+
+  if (scoringChart) {
+    scoringChart.destroy();
+  }
+
+  // Define each scoring category
+  const scoringData = [
+    {
+      label: 'Eagles',
+      value: Number(allTime.total_eagles) || 0,
+      color: '#b34faf'
+    },
+    {
+      label: 'Birdies',
+      value: Number(allTime.total_birdies) || 0,
+      color: '#6cd1e0'
+    },
+    {
+      label: 'Pars',
+      value: Number(allTime.total_pars) || 0,
+      color: '#3ab57c'
+    },
+    {
+      label: 'Bogeys',
+      value: Number(allTime.total_bogeys) || 0,
+      color: '#D9A441'
+    },
+    {
+      label: 'Double Bogeys',
+      value: Number(allTime.total_dbl_bogeys) || 0,
+      color: '#C94636'
+    },
+    {
+      label: 'Triple Bogeys',
+      value: Number(allTime.total_trp_bogeys) || 0,
+      color: '#61201d'
+    },
+    {
+      label: 'Quads+',
+      value: Number(allTime.total_qud_bogeys) || 0,
+      color: '#000000'
+    }
+  ];
+
+  // Remove categories with zero occurrences
+  const filteredScoringData = scoringData.filter(item => item.value > 0);
+
+  scoringChart = new Chart(chartCanvas, {
+    type: 'doughnut',
+
+    data: {
+      labels: filteredScoringData.map(item => item.label),
+
+      datasets: [{
+        data: filteredScoringData.map(item => item.value),
+        backgroundColor: filteredScoringData.map(item => item.color),
+        borderColor: '#FFFFFF',
+        borderWidth: 2
+      }]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: {
+              family: 'DM Sans'
+            },
+            padding: 12
+          }
+        },
+
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const value = context.raw;
+              const data = context.dataset.data;
+              const total = data.reduce((a, b) => a + b, 0);
+              const pct = total
+                ? ((value / total) * 100).toFixed(1)
+                : 0;
+
+              return `${context.label}: ${value} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
 }
 
 function playerAwards(allTime) {
@@ -1278,6 +1445,55 @@ function parseCSV(text) {
     return result;
   });
 }
+
+async function loadCourseYears() {
+  const response = await fetch('courses.csv', {
+    cache: 'no-store'
+  });
+
+  if (!response.ok) {
+    throw new Error('Could not load courses.csv');
+  }
+
+  const text = await response.text();
+  const rows = parseCSV(text);
+
+  return [...new Set(
+    rows
+      .map(row => Number(row.year))
+      .filter(year => Number.isFinite(year))
+  )].sort((a, b) => a - b);
+}
+
+async function renderYearsPlayed(allTime) {
+  const element = document.getElementById('years-played-bar');
+
+  if (!element) return;
+
+  try {
+    const allYears = await loadCourseYears();
+
+    const playedYears = new Set(
+      (allTime.years_played || []).map(Number)
+    );
+
+    element.innerHTML = allYears.map(year => `
+      <div class="year-pill ${playedYears.has(year) ? 'played' : 'not-played'}">
+        ${year}
+      </div>
+    `).join('');
+
+  } catch (error) {
+    console.error('Could not render years played:', error);
+
+    element.innerHTML = `
+      <div class="ps">
+        Could not load tournament years.
+      </div>
+    `;
+  }
+}
+
 // INIT
 // seed();
 loadYear(DB.get('activeYear')||2026);

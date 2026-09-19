@@ -124,6 +124,8 @@ def empty_player():
         "total_pars": 0,
         "total_bogeys": 0,
         "total_dbl_bogeys": 0,
+        "total_trp_bogeys": 0,
+        "total_qud_bogeys": 0,
         "wins": 0,
         "gross_scores": [],
         "net_scores": [],
@@ -147,6 +149,8 @@ def calculate_round_metrics(round_data, course):
         "pars": 0,
         "bogeys": 0,
         "double_bogeys": 0,
+        "triple_bogeys": 0,
+        "quad_bogeys": 0,
         "par3_strokes": 0,
         "par4_strokes": 0,
         "par5_strokes": 0,
@@ -173,9 +177,12 @@ def calculate_round_metrics(round_data, course):
             metrics["pars"] += 1
         elif difference == 1:
             metrics["bogeys"] += 1
-        elif difference >= 2:
+        elif difference == 2:
             metrics["double_bogeys"] += 1
-
+        elif difference == 3:
+            metrics["triple_bogeys"] += 1
+        elif difference >= 4:
+            metrics["quad_bogeys"] += 1
     return metrics
 
 
@@ -183,6 +190,7 @@ def calculate_all(rounds, courses):
     yearly = defaultdict(lambda: defaultdict(lambda: {
         "handicap": None, "gross_score": 0, "net_score": None,
         "birdies": 0, "eagles": 0, "pars": 0, "bogeys": 0, "double_bogeys": 0,
+        "triple_bogeys": 0, "quad_bogeys": 0,
         "rounds": 0, "team_placement": None, "solo_placement": None, "net_placement": None,
     }))
     players = defaultdict(empty_player)
@@ -247,6 +255,8 @@ def calculate_all(rounds, courses):
         record["pars"] += metrics["pars"]
         record["bogeys"] += metrics["bogeys"]
         record["double_bogeys"] += metrics["double_bogeys"]
+        record["triple_bogeys"] += metrics["triple_bogeys"]
+        record["quad_bogeys"] += metrics["quad_bogeys"]
         record["rounds"] += 1
 
         summary = players[player]
@@ -259,6 +269,9 @@ def calculate_all(rounds, courses):
         summary["total_pars"] += metrics["pars"]
         summary["total_bogeys"] += metrics["bogeys"]
         summary["total_dbl_bogeys"] += metrics["double_bogeys"]
+        summary["total_trp_bogeys"] += metrics["triple_bogeys"]
+        summary["total_qud_bogeys"] += metrics["quad_bogeys"]
+
         summary["gross_scores"].append(metrics["gross_score"])
         summary["net_scores"].append(metrics["net_score"])
 
@@ -297,7 +310,8 @@ def write_outputs(output_dir, yearly, players, winning_rounds):
         yearly_path = player_dir / "yearly_stats.csv"
         yearly_fields = [
             "year", "handicap", "gross_score", "net_score",
-            "birdies", "eagles", "pars", "bogeys", "double_bogeys", "solo_placement",
+            "birdies", "eagles", "pars", "bogeys", "double_bogeys", 
+            "triple_bogeys", "quad_bogeys", "solo_placement",
             "net_placement", "team_placement"
         ]
         with yearly_path.open("w", newline="", encoding="utf-8") as file:
@@ -329,6 +343,8 @@ def write_outputs(output_dir, yearly, players, winning_rounds):
             "total_pars": summary["total_pars"],
             "total_bogeys": summary["total_bogeys"],
             "total_dbl_bogeys": summary["total_dbl_bogeys"],
+            "total_trp_bogeys": summary["total_trp_bogeys"],
+            "total_qud_bogeys": summary["total_qud_bogeys"],
             "par3_average": round(summary["par3_strokes"] / summary["par3_holes"], 2) if summary["par3_holes"] else None,
             "par4_average": round(summary["par4_strokes"] / summary["par4_holes"], 2) if summary["par4_holes"] else None,
             "par5_average": round(summary["par5_strokes"] / summary["par5_holes"], 2) if summary["par5_holes"] else None,

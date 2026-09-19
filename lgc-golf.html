@@ -1315,7 +1315,7 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
 
   document.querySelectorAll('#stats-content .stat-header').forEach(button => {
     button.addEventListener('click', () => {
-      showYearlyStat(button.dataset.stat, button, yearly);
+      showYearlyStat(button.dataset.stat, button, yearly, playerFolder);
     });
   });
 
@@ -1552,7 +1552,7 @@ const yearlyStatLabels = {
   team_placement: 'Team Rank'
 };
 
-async function showYearlyStat(stat, button, yearly) {
+async function showYearlyStat(stat, button, yearly, playerFolder) {
   const container = document.getElementById('yearly-chart-container');
   const title = document.getElementById('yearly-chart-title');
   const canvas = document.getElementById('yearly-chart');
@@ -1574,52 +1574,122 @@ async function showYearlyStat(stat, button, yearly) {
     // Get all tournament years
     const allYears = await loadCourseYears();
 
-    // Map player's existing yearly data by year
-    const yearlyByYear = new Map(
+    // Convert selected player's data into a year -> row map
+    const selectedByYear = new Map(
       yearly.map(row => [Number(row.year), row])
     );
 
-    // Build values for every LGC year.
-    // null means the player did not play that year.
-    const values = allYears.map(year => {
-      const row = yearlyByYear.get(year);
+    // Create the selected player's data first
+    const selectedValues = allYears.map(year => {
+      const row = selectedByYear.get(year);
 
       if (!row) {
         return null;
       }
 
       const value = Number(row[stat]);
-
       return Number.isFinite(value) ? value : null;
     });
 
+    // Load all other players' yearly CSV files
+    const otherPlayers = statsPlayers.filter(
+      player => player.folder !== playerFolder
+    );
+
+    const otherPlayerData = await Promise.all(
+      otherPlayers.map(async player => {
+        const response = await fetch(
+          `stats/${player.folder}/yearly_stats.csv`,
+          { cache: 'no-store' }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Could not load ${player.name}'s yearly statistics`
+          );
+        }
+
+        const text = await response.text();
+        const playerYearly = parseCSV(text);
+
+        return {
+          name: player.name,
+          yearly: playerYearly
+        };
+      })
+    );
+
     title.textContent = `${yearlyStatLabels[stat]} by Year`;
     container.style.display = '';
+
+    // Start with selected player
+    const datasets = [{
+      label: statsPlayers.find(
+        player => player.folder === playerFolder
+      )?.name || 'Selected Player',
+
+      data: selectedValues,
+
+      borderColor: '#2563EB',
+      backgroundColor: '#2563EB',
+
+      borderWidth: 3,
+      pointRadius: 4,
+      pointHoverRadius: 5,
+
+      tension: 0.25,
+      spanGaps: false
+    }];
+
+    // Add every other player in gray
+    otherPlayerData.forEach(player => {
+      const playerByYear = new Map(
+        player.yearly.map(row => [Number(row.year), row])
+      );
+
+      const values = allYears.map(year => {
+        const row = playerByYear.get(year);
+
+        if (!row) {
+          return null;
+        }
+
+        const value = Number(row[stat]);
+        return Number.isFinite(value) ? value : null;
+      });
+
+      datasets.push({
+        label: player.name,
+        data: values,
+
+        borderColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+
+        borderWidth: 1.5,
+        pointRadius: 2.5,
+        pointHoverRadius: 5,
+
+        tension: 0.25,
+        spanGaps: false
+      });
+    });
 
     yearlyChart = new Chart(canvas, {
       type: 'line',
 
       data: {
         labels: allYears,
-
-        datasets: [{
-          label: yearlyStatLabels[stat],
-          data: values,
-
-          borderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-
-          tension: 0.25,
-
-          // Do not connect across skipped years
-          spanGaps: false
-        }]
+        datasets: datasets
       },
 
       options: {
         responsive: true,
         maintainAspectRatio: false,
+
+        interaction: {
+          mode: 'nearest',
+          intersect: true
+        },
 
         scales: {
           x: {
@@ -1656,8 +1726,12 @@ async function showYearlyStat(stat, button, yearly) {
 
           tooltip: {
             callbacks: {
+              title: function(context) {
+                return `Year: ${context[0].label}`;
+              },
+
               label: function(context) {
-                return `${yearlyStatLabels[stat]}: ${context.raw}`;
+                return `${context.dataset.label}: ${context.raw}`;
               }
             }
           }

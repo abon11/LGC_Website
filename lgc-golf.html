@@ -229,11 +229,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .year-pill.played {
   background: var(--gd);
   color: white;
+  cursor: pointer;
+  transition: transform .12s, opacity .12s;
+}
+
+.year-pill.played:hover {
+  transform: translateY(-1px);
+  opacity: .88;
 }
 
 .year-pill.not-played {
   background: #eeeeee;
   color: #a0a0a0;
+  cursor: default;
 }
 
 .stat-header {
@@ -260,6 +268,231 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   position: relative;
   width: 100%;
   height: 260px;
+}
+
+.scorecard-modal {
+  padding: 20px 14px calc(20px + var(--sb));
+}
+
+.scorecard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.scorecard-course {
+  font-size: 12px;
+  color: var(--ts);
+  margin-top: 2px;
+}
+
+.scorecard-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,.06);
+  color: var(--tm);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.scorecard-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+.scorecard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+  font-size: 12px;
+}
+
+.scorecard-table th,
+.scorecard-table td {
+  min-width: 34px;
+  padding: 9px 7px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.scorecard-table th:last-child,
+.scorecard-table td:last-child {
+  border-right: none;
+}
+
+.scorecard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.scorecard-table th {
+  background: var(--gd);
+  color: rgba(255,255,255,.75);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.scorecard-table td.label {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--gp);
+  color: var(--gd);
+  font-weight: 600;
+  min-width: 72px;
+  text-align: left;
+}
+
+.scorecard-table td.score {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gd);
+  background: white;
+  vertical-align: middle;
+  text-align: center;
+  padding: 5px;
+}
+
+.score-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.score-number {
+  position: relative;
+  top: 1px;
+  line-height: 1;
+}
+
+/* Birdie */
+.score.birdie .score-mark {
+  border: 1.2px solid var(--gd);
+  border-radius: 50%;
+}
+
+/* Eagle */
+.score.eagle .score-mark {
+  border: 1.2px solid var(--gd);
+  border-radius: 50%;
+}
+
+.score.eagle .score-mark::after {
+  content: '';
+  position: absolute;
+  inset: 2.5px;
+  border: 1.2px solid var(--gd);
+  border-radius: 50%;
+}
+
+/* Bogey */
+.score.bogey .score-mark {
+  border: 1.2px solid var(--gd);
+}
+
+/* Double bogey+ */
+.score.double-bogey .score-mark {
+  border: 1.2px solid var(--gd);
+}
+
+.score.double-bogey .score-mark::after {
+  content: '';
+  position: absolute;
+  inset: 2.5px;
+  border: 1.2px solid var(--gd);
+}
+
+.scorecard-year-cell {
+  cursor: pointer;
+  color: var(--gd) !important;
+  font-weight: 700 !important;
+  transition: background .15s;
+}
+
+.scorecard-year-cell:hover {
+  background: var(--gp);
+}
+
+.scorecard-table .par-row td {
+  font-weight: 700;
+}
+
+.scorecard-table th.summary {
+  background: var(--gd);
+  color: rgba(255,255,255,.8);
+  font-weight: 600;
+}
+
+.scorecard-table td.summary {
+  background: var(--gp);
+  color: var(--gd);
+  font-weight: 600;
+}
+
+.scorecard-table td.summary {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+}
+
+.scorecard-table th.summary {
+  color: rgba(255,255,255,.8);
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.scorecard-table td.label {
+  background: var(--gp);
+  color: var(--gd);
+}
+
+.scorecard-table td.label,
+.scorecard-table th.label {
+  font-weight: 600;
+}
+
+.scorecard-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--gd);
+  line-height: 1.1;
+}
+
+.scorecard-title-dot {
+  color: var(--gold);
+  font-size: 24px;
+}
+
+.scorecard-course {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tm);
+  margin-top: 4px;
+}
+
+.scorecard-course-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--ts);
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -501,6 +734,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   <div class="fg"><label class="fl">vs Par (e.g. -5)</label><input type="number" class="fi" id="ts-rel"></div>
   <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-team-score')">Cancel</button><button class="bp" style="flex:2;" onclick="saveTeamScore()">Save</button></div>
 </div></div>
+
+<div class="mo" id="mod-scorecard">
+  <div class="ms scorecard-modal">
+
+    <div class="scorecard-header">
+      <div>
+        <div class="scorecard-title">
+          <span id="scorecard-player">Player</span>
+          <span class="scorecard-title-dot">·</span>
+          <span id="scorecard-year">2026</span>
+        </div>
+        <div class="scorecard-course" id="scorecard-course">Course</div>
+
+        <div class="scorecard-course-info">
+          <span id="scorecard-rating">Rating —</span>
+          <span>·</span>
+          <span id="scorecard-slope">Slope —</span>
+        </div>
+      </div>
+
+      <button class="scorecard-close" onclick="closeM('mod-scorecard')">
+        ×
+      </button>
+    </div>
+    <div id="scorecard-content"></div>
+  </div>
+</div>
 
 <script>
 let scoringChart = null;
@@ -1282,7 +1542,16 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
           <tbody>
             ${yearly.map(row => `
               <tr>
-                <td>${row.year}</td>
+                <td
+                  class="scorecard-year-cell"
+                  onclick="openScorecard(
+                    ${row.year},
+                    '${encodeURIComponent(playerFolder)}',
+                    '${encodeURIComponent(playerName)}'
+                  )"
+                >
+                  ${row.year}
+                </td>
                 <td>${row.handicap || '—'}</td>
                 <td>${row.gross_score || '—'}</td>
                 <td>${row.net_score || '—'}</td>
@@ -1311,7 +1580,7 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
     </div>
 
   `;
-  renderYearsPlayed(allTime);
+  renderYearsPlayed(allTime, playerFolder, playerName);
 
   document.querySelectorAll('#stats-content .stat-header').forEach(button => {
     button.addEventListener('click', () => {
@@ -1507,7 +1776,7 @@ async function loadCourseYears() {
   )].sort((a, b) => a - b);
 }
 
-async function renderYearsPlayed(allTime) {
+async function renderYearsPlayed(allTime, playerFolder, playerName) {
   const element = document.getElementById('years-played-bar');
 
   if (!element) return;
@@ -1519,11 +1788,21 @@ async function renderYearsPlayed(allTime) {
       (allTime.years_played || []).map(Number)
     );
 
-    element.innerHTML = allYears.map(year => `
-      <div class="year-pill ${playedYears.has(year) ? 'played' : 'not-played'}">
-        ${year}
-      </div>
-    `).join('');
+    element.innerHTML = allYears.map(year => {
+      const played = playedYears.has(year);
+
+      return `
+        <div
+          class="year-pill ${played ? 'played' : 'not-played'}"
+          ${played
+            ? `onclick="openScorecard(${year}, '${encodeURIComponent(playerFolder)}', '${encodeURIComponent(playerName)}')"`
+            : ''
+          }
+        >
+          ${year}
+        </div>
+      `;
+    }).join('');
 
   } catch (error) {
     console.error('Could not render years played:', error);
@@ -1630,8 +1909,8 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
 
       data: selectedValues,
 
-      borderColor: '#2563EB',
-      backgroundColor: '#2563EB',
+      borderColor: '#d9b902',
+      backgroundColor: '#d9b902',
 
       borderWidth: 3,
       pointRadius: 4,
@@ -1744,6 +2023,331 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
 
     container.style.display = '';
     title.textContent = 'Chart unavailable';
+  }
+}
+
+async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
+  const playerFolder = decodeURIComponent(encodedPlayerFolder);
+  const playerName = decodeURIComponent(encodedPlayerName);
+
+  const content = document.getElementById('scorecard-content');
+  const yearLabel = document.getElementById('scorecard-year');
+  const courseLabel = document.getElementById('scorecard-course');
+
+  openM('mod-scorecard');
+
+  content.innerHTML = `
+    <div class="es" style="padding:30px 10px;">
+      <div class="ei">⛳</div>
+      <div class="et">Loading scorecard...</div>
+    </div>
+  `;
+
+  try {
+    // courses.csv and rounds.csv are in the working directory
+    const [coursesResponse, roundsResponse] = await Promise.all([
+      fetch('courses.csv', {
+        cache: 'no-store'
+      }),
+
+      fetch('rounds.csv', {
+        cache: 'no-store'
+      })
+    ]);
+
+    if (!coursesResponse.ok) {
+      throw new Error('Could not load courses.csv');
+    }
+
+    if (!roundsResponse.ok) {
+      throw new Error('Could not load rounds.csv');
+    }
+
+    const coursesText = await coursesResponse.text();
+    const roundsText = await roundsResponse.text();
+
+    const courses = parseCSV(coursesText);
+    const rounds = parseCSV(roundsText);
+
+    // Find course information for the selected year
+    const course = courses.find(
+      row => Number(row.year) === Number(year)
+    );
+
+    if (!course) {
+      throw new Error(`No course information found for ${year}`);
+    }
+
+    // Find the player's individual round for the selected year.
+    //
+    // The player column is stored as a JSON string, e.g.
+    // ["Raymond"]
+    //
+    // Team rounds look like:
+    // ["Tom","Raymond"]
+    //
+    // We only accept a row where the player array contains exactly
+    // one name and that name matches the selected player.
+    const round = rounds.find(row => {
+      if (Number(row.year) !== Number(year)) {
+        return false;
+      }
+
+      if (!row.player) {
+        return false;
+      }
+
+      try {
+        const players = JSON.parse(row.player);
+
+        return (
+          Array.isArray(players) &&
+          players.length === 1 &&
+          players[0] === playerName
+        );
+      } catch {
+        return false;
+      }
+    });
+
+    if (!round) {
+      throw new Error(
+        `No individual scorecard found for ${playerName} in ${year}`
+      );
+    }
+
+    yearLabel.textContent = year;
+
+    document.getElementById('scorecard-player').textContent =
+      playerName;
+
+    courseLabel.textContent =
+      course.course_name || 'Course';
+
+    document.getElementById('scorecard-rating').textContent =
+      `Rating ${course.rating ?? '—'}`;
+
+    document.getElementById('scorecard-slope').textContent =
+      `Slope ${course.slope ?? '—'}`;
+
+    const holes = Array.from(
+      { length: 18 },
+      (_, i) => i + 1
+    );
+
+    const yardages = holes.map(
+      hole => course[`hole${hole}_yardage`]
+    );
+
+    const handicaps = holes.map(
+      hole => course[`hole${hole}_hdcp`]
+    );
+
+    const pars = holes.map(
+      hole => course[`hole${hole}_par`]
+    );
+
+    const scores = holes.map(
+      hole => round[`hole${hole}`]
+    );
+
+    const frontYardage = yardages
+      .slice(0, 9)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const backYardage = yardages
+      .slice(9, 18)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const totalYardage = frontYardage + backYardage;
+
+    const frontPar = pars
+      .slice(0, 9)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const backPar = pars
+      .slice(9, 18)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const totalPar = frontPar + backPar;
+
+    const frontScore = scores
+      .slice(0, 9)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const backScore = scores
+      .slice(9, 18)
+      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+
+    const totalScore = frontScore + backScore;
+
+    content.innerHTML = `
+      <div class="scorecard-table-wrap">
+        <table class="scorecard-table">
+
+          <thead>
+            <tr>
+              <th class="label">Hole</th>
+
+              ${holes.slice(0, 9).map(
+                hole => `<th>${hole}</th>`
+              ).join('')}
+
+              <th class="summary">OUT</th>
+
+              ${holes.slice(9, 18).map(
+                hole => `<th>${hole}</th>`
+              ).join('')}
+
+              <th class="summary">IN</th>
+              <th class="summary">TOT</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <!-- YARDAGE -->
+            <tr>
+              <td class="label">Yards</td>
+
+              ${yardages.slice(0, 9).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">${frontYardage}</td>
+
+              ${yardages.slice(9, 18).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">${backYardage}</td>
+              <td class="summary">${totalYardage}</td>
+            </tr>
+
+            <!-- HANDICAP -->
+            <tr>
+              <td class="label">HDCP</td>
+
+              ${handicaps.slice(0, 9).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">—</td>
+
+              ${handicaps.slice(9, 18).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">—</td>
+              <td class="summary">—</td>
+            </tr>
+
+            <!-- PAR -->
+            <tr class="par-row">
+              <td class="label">Par</td>
+
+              ${pars.slice(0, 9).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">${frontPar}</td>
+
+              ${pars.slice(9, 18).map(
+                value => `<td>${value ?? '—'}</td>`
+              ).join('')}
+
+              <td class="summary">${backPar}</td>
+              <td class="summary">${totalPar}</td>
+            </tr>
+
+            <!-- SCORE -->
+            <tr>
+              <td class="label">Score</td>
+
+              ${scores.slice(0, 9).map((score, i) => {
+                const par = Number(pars[i]);
+                const s = Number(score);
+
+                let cls = '';
+
+                if (
+                  Number.isFinite(s) &&
+                  Number.isFinite(par)
+                ) {
+                  if (s <= par - 2) {
+                    cls = 'eagle';
+                  } else if (s === par - 1) {
+                    cls = 'birdie';
+                  } else if (s === par + 1) {
+                    cls = 'bogey';
+                  } else if (s >= par + 2) {
+                    cls = 'double-bogey';
+                  }
+                }
+
+                return `
+                  <td class="score ${cls}">
+                    <span class="score-mark">
+                      <span class="score-number">${score ?? '—'}</span>
+                    </span>
+                  </td>
+                `;
+              }).join('')}
+
+              <td class="summary">${frontScore}</td>
+
+              ${scores.slice(9, 18).map((score, i) => {
+                const actualIndex = i + 9;
+                const par = Number(pars[actualIndex]);
+                const s = Number(score);
+
+                let cls = '';
+
+                if (
+                  Number.isFinite(s) &&
+                  Number.isFinite(par)
+                ) {
+                  if (s <= par - 2) {
+                    cls = 'eagle';
+                  } else if (s === par - 1) {
+                    cls = 'birdie';
+                  } else if (s === par + 1) {
+                    cls = 'bogey';
+                  } else if (s >= par + 2) {
+                    cls = 'double-bogey';
+                  }
+                }
+
+                return `
+                  <td class="score ${cls}">
+                    <span class="score-mark">
+                      <span class="score-number">${score ?? '—'}</span>
+                    </span>
+                  </td>
+                `;
+              }).join('')}
+
+              <td class="summary">${backScore}</td>
+              <td class="summary">${totalScore}</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    `;
+
+  } catch (error) {
+    console.error('Scorecard error:', error);
+
+    content.innerHTML = `
+      <div class="es">
+        <div class="ei">⚠️</div>
+        <div class="et">Scorecard unavailable</div>
+        <div class="esub">
+          ${error.message}
+        </div>
+      </div>
+    `;
   }
 }
 

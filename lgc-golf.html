@@ -494,6 +494,244 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   font-size: 11px;
   color: var(--ts);
 }
+
+.career-overview {
+  display:grid;
+  grid-template-columns:1.25fr 1fr 1fr;
+  gap:12px;
+  align-items:start;
+}
+
+.career-stats {
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:7px;
+}
+
+.stat-box-clickable {
+  width:100%;
+  border:none;
+  text-align:left;
+  cursor:pointer;
+  transition:
+    transform .12s,
+    background .12s,
+    box-shadow .12s;
+}
+
+.stat-box-clickable:hover {
+  transform:translateY(-1px);
+  box-shadow:0 3px 10px rgba(26,58,26,.10);
+}
+
+.stat-box-clickable.active {
+  background:var(--gold);
+}
+
+.career-rank-card {
+  background:var(--gp);
+  border-radius:12px;
+  padding:14px;
+  min-height:100%;
+}
+
+.career-rank-empty {
+  min-height:220px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:var(--ts);
+  gap:5px;
+}
+
+.career-rank-empty div {
+  font-size:28px;
+  opacity:.35;
+}
+
+.career-rank-empty span {
+  font-size:11px;
+}
+
+.career-rank-row {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:6px 0;
+}
+
+.career-rank-row {
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:6px 0;
+}
+
+.career-rank-row.selected {
+  background:transparent;
+}
+
+.career-rank-row.selected::before {
+  content:'';
+  position:absolute;
+  left:-6px;
+  right:-6px;
+  top:1px;
+  bottom:1px;
+  background:rgba(201,168,76,.16);
+  border-radius:8px;
+  z-index:0;
+}
+
+.career-rank-row > * {
+  position:relative;
+  z-index:1;
+}
+
+.career-rank-number {
+  width:24px;
+  flex-shrink:0;
+  font-family:'Playfair Display',serif;
+  font-size:13px;
+  font-weight:700;
+  color:var(--ts);
+  text-align:center;
+}
+
+.career-rank-row.selected .career-rank-number {
+  color:var(--gd);
+}
+
+.career-rank-player {
+  flex:1;
+  min-width:0;
+}
+
+.career-rank-name {
+  font-size:10px;
+  font-weight:500;
+  margin-bottom:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.career-rank-track {
+  height:6px;
+  background:rgba(0,0,0,.07);
+  border-radius:3px;
+  overflow:hidden;
+}
+
+.career-rank-bar {
+  height:100%;
+  background:var(--gd);
+  border-radius:3px;
+}
+
+.career-rank-row.selected .career-rank-bar {
+  background:var(--gold);
+}
+
+.career-rank-value {
+  width:42px;
+  flex-shrink:0;
+  text-align:right;
+  font-size:10px;
+  font-weight:600;
+  color:var(--tm);
+}
+
+@media (max-width:699px) {
+  .career-overview {
+    grid-template-columns:1fr;
+  }
+
+  .career-stats {
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .career-rank-card,
+  .stats-chart-card {
+    margin-top:0;
+  }
+}
+
+.career-rank-note {
+  margin-top:10px;
+  padding-top:9px;
+  border-top:1px solid rgba(0,0,0,.08);
+  font-size:9px;
+  line-height:1.4;
+  color:var(--ts);
+  text-align:center;
+}
+
+.player-header {
+  cursor:pointer;
+  user-select:none;
+  transition:transform .12s, opacity .12s;
+}
+
+.player-header:hover {
+  opacity:.94;
+}
+
+.player-header:active {
+  transform:scale(.99);
+}
+
+.player-header-name {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-family:'Playfair Display',serif;
+  font-size:26px;
+  font-weight:700;
+  color:white;
+  line-height:1.15;
+}
+
+.player-header-awards {
+  font-family:'DM Sans',sans-serif;
+  font-size:15px;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.player-header-chevron {
+  margin-left:auto;
+  font-family:'DM Sans',sans-serif;
+  font-size:18px;
+  color:var(--gold);
+  opacity:.8;
+  transform:translateY(-1px);
+}
+
+.stats-empty-select {
+  cursor:pointer;
+  border-radius:var(--r);
+  transition:background .15s, transform .12s;
+}
+
+.stats-empty-select:hover {
+  background:rgba(26,58,26,.04);
+}
+
+.stats-empty-select:active {
+  transform:scale(.99);
+}
+
+.stats-empty-select .ei {
+  transition:transform .15s;
+}
+
+.stats-empty-select:hover .ei {
+  transform:translateY(-2px);
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -645,21 +883,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 
 <!-- STATS -->
 <main id="page-stats" class="pg">
-  <div class="card">
-    <div class="ct">Select Player</div>
-
-    <select id="stats-player-select" class="fi"
-            onchange="loadPlayerStats(this.value)">
-      <option value="">Select a player...</option>
-    </select>
-  </div>
-
   <div id="stats-content">
-    <div class="es" style="padding-top:40px;">
+    <div
+      class="es stats-empty-select"
+      onclick="openStatsPlayerPicker()"
+      style="padding-top:40px;"
+    >
       <div class="ei">📊</div>
       <div class="et">Choose a player</div>
       <div class="esub">
-        Select a player to view their record book.
+        Tap here to select a player.
       </div>
     </div>
   </div>
@@ -762,9 +995,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   </div>
 </div>
 
+<div class="mo" id="mod-stats-player">
+  <div class="ms">
+    <div class="mh"></div>
+    <div class="mt">Select Player</div>
+
+    <div id="stats-player-list"></div>
+
+    <div style="height:10px;"></div>
+
+    <button class="bo" onclick="closeM('mod-stats-player')">
+      Close
+    </button>
+  </div>
+</div>
+
 <script>
 let scoringChart = null;
 let yearlyChart = null;
+let selectedStatsPlayerFolder = null;
 
 // DB
 const DB={
@@ -1241,6 +1490,37 @@ function playerNames(players) {
     : '—';
 }
 
+function openStatsPlayerPicker() {
+  const list = document.getElementById('stats-player-list');
+
+  list.innerHTML = statsPlayers.map(player => `
+    <div
+      class="yr"
+      onclick="
+        loadPlayerStats('${player.folder}');
+        closeM('mod-stats-player');
+      "
+    >
+      <div style="
+        font-size:15px;
+        font-weight:500;
+        color:var(--td);
+        flex:1;
+      ">
+        ${player.name}
+      </div>
+
+      ${
+        player.folder === selectedStatsPlayerFolder
+          ? '<span style="color:var(--gold);font-size:18px;">✓</span>'
+          : '<span style="color:var(--ts);">›</span>'
+      }
+    </div>
+  `).join('');
+
+  openM('mod-stats-player');
+}
+
 async function renderAllTimeRecords() {
   const element = document.getElementById('home-at');
 
@@ -1382,17 +1662,6 @@ async function loadStatsPlayers() {
 
     statsPlayers = await response.json();
 
-    const select = document.getElementById('stats-player-select');
-
-    select.innerHTML =
-      '<option value="">Select a player...</option>' +
-      statsPlayers
-        .map(player =>
-          `<option value="${player.folder}">
-             ${player.name}
-           </option>`
-        )
-        .join('');
   } catch (error) {
     console.error(error);
 
@@ -1409,6 +1678,7 @@ async function loadStatsPlayers() {
 }
 
 async function loadPlayerStats(folder) {
+  selectedStatsPlayerFolder = folder;
   const content = document.getElementById('stats-content');
 
   if (!folder) {
@@ -1445,6 +1715,7 @@ async function loadPlayerStats(folder) {
     const yearly = parseCSV(yearlyText);
 
     renderPlayerStats(player.name, folder, allTime, yearly);
+
   } catch (error) {
     console.error('Player stats error:', error);
 
@@ -1462,15 +1733,13 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
   const content = document.getElementById('stats-content');
 
   content.innerHTML = `
-    <div class="sc" style="margin-bottom:12px;">
+    <div class="sc player-header" style="margin-bottom:12px;" onclick="openStatsPlayerPicker()">
       <div class="sl">Player Record Book</div>
-      <div style="
-        font-family:'Playfair Display',serif;
-        font-size:26px;
-        font-weight:700;
-        color:white;
-      ">
-        ${playerName} ${playerAwards(allTime)}
+
+      <div class="player-header-name">
+        <span>${playerName}</span>
+        <span class="player-header-awards">${playerAwards(allTime)}</span>
+        <span class="player-header-chevron">⌄</span>
       </div>
     </div>
 
@@ -1484,27 +1753,42 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
     <div class="card">
       <div class="ct">Career Summary</div>
 
-      <div class="stats-overview">
+      <div class="career-overview">
 
-        <div class="stats-grid">
-          ${statBox('Solo Rounds', allTime.solo_rounds)}
-          ${statBox('Team Wins', allTime.team_wins)}
-          ${statBox('Solo 1st Places', allTime.solo_first_places)}
-          ${statBox('Avg Solo Place', allTime.average_solo_placement)}
-          ${statBox('Avg Net Place', allTime.average_net_placement)}
-          ${statBox('Avg Team Place', allTime.average_team_placement)}
-          ${statBox('Total Gross', allTime.total_gross_score)}
-          ${statBox('Avg Gross', allTime.average_gross_score)}
-          ${statBox('Best Gross', allTime.best_gross_score)}
-          ${statBox('Total Net', allTime.total_net_score)}
-          ${statBox('Avg Net', allTime.average_net_score)}
-          ${statBox('Best Net', allTime.best_net_score)}
-          ${statBox('Birdie %', formatPercent(allTime.birdie_percentage))}
-          ${statBox('Par 3 Avg', allTime.par3_average)}
-          ${statBox('Par 4 Avg', allTime.par4_average)}
-          ${statBox('Par 5 Avg', allTime.par5_average)}
+        <!-- LEFT: CLICKABLE CAREER STATS -->
+        <div class="career-stats" id="career-stats-grid">
+          ${statBox('Solo Rounds', allTime.solo_rounds, 'solo_rounds', 'higher')}
+          ${statBox('Solo 1st Places', allTime.solo_first_places, 'solo_first_places', 'higher')}
+          ${statBox('Avg Solo Place', allTime.average_solo_placement, 'average_solo_placement', 'lower')}
+          ${statBox('Avg Net Place', allTime.average_net_placement, 'average_net_placement', 'lower')}
+          ${statBox('Team Wins', allTime.team_wins, 'team_wins', 'higher')}
+          ${statBox('Avg Team Place', allTime.average_team_placement, 'average_team_placement', 'lower')}
+          ${statBox('Total Gross', allTime.total_gross_score, 'total_gross_score', 'lower')}
+          ${statBox('Avg Gross', allTime.average_gross_score, 'average_gross_score', 'lower')}
+          ${statBox('Best Gross', allTime.best_gross_score, 'best_gross_score', 'lower')}
+          ${statBox('Total Net', allTime.total_net_score, 'total_net_score', 'lower')}
+          ${statBox('Avg Net', allTime.average_net_score, 'average_net_score', 'lower')}
+          ${statBox('Best Net', allTime.best_net_score, 'best_net_score', 'lower')}
+          ${statBox('Birdie %', formatPercent(allTime.birdie_percentage), 'birdie_percentage', 'higher')}
+          ${statBox('Par 3 Avg', allTime.par3_average, 'par3_average', 'lower')}
+          ${statBox('Par 4 Avg', allTime.par4_average, 'par4_average', 'lower')}
+          ${statBox('Par 5 Avg', allTime.par5_average, 'par5_average', 'lower')}
         </div>
 
+        <!-- CENTER: CAREER RANK -->
+        <div class="career-rank-card">
+          <div class="stat-box-label" id="career-rank-title">
+            Select a stat
+          </div>
+          <div id="career-rank-content">
+            <div class="career-rank-empty">
+              <div>↔</div>
+              <span>Click a career stat</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: EXISTING DOUGHNUT -->
         <div class="stats-chart-card">
           <div class="stat-box-label">Scoring Distribution</div>
 
@@ -1580,6 +1864,18 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
     </div>
 
   `;
+  document
+    .querySelectorAll('#career-stats-grid .stat-box-clickable')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        showCareerRanking(
+          button.dataset.careerStat,
+          button.dataset.direction,
+          selectedStatsPlayerFolder
+        );
+      });
+    });
+
   renderYearsPlayed(allTime, playerFolder, playerName);
 
   document.querySelectorAll('#stats-content .stat-header').forEach(button => {
@@ -1692,12 +1988,17 @@ function playerAwards(allTime) {
   return `${trophies}${medals}`;
 }
 
-function statBox(label, value) {
+function statBox(label, value, key, direction = 'lower') {
   return `
-    <div class="stat-box">
+    <button
+      class="stat-box stat-box-clickable"
+      data-career-stat="${key}"
+      data-direction="${direction}"
+      type="button"
+    >
       <div class="stat-box-label">${label}</div>
       <div class="stat-box-value">${value ?? '—'}</div>
-    </div>
+    </button>
   `;
 }
 
@@ -2349,6 +2650,252 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
       </div>
     `;
   }
+}
+
+function isTied(players, value) {
+  return players.filter(p => p.value === value).length > 1;
+}
+
+function formatCareerValue(stat, value) {
+  if (!Number.isFinite(value)) {
+    return '—';
+  }
+
+  if (stat === 'birdie_percentage') {
+    return `${value}%`;
+  }
+
+  if (
+    stat.includes('average') ||
+    stat.includes('_score') ||
+    stat === 'par3_average' ||
+    stat === 'par4_average' ||
+    stat === 'par5_average'
+  ) {
+    return Number.isInteger(value)
+      ? value
+      : value.toFixed(1);
+  }
+
+  return value;
+}
+
+async function showCareerRanking(stat, direction, selectedFolder) {
+  const container = document.getElementById('career-rank-content');
+  const title = document.getElementById('career-rank-title');
+
+  const selectedPlayer = statsPlayers.find(
+    p => p.folder === selectedFolder
+  );
+
+  const statButton = document.querySelector(
+    `[data-career-stat="${stat}"]`
+  );
+
+  const label =
+    statButton?.querySelector('.stat-box-label')?.textContent || stat;
+
+  title.textContent = label;
+
+  // Highlight selected stat
+  document
+    .querySelectorAll('#career-stats-grid .stat-box-clickable')
+    .forEach(button => {
+      button.classList.toggle(
+        'active',
+        button.dataset.careerStat === stat
+      );
+    });
+
+  container.innerHTML = `
+    <div class="career-rank-empty">
+      <div>↔</div>
+      <span>Loading ranking...</span>
+    </div>
+  `;
+
+  try {
+    const allYears = await getAllTournamentYears();
+
+    const players = await Promise.all(
+      statsPlayers.map(async player => {
+        const response = await fetch(
+          `stats/${player.folder}/all_time_stats.json`,
+          { cache: 'no-store' }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Could not load ${player.name}'s stats`
+          );
+        }
+
+        const stats = await response.json();
+
+        const yearsPlayed = new Set(
+          (stats.years_played || []).map(Number)
+        );
+
+        const playedEveryYear =
+          allYears.every(year => yearsPlayed.has(year));
+
+        return {
+          name: player.name,
+          folder: player.folder,
+          value: Number(stats[stat]),
+          playedEveryYear
+        };
+      })
+    );
+
+    // Only enforce the every-year requirement for totals
+    const eligiblePlayers = isCareerTotalStat(stat)
+      ? players.filter(player => player.playedEveryYear)
+      : players;
+
+    const valid = eligiblePlayers.filter(
+      player => Number.isFinite(player.value)
+    );
+
+    // Sort according to whether higher or lower is better
+    valid.sort((a, b) =>
+      direction === 'higher'
+        ? b.value - a.value
+        : a.value - b.value
+    );
+
+    // Competition ranking: 1, 2, 2, 4
+    let currentRank = 1;
+
+    valid.forEach((player, index) => {
+      if (
+        index > 0 &&
+        player.value !== valid[index - 1].value
+      ) {
+        currentRank = index + 1;
+      }
+
+      player.rank = currentRank;
+    });
+
+    if (!valid.length) {
+      container.innerHTML = `
+        <div class="career-rank-empty">
+          <div>—</div>
+          <span>No ranking data available</span>
+        </div>
+      `;
+      return;
+    }
+
+    const selectedIndex = valid.findIndex(
+      player => player.folder === selectedFolder
+    );
+
+    const selectedRank =
+      selectedIndex >= 0
+        ? valid[selectedIndex].rank
+        : null;
+      
+    const minValue = Math.min(
+      ...valid.map(player => player.value)
+    );
+
+    const maxValue = Math.max(
+      ...valid.map(player => player.value)
+    );
+
+    const valueRange = maxValue - minValue;
+
+    const totalStatNote = isCareerTotalStat(stat)
+      ? `
+        <div class="career-rank-note">
+          Ranked only among players who played every tournament year.
+        </div>
+      `
+      : '';
+
+    container.innerHTML = `
+      <div class="career-rank-summary">
+        ${
+          selectedRank != null
+            ? `<strong>${selectedPlayer?.name || 'Player'}</strong>
+               <span> ${isTied(valid, valid[selectedIndex].value) ? 'T' : ''}${selectedRank}
+               of ${valid.length}</span>`
+            : `<span>Selected player is not eligible for this ranking</span>`
+        }
+      </div>
+
+      <div class="career-rank-list">
+        ${valid.map(player => {
+          const selected =
+            player.folder === selectedFolder;
+
+
+
+          let barWidth;
+          if (valueRange === 0) {
+            barWidth = 100;
+          } else {
+            barWidth =
+              ((player.value - minValue) / valueRange) * 100;
+          }
+
+          barWidth = Math.max(barWidth, 8);
+
+          const tied =
+            isTied(valid, player.value);
+
+          return `
+            <div class="career-rank-row ${selected ? 'selected' : ''}">
+
+              <div class="career-rank-number">
+                ${tied ? 'T' : ''}${player.rank}
+              </div>
+
+              <div class="career-rank-player">
+
+                <div class="career-rank-name">
+                  ${player.name}
+                </div>
+
+                <div class="career-rank-track">
+                  <div
+                    class="career-rank-bar"
+                    style="width:${Math.max(barWidth, 8)}%;"
+                  ></div>
+                </div>
+
+              </div>
+
+              <div class="career-rank-value">
+                ${formatCareerValue(stat, player.value)}
+              </div>
+
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+
+  } catch (error) {
+    console.error('Career ranking error:', error);
+
+    container.innerHTML = `
+      <div class="career-rank-empty">
+        <div>⚠️</div>
+        <span>Ranking unavailable</span>
+      </div>
+    `;
+  }
+}
+
+function isCareerTotalStat(stat) {
+  return stat === 'total_gross_score' || stat === 'total_net_score';
+}
+
+async function getAllTournamentYears() {
+  return await loadCourseYears();
 }
 
 // INIT

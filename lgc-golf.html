@@ -740,9 +740,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 <header class="hdr">
   <div class="hdr-in">
     <div><div class="lgc">LGC</div><div class="lgc-sub">Lifelong Golf Commitment</div></div>
-    <button class="yr-btn" onclick="openYearPicker()">
-      <span id="active-year-label">2026</span>
-      <svg viewBox="0 0 16 16" width="11" fill="currentColor"><path d="M8 11L2 5h12z"/></svg>
+    <button class="yr-btn" onclick="openStatsModePicker()">
+      <span id="stats-mode-label">Solo</span>
+      <svg viewBox="0 0 16 16" width="11" fill="currentColor">
+        <path d="M8 11L2 5h12z"/>
+      </svg>
     </button>
   </div>
 </header>
@@ -1010,16 +1012,109 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   </div>
 </div>
 
+<div class="mo" id="mod-stats-mode">
+  <div class="ms">
+    <div class="mh"></div>
+    <div class="mt">Stats View</div>
+
+    <div
+      class="yr"
+      onclick="setStatsMode('solo');closeM('mod-stats-mode');"
+    >
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:500;">
+          Solo
+        </div>
+        <div style="font-size:11px;color:var(--ts);">
+          Individual stroke-play statistics
+        </div>
+      </div>
+      <span id="stats-mode-check-solo" style="color:var(--gold);"></span>
+    </div>
+
+    <div
+      class="yr"
+      onclick="setStatsMode('team');closeM('mod-stats-mode');"
+    >
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:500;">
+          Team
+        </div>
+        <div style="font-size:11px;color:var(--ts);">
+          Scramble / team statistics
+        </div>
+      </div>
+      <span id="stats-mode-check-team" style="color:var(--gold);"></span>
+    </div>
+
+    <div
+      class="yr"
+      onclick="setStatsMode('combined');closeM('mod-stats-mode');"
+    >
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:500;">
+          Combined
+        </div>
+        <div style="font-size:11px;color:var(--ts);">
+          Solo + team statistics together
+        </div>
+      </div>
+      <span id="stats-mode-check-combined" style="color:var(--gold);"></span>
+    </div>
+
+    <div style="height:10px;"></div>
+
+    <button class="bo" onclick="closeM('mod-stats-mode')">
+      Close
+    </button>
+  </div>
+</div>
+
 <script>
 let scoringChart = null;
 let yearlyChart = null;
 let selectedStatsPlayerFolder = null;
+let statsMode = 'solo';
 
 // DB
 const DB={
   get(k){try{return JSON.parse(localStorage.getItem('lgc_'+k))||null;}catch{return null;}},
   set(k,v){localStorage.setItem('lgc_'+k,JSON.stringify(v));}
 };
+
+function openStatsModePicker() {
+  updateStatsModePicker();
+  openM('mod-stats-mode');
+}
+
+function updateStatsModePicker() {
+  document.getElementById('stats-mode-label').textContent =
+    statsMode === 'solo'
+      ? 'Solo'
+      : statsMode === 'team'
+        ? 'Team'
+        : 'Combined';
+
+  ['solo', 'team', 'combined'].forEach(mode => {
+    const el = document.getElementById(
+      `stats-mode-check-${mode}`
+    );
+
+    if (el) {
+      el.textContent = statsMode === mode ? '✓' : '';
+    }
+  });
+}
+
+function setStatsMode(mode) {
+  statsMode = mode;
+  DB.set('statsMode', mode);
+  updateStatsModePicker();
+
+  if (selectedStatsPlayerFolder) {
+    loadPlayerStats(selectedStatsPlayerFolder);
+  }
+}
 
 let AY=2026, players=[], scores={}, teams=[], tripInfo={}, editTripKey='';
 const TLABELS={dates:'Dates',airbnb:'Host / Airbnb',address:'Address',code:'Airbnb Code',course:'Course',teetimes:'Tee Times',notes:'Notes'};
@@ -1452,46 +1547,69 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
 // SEED
-function lowestBy(players, field) {
+function lowestBy(players, field, section = 'solo') {
   const valid = players.filter(
-    player => player[field] != null
+    player => player[section]?.[field] != null
   );
 
   if (!valid.length) return [];
 
   const best = Math.min(
-    ...valid.map(player => Number(player[field]))
+    ...valid.map(player => Number(player[section][field]))
   );
 
   return valid.filter(
-    player => Number(player[field]) === best
+    player => Number(player[section][field]) === best
   );
 }
 
-function highestBy(players, field) {
+function highestBy(players, field, section = 'solo') {
   const valid = players.filter(
-    player => player[field] != null
+    player => player[section]?.[field] != null
   );
 
   if (!valid.length) return [];
 
   const best = Math.max(
-    ...valid.map(player => Number(player[field]))
+    ...valid.map(player => Number(player[section][field]))
   );
 
   return valid.filter(
-    player => Number(player[field]) === best
+    player => Number(player[section][field]) === best
   );
 }
 
 function playerNames(players) {
   return players.length
-    ? players.map(player => player.player).join(' & ')
+    ? players.map(player => player.personal?.player || '—').join(' & ')
     : '—';
 }
 
 function openStatsPlayerPicker() {
   const list = document.getElementById('stats-player-list');
+
+  if (!statsPlayers.length) {
+    list.innerHTML = `
+      <div class="es" style="padding:20px 10px;">
+        <div class="ei">⚠️</div>
+        <div class="et">Players unavailable</div>
+        <div class="esub">
+          Could not load the player list.
+        </div>
+      </div>
+    `;
+    openM('mod-stats-player');
+
+    // Try loading them again in case the picker was opened
+    // before the initial fetch completed.
+    loadStatsPlayers().then(() => {
+      if (statsPlayers.length) {
+        openStatsPlayerPicker();
+      }
+    });
+
+    return;
+  }
 
   list.innerHTML = statsPlayers.map(player => `
     <div
@@ -1553,32 +1671,37 @@ async function renderAllTimeRecords() {
 
     const bestGrossPlayers = lowestBy(
       playerStats,
-      'best_gross_score'
+      'best_gross_score',
+      'solo'
     );
 
     const bestNetPlayers = lowestBy(
       playerStats,
-      'best_net_score'
+      'best_net_score',
+      'solo'
     );
 
     const bestAverageGrossPlayers = lowestBy(
       playerStats,
-      'average_gross_score'
+      'average_gross_score',
+      'solo'
     );
 
     const mostWinsPlayers = highestBy(
       playerStats,
-      'team_wins'
+      'team_wins',
+      'team'
     );
 
     const mostBirdiesPlayers = highestBy(
       playerStats,
-      'total_birdies'
+      'total_birdies',
+      'solo'
     );
 
     const totalBirdies = playerStats.reduce(
       (total, player) =>
-        total + (Number(player.total_birdies) || 0),
+        total + (Number(player.solo?.total_birdies) || 0),
       0
     );
 
@@ -1586,7 +1709,7 @@ async function renderAllTimeRecords() {
       <div style="background:var(--gp);border-radius:10px;padding:11px;">
         <div class="stat-box-label">Best Gross</div>
         <div class="stat-box-value">
-          ${bestGrossPlayers[0]?.best_gross_score ?? '—'}
+          ${bestGrossPlayers[0]?.solo?.best_gross_score ?? '—'}
         </div>
         <div class="ps">
           ${playerNames(bestGrossPlayers)}
@@ -1596,7 +1719,7 @@ async function renderAllTimeRecords() {
       <div style="background:var(--gp);border-radius:10px;padding:11px;">
         <div class="stat-box-label">Best Net</div>
         <div class="stat-box-value">
-          ${bestNetPlayers[0]?.best_net_score ?? '—'}
+          ${bestNetPlayers[0]?.solo?.best_net_score ?? '—'}
         </div>
         <div class="ps">
           ${playerNames(bestNetPlayers)}
@@ -1606,7 +1729,7 @@ async function renderAllTimeRecords() {
       <div style="background:var(--gp);border-radius:10px;padding:11px;">
         <div class="stat-box-label">Best Average Gross</div>
         <div class="stat-box-value">
-          ${bestAverageGrossPlayers[0]?.average_gross_score ?? '—'}
+          ${bestAverageGrossPlayers[0]?.solo?.average_gross_score ?? '—'}
         </div>
         <div class="ps">
           ${playerNames(bestAverageGrossPlayers)}
@@ -1618,7 +1741,7 @@ async function renderAllTimeRecords() {
           Most Wins
         </div>
         <div class="stat-box-value" style="color:var(--gold);">
-          ${mostWinsPlayers[0]?.team_wins ?? '—'} 🏆
+          ${mostWinsPlayers[0]?.team?.team_wins ?? '—'} 🏆
         </div>
         <div style="font-size:11px;color:white;">
           ${playerNames(mostWinsPlayers)}
@@ -1630,7 +1753,7 @@ async function renderAllTimeRecords() {
           Most Birdies
         </div>
         <div class="stat-box-value" style="color:var(--gold);">
-          ${mostBirdiesPlayers[0]?.total_birdies ?? '—'} 🐦
+          ${mostBirdiesPlayers[0]?.solo?.total_birdies ?? '—'} 🐦
         </div>
         <div style="font-size:11px;color:white;">
           ${playerNames(mostBirdiesPlayers)}
@@ -1697,24 +1820,41 @@ async function loadPlayerStats(folder) {
   const player = statsPlayers.find(p => p.folder === folder);
 
   try {
-    const [jsonResponse, csvResponse] = await Promise.all([
+    const [
+      jsonResponse,
+      csvResponse,
+      teamCsvResponse
+    ] = await Promise.all([
       fetch(`stats/${folder}/all_time_stats.json`, {
         cache: 'no-store'
       }),
+
       fetch(`stats/${folder}/yearly_stats.csv`, {
+        cache: 'no-store'
+      }),
+
+      fetch(`stats/${folder}/yearly_team_stats.csv`, {
         cache: 'no-store'
       })
     ]);
 
-    if (!jsonResponse.ok || !csvResponse.ok) {
+    if (
+      !jsonResponse.ok ||
+      !csvResponse.ok ||
+      !teamCsvResponse.ok
+    ) {
       throw new Error('Could not load player statistics');
     }
 
     const allTime = await jsonResponse.json();
+
     const yearlyText = await csvResponse.text();
     const yearly = parseCSV(yearlyText);
 
-    renderPlayerStats(player.name, folder, allTime, yearly);
+    const teamYearlyText = await teamCsvResponse.text();
+    const yearlyTeam = parseCSV(teamYearlyText);
+
+    renderPlayerStats(player.name, folder, allTime, yearly, yearlyTeam);
 
   } catch (error) {
     console.error('Player stats error:', error);
@@ -1729,7 +1869,184 @@ async function loadPlayerStats(folder) {
   }
 }
 
-function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
+function getCareerStat(allTime, stat) {
+  if (stat === 'team_wins' || stat === 'average_team_placement') {
+    return allTime.team?.[stat];
+  }
+
+  return allTime.solo?.[stat];
+}
+
+function getStatsModeData(allTime) {
+  const solo = allTime.solo || {};
+  const team = allTime.team || {};
+
+  if (statsMode === 'solo') {
+    return {
+      section: solo,
+      label: 'Solo'
+    };
+  }
+
+  if (statsMode === 'team') {
+    return {
+      section: team,
+      label: 'Team'
+    };
+  }
+
+  const soloRounds = Number(solo.solo_rounds) || 0;
+  const teamRounds = Number(team.team_rounds) || 0;
+  const totalRounds = soloRounds + teamRounds;
+
+  const combined = {
+    solo_rounds: totalRounds,
+
+    total_gross_score:
+      (Number(solo.total_gross_score) || 0) +
+      (Number(team.total_gross_score) || 0),
+
+    total_eagles:
+      (Number(solo.total_eagles) || 0) +
+      (Number(team.total_eagles) || 0),
+
+    total_birdies:
+      (Number(solo.total_birdies) || 0) +
+      (Number(team.total_birdies) || 0),
+
+    total_pars:
+      (Number(solo.total_pars) || 0) +
+      (Number(team.total_pars) || 0),
+
+    total_bogeys:
+      (Number(solo.total_bogeys) || 0) +
+      (Number(team.total_bogeys) || 0),
+
+    total_dbl_bogeys:
+      (Number(solo.total_dbl_bogeys) || 0) +
+      (Number(team.total_dbl_bogeys) || 0),
+
+    total_trp_bogeys:
+      (Number(solo.total_trp_bogeys) || 0) +
+      (Number(team.total_trp_bogeys) || 0),
+
+    total_qud_bogeys:
+      (Number(solo.total_qud_bogeys) || 0) +
+      (Number(team.total_qud_bogeys) || 0),
+
+    average_gross_score:
+      totalRounds
+        ? (
+            (
+              (Number(solo.total_gross_score) || 0) +
+              (Number(team.total_gross_score) || 0)
+            ) / totalRounds
+          )
+        : null,
+
+    best_gross_score: minDefined(
+      solo.best_gross_score,
+      team.best_gross_score
+    ),
+
+    average_solo_placement:
+      weightedAverage(
+        solo.average_solo_placement,
+        soloRounds,
+        team.average_team_placement,
+        teamRounds
+      ),
+
+    average_team_placement:
+      weightedAverage(
+        solo.average_solo_placement,
+        soloRounds,
+        team.average_team_placement,
+        teamRounds
+      ),
+
+    solo_first_places:
+      (Number(solo.solo_first_places) || 0) +
+      (Number(team.team_first_places) || 0),
+
+    team_wins:
+      (Number(solo.solo_first_places) || 0) +
+      (Number(team.team_wins) || 0),
+
+    par3_average:
+      weightedAverage(
+        solo.par3_average,
+        soloRounds,
+        team.par3_average,
+        teamRounds
+      ),
+
+    par4_average:
+      weightedAverage(
+        solo.par4_average,
+        soloRounds,
+        team.par4_average,
+        teamRounds
+      ),
+
+    par5_average:
+      weightedAverage(
+        solo.par5_average,
+        soloRounds,
+        team.par5_average,
+        teamRounds
+      )
+  };
+
+  combined.birdie_percentage =
+    totalRounds
+      ? (
+          (combined.total_birdies + combined.total_eagles)
+          / (totalRounds * 18)
+          * 100
+        )
+      : null;
+
+  return {
+    section: combined,
+    label: 'Combined'
+  };
+}
+
+function weightedAverage(a, weightA, b, weightB) {
+  const va = Number(a);
+  const vb = Number(b);
+
+  const validA = Number.isFinite(va) && weightA > 0;
+  const validB = Number.isFinite(vb) && weightB > 0;
+
+  if (!validA && !validB) return null;
+  if (!validA) return vb;
+  if (!validB) return va;
+
+  return (
+    (va * weightA + vb * weightB) /
+    (weightA + weightB)
+  );
+}
+
+function minDefined(a, b) {
+  const values = [Number(a), Number(b)]
+    .filter(Number.isFinite);
+
+  return values.length
+    ? Math.min(...values)
+    : null;
+}
+
+function renderPlayerStats(playerName, playerFolder, allTime, yearly, yearlyTeam) {
+  const solo = allTime.solo || {};
+  const team = allTime.team || {};
+
+  const modeData = getStatsModeData(allTime);
+  const stats = modeData.section;
+  const modeLabel = modeData.label;
+
   const content = document.getElementById('stats-content');
 
   content.innerHTML = `
@@ -1757,22 +2074,58 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
 
         <!-- LEFT: CLICKABLE CAREER STATS -->
         <div class="career-stats" id="career-stats-grid">
-          ${statBox('Solo Rounds', allTime.solo_rounds, 'solo_rounds', 'higher')}
-          ${statBox('Solo 1st Places', allTime.solo_first_places, 'solo_first_places', 'higher')}
-          ${statBox('Avg Solo Place', allTime.average_solo_placement, 'average_solo_placement', 'lower')}
-          ${statBox('Avg Net Place', allTime.average_net_placement, 'average_net_placement', 'lower')}
-          ${statBox('Team Wins', allTime.team_wins, 'team_wins', 'higher')}
-          ${statBox('Avg Team Place', allTime.average_team_placement, 'average_team_placement', 'lower')}
-          ${statBox('Total Gross', allTime.total_gross_score, 'total_gross_score', 'lower')}
-          ${statBox('Avg Gross', allTime.average_gross_score, 'average_gross_score', 'lower')}
-          ${statBox('Best Gross', allTime.best_gross_score, 'best_gross_score', 'lower')}
-          ${statBox('Total Net', allTime.total_net_score, 'total_net_score', 'lower')}
-          ${statBox('Avg Net', allTime.average_net_score, 'average_net_score', 'lower')}
-          ${statBox('Best Net', allTime.best_net_score, 'best_net_score', 'lower')}
-          ${statBox('Birdie %', formatPercent(allTime.birdie_percentage), 'birdie_percentage', 'higher')}
-          ${statBox('Par 3 Avg', allTime.par3_average, 'par3_average', 'lower')}
-          ${statBox('Par 4 Avg', allTime.par4_average, 'par4_average', 'lower')}
-          ${statBox('Par 5 Avg', allTime.par5_average, 'par5_average', 'lower')}
+
+          ${statsMode === 'solo'
+            ? statBox('Solo Rounds', stats.solo_rounds, 'solo_rounds', 'higher')
+            : statsMode === 'team'
+              ? statBox('Team Rounds', stats.team_rounds, 'team_rounds', 'higher')
+              : statBox('Total Rounds', stats.solo_rounds, 'solo_rounds', 'higher')
+          }
+
+          ${statsMode === 'solo'
+            ? statBox('Solo 1st Places', stats.solo_first_places, 'solo_first_places', 'higher')
+            : statsMode === 'team'
+              ? statBox('Team Wins', stats.team_wins, 'team_wins', 'higher')
+              : statBox('1st Places', stats.solo_first_places, 'solo_first_places', 'higher')
+          }
+
+          ${statsMode === 'solo'
+            ? statBox('Avg Solo Place', stats.average_solo_placement, 'average_solo_placement', 'lower')
+            : statsMode === 'team'
+              ? statBox('Avg Team Place', stats.average_team_placement, 'average_team_placement', 'lower')
+              : statBox('Avg Place', stats.average_solo_placement, 'average_solo_placement', 'lower')
+          }
+
+          ${statBox('Total Gross', stats.total_gross_score, 'total_gross_score', 'lower')}
+          ${statBox('Avg Gross', stats.average_gross_score, 'average_gross_score', 'lower')}
+          ${statBox('Best Gross', stats.best_gross_score, 'best_gross_score', 'lower')}
+
+          ${statsMode === 'solo'
+            ? statBox('Total Net', stats.total_net_score, 'total_net_score', 'lower')
+            : ''
+          }
+
+          ${statsMode === 'solo'
+            ? statBox('Avg Net', stats.average_net_score, 'average_net_score', 'lower')
+            : ''
+          }
+
+          ${statsMode === 'solo'
+            ? statBox('Best Net', stats.best_net_score, 'best_net_score', 'lower')
+            : ''
+          }
+
+          ${statBox(
+            'Birdie %',
+            formatPercent(stats.birdie_percentage),
+            'birdie_percentage',
+            'higher'
+          )}
+
+          ${statBox('Par 3 Avg', stats.par3_average, 'par3_average', 'lower')}
+          ${statBox('Par 4 Avg', stats.par4_average, 'par4_average', 'lower')}
+          ${statBox('Par 5 Avg', stats.par5_average, 'par5_average', 'lower')}
+
         </div>
 
         <!-- CENTER: CAREER RANK -->
@@ -1790,7 +2143,7 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
 
         <!-- RIGHT: EXISTING DOUGHNUT -->
         <div class="stats-chart-card">
-          <div class="stat-box-label">Scoring Distribution</div>
+          <div class="stat-box-label">${modeLabel} Scoring Distribution</div>
 
           <div class="chart-wrap">
             <canvas id="scoring-chart"></canvas>
@@ -1800,61 +2153,136 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
       </div>
     </div>
 
-    <div class="card">
-      <div class="ct">Year-by-Year</div>
+    ${
+      statsMode === 'combined'
+        ? ''
+        : statsMode === 'solo'
+          ? `
+            <div class="card">
+              <div class="ct">Solo — Year-by-Year</div>
 
-      <div style="overflow-x:auto;">
-        <table class="ht">
-        <thead>
-          <tr>
-            <th>Year</th>
-            <th class="stat-header" data-stat="handicap">HDCP</th>
-            <th class="stat-header" data-stat="gross_score">Gross</th>
-            <th class="stat-header" data-stat="net_score">Net</th>
-            <th class="stat-header" data-stat="eagles">Eagles</th>
-            <th class="stat-header" data-stat="birdies">Birdies</th>
-            <th class="stat-header" data-stat="pars">Pars</th>
-            <th class="stat-header" data-stat="bogeys">Bogeys</th>
-            <th class="stat-header" data-stat="double_bogeys">Doubles</th>
-            <th class="stat-header" data-stat="triple_bogeys">Triples</th>
-            <th class="stat-header" data-stat="quad_bogeys">Quads+</th>
-            <th class="stat-header" data-stat="solo_placement">Solo Rank</th>
-            <th class="stat-header" data-stat="net_placement">Net Rank</th>
-            <th class="stat-header" data-stat="team_placement">Team Rank</th>
-          </tr>
-        </thead>
-          <tbody>
-            ${yearly.map(row => `
-              <tr>
-                <td
-                  class="scorecard-year-cell"
-                  onclick="openScorecard(
-                    ${row.year},
-                    '${encodeURIComponent(playerFolder)}',
-                    '${encodeURIComponent(playerName)}'
-                  )"
-                >
-                  ${row.year}
-                </td>
-                <td>${row.handicap || '—'}</td>
-                <td>${row.gross_score || '—'}</td>
-                <td>${row.net_score || '—'}</td>
-                <td>${row.eagles || 0}</td>
-                <td>${row.birdies || 0}</td>
-                <td>${row.pars || 0}</td>
-                <td>${row.bogeys || 0}</td>
-                <td>${row.double_bogeys || 0}</td>
-                <td>${row.triple_bogeys || 0}</td>
-                <td>${row.quad_bogeys || 0}</td>
-                <td>${row.solo_placement || '—'}</td>
-                <td>${row.net_placement || '—'}</td>
-                <td>${row.team_placement || '—'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
+              <div style="overflow-x:auto;">
+                <table class="ht">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th class="stat-header" data-stat="handicap">HDCP</th>
+                      <th class="stat-header" data-stat="gross_score">Gross</th>
+                      <th class="stat-header" data-stat="net_score">Net</th>
+                      <th class="stat-header" data-stat="eagles">Eagles</th>
+                      <th class="stat-header" data-stat="birdies">Birdies</th>
+                      <th class="stat-header" data-stat="pars">Pars</th>
+                      <th class="stat-header" data-stat="bogeys">Bogeys</th>
+                      <th class="stat-header" data-stat="double_bogeys">Doubles</th>
+                      <th class="stat-header" data-stat="triple_bogeys">Triples</th>
+                      <th class="stat-header" data-stat="quad_bogeys">Quads+</th>
+                      <th class="stat-header" data-stat="solo_placement">Solo Rank</th>
+                      <th class="stat-header" data-stat="net_placement">Net Rank</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    ${yearly.map(row => `
+                      <tr>
+                        <td
+                          class="scorecard-year-cell"
+                          onclick="openScorecard(
+                            ${row.year},
+                            '${encodeURIComponent(playerFolder)}',
+                            '${encodeURIComponent(playerName)}',
+                            'solo'
+                          )"
+                        >
+                          ${row.year}
+                        </td>
+
+                        <td>${row.handicap || '—'}</td>
+                        <td>${row.gross_score || '—'}</td>
+                        <td>${row.net_score || '—'}</td>
+                        <td>${row.eagles || 0}</td>
+                        <td>${row.birdies || 0}</td>
+                        <td>${row.pars || 0}</td>
+                        <td>${row.bogeys || 0}</td>
+                        <td>${row.double_bogeys || 0}</td>
+                        <td>${row.triple_bogeys || 0}</td>
+                        <td>${row.quad_bogeys || 0}</td>
+                        <td>${row.solo_placement || '—'}</td>
+                        <td>${row.net_placement || '—'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `
+          : `
+            <div class="card">
+              <div class="ct">Team — Year-by-Year</div>
+
+              <div style="overflow-x:auto;">
+                <table class="ht">
+                  <thead>
+                    <tr>
+                      <th>Year</th>
+                      <th>Teammate</th>
+                      <th class="stat-header" data-stat="team_score">Score</th>
+                      <th class="stat-header" data-stat="relative_to_par">Vs Par</th>
+                      <th class="stat-header" data-stat="eagles">Eagles</th>
+                      <th class="stat-header" data-stat="birdies">Birdies</th>
+                      <th class="stat-header" data-stat="pars">Pars</th>
+                      <th class="stat-header" data-stat="bogeys">Bogeys</th>
+                      <th class="stat-header" data-stat="double_bogeys">Doubles</th>
+                      <th class="stat-header" data-stat="triple_bogeys">Triples</th>
+                      <th class="stat-header" data-stat="quad_bogeys">Quads+</th>
+                      <th class="stat-header" data-stat="team_placement">Team Rank</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    ${yearlyTeam.map(row => `
+                      <tr>
+                        <td
+                          class="scorecard-year-cell"
+                          onclick="openScorecard(
+                            ${row.year},
+                            '${encodeURIComponent(playerFolder)}',
+                            '${encodeURIComponent(playerName)}',
+                            'team'
+                          )"
+                        >
+                          ${row.year}
+                        </td>
+                        <td>${row.teammate || '—'}</td>
+                        <td>${row.score || '—'}</td>
+
+                        <td>
+                          ${
+                            row.relative_to_par != null
+                              ? Number(row.relative_to_par) === 0
+                                ? 'E'
+                                : Number(row.relative_to_par) > 0
+                                  ? `+${row.relative_to_par}`
+                                  : row.relative_to_par
+                              : '—'
+                          }
+                        </td>
+
+                        <td>${row.eagles || 0}</td>
+                        <td>${row.birdies || 0}</td>
+                        <td>${row.pars || 0}</td>
+                        <td>${row.bogeys || 0}</td>
+                        <td>${row.double_bogeys || 0}</td>
+                        <td>${row.triple_bogeys || 0}</td>
+                        <td>${row.quad_bogeys || 0}</td>
+                        <td>${row.team_placement || '—'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `
+    }
 
     <div id="yearly-chart-container" class="card yearly-chart-card" style="display:none;">
       <div class="ct" id="yearly-chart-title">Stat by Year</div>
@@ -1880,7 +2308,13 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
 
   document.querySelectorAll('#stats-content .stat-header').forEach(button => {
     button.addEventListener('click', () => {
-      showYearlyStat(button.dataset.stat, button, yearly, playerFolder);
+      showYearlyStat(
+        button.dataset.stat,
+        button,
+        yearly,
+        yearlyTeam,
+        playerFolder
+      );
     });
   });
 
@@ -1894,37 +2328,37 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
   const scoringData = [
     {
       label: 'Eagles',
-      value: Number(allTime.total_eagles) || 0,
+      value: Number(stats.total_eagles) || 0,
       color: '#b34faf'
     },
     {
       label: 'Birdies',
-      value: Number(allTime.total_birdies) || 0,
+      value: Number(stats.total_birdies) || 0,
       color: '#6cd1e0'
     },
     {
       label: 'Pars',
-      value: Number(allTime.total_pars) || 0,
+      value: Number(stats.total_pars) || 0,
       color: '#3ab57c'
     },
     {
       label: 'Bogeys',
-      value: Number(allTime.total_bogeys) || 0,
+      value: Number(stats.total_bogeys) || 0,
       color: '#D9A441'
     },
     {
       label: 'Double Bogeys',
-      value: Number(allTime.total_dbl_bogeys) || 0,
+      value: Number(stats.total_dbl_bogeys) || 0,
       color: '#C94636'
     },
     {
       label: 'Triple Bogeys',
-      value: Number(allTime.total_trp_bogeys) || 0,
+      value: Number(stats.total_trp_bogeys) || 0,
       color: '#61201d'
     },
     {
       label: 'Quads+',
-      value: Number(allTime.total_qud_bogeys) || 0,
+      value: Number(stats.total_qud_bogeys) || 0,
       color: '#000000'
     }
   ];
@@ -1982,10 +2416,39 @@ function renderPlayerStats(playerName, playerFolder, allTime, yearly) {
 }
 
 function playerAwards(allTime) {
-  const trophies = '🏆'.repeat(Number(allTime.team_wins) || 0);
-  const medals = '🥇'.repeat(Number(allTime.solo_first_places) || 0);
+  const trophies = '🏆'.repeat(
+    Number(allTime.team?.team_wins) || 0
+  );
+
+  const medals = '🥇'.repeat(
+    Number(allTime.solo?.solo_first_places) || 0
+  );
 
   return `${trophies}${medals}`;
+}
+
+function formatStatValue(value) {
+  if (value == null || value === '' || value === '—') {
+    return '—';
+  }
+
+  // Preserve already-formatted percentages.
+  if (typeof value === 'string' && value.endsWith('%')) {
+    const number = Number(value.slice(0, -1));
+
+    return Number.isFinite(number)
+      ? `${Number(number.toFixed(2))}%`
+      : value;
+  }
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return value;
+  }
+
+  // Maximum of 2 decimal places, without unnecessary trailing zeros.
+  return Number(number.toFixed(2));
 }
 
 function statBox(label, value, key, direction = 'lower') {
@@ -1997,13 +2460,21 @@ function statBox(label, value, key, direction = 'lower') {
       type="button"
     >
       <div class="stat-box-label">${label}</div>
-      <div class="stat-box-value">${value ?? '—'}</div>
+      <div class="stat-box-value">${formatStatValue(value)}</div>
     </button>
   `;
 }
 
 function formatPercent(value) {
-  return value == null ? '—' : `${value}%`;
+  if (value == null) {
+    return '—';
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? `${Number(number.toFixed(2))}%`
+    : '—';
 }
 
 function parseCSV(text) {
@@ -2086,7 +2557,7 @@ async function renderYearsPlayed(allTime, playerFolder, playerName) {
     const allYears = await loadCourseYears();
 
     const playedYears = new Set(
-      (allTime.years_played || []).map(Number)
+      (allTime.personal?.years_played || []).map(Number)
     );
 
     element.innerHTML = allYears.map(year => {
@@ -2096,7 +2567,12 @@ async function renderYearsPlayed(allTime, playerFolder, playerName) {
         <div
           class="year-pill ${played ? 'played' : 'not-played'}"
           ${played
-            ? `onclick="openScorecard(${year}, '${encodeURIComponent(playerFolder)}', '${encodeURIComponent(playerName)}')"`
+            ? `onclick="openScorecard(
+                ${year},
+                '${encodeURIComponent(playerFolder)}',
+                '${encodeURIComponent(playerName)}',
+                '${statsMode}'
+              )"`
             : ''
           }
         >
@@ -2118,8 +2594,13 @@ async function renderYearsPlayed(allTime, playerFolder, playerName) {
 
 const yearlyStatLabels = {
   handicap: 'Handicap',
+
   gross_score: 'Gross Score',
+  team_score: 'Score',
+  relative_to_par: 'Vs Par',
+
   net_score: 'Net Score',
+
   eagles: 'Eagles',
   birdies: 'Birdies',
   pars: 'Pars',
@@ -2127,20 +2608,35 @@ const yearlyStatLabels = {
   double_bogeys: 'Double Bogeys',
   triple_bogeys: 'Triple Bogeys',
   quad_bogeys: 'Quadruple Bogeys+',
+
   solo_placement: 'Solo Rank',
   net_placement: 'Net Rank',
   team_placement: 'Team Rank'
 };
 
-async function showYearlyStat(stat, button, yearly, playerFolder) {
+async function showYearlyStat(
+  stat,
+  button,
+  yearly,
+  yearlyTeam,
+  playerFolder
+) {
   const container = document.getElementById('yearly-chart-container');
   const title = document.getElementById('yearly-chart-title');
   const canvas = document.getElementById('yearly-chart');
 
+  // Combined mode has no year-by-year table,
+  // so there is nothing to chart.
+  if (statsMode === 'combined') {
+    return;
+  }
+
   // Highlight selected header
-  document.querySelectorAll('.stat-header').forEach(header => {
-    header.classList.remove('active');
-  });
+  document
+    .querySelectorAll('#stats-content .stat-header')
+    .forEach(header => {
+      header.classList.remove('active');
+    });
 
   button.classList.add('active');
 
@@ -2151,15 +2647,47 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
   }
 
   try {
-    // Get all tournament years
-    const allYears = await loadCourseYears();
+    const allYears = await getAllTournamentYears();
 
-    // Convert selected player's data into a year -> row map
-    const selectedByYear = new Map(
-      yearly.map(row => [Number(row.year), row])
-    );
+    // ---------------------------------------------------------
+    // SELECT THE CORRECT DATASET
+    // ---------------------------------------------------------
 
-    // Create the selected player's data first
+    const selectedYearly =
+      statsMode === 'solo'
+        ? yearly
+        : yearlyTeam;
+
+    // Map rows by year.
+    //
+    // Solo has one row per year.
+    // Team normally has one row per team round.
+    const selectedByYear = new Map();
+
+    selectedYearly.forEach(row => {
+      const year = Number(row.year);
+
+      // Team rows:
+      // if there are ever multiple team rounds in a year,
+      // use the first one for the yearly line.
+      if (!selectedByYear.has(year)) {
+        selectedByYear.set(year, row);
+      }
+    });
+
+    // ---------------------------------------------------------
+    // DETERMINE THE CSV FIELD
+    // ---------------------------------------------------------
+
+    const csvField =
+      statsMode === 'team' && stat === 'team_score'
+        ? 'score'
+        : stat;
+
+    // ---------------------------------------------------------
+    // SELECTED PLAYER VALUES
+    // ---------------------------------------------------------
+
     const selectedValues = allYears.map(year => {
       const row = selectedByYear.get(year);
 
@@ -2167,65 +2695,120 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
         return null;
       }
 
-      const value = Number(row[stat]);
-      return Number.isFinite(value) ? value : null;
+      const value = Number(row[csvField]);
+
+      return Number.isFinite(value)
+        ? value
+        : null;
     });
 
-    // Load all other players' yearly CSV files
+    // ---------------------------------------------------------
+    // LOAD OTHER PLAYERS
+    // ---------------------------------------------------------
+
     const otherPlayers = statsPlayers.filter(
       player => player.folder !== playerFolder
     );
 
     const otherPlayerData = await Promise.all(
       otherPlayers.map(async player => {
+
+        if (statsMode === 'solo') {
+          const response = await fetch(
+            `stats/${player.folder}/yearly_stats.csv`,
+            { cache: 'no-store' }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `Could not load ${player.name}'s yearly statistics`
+            );
+          }
+
+          const text = await response.text();
+
+          return {
+            name: player.name,
+            yearly: parseCSV(text)
+          };
+        }
+
         const response = await fetch(
-          `stats/${player.folder}/yearly_stats.csv`,
+          `stats/${player.folder}/yearly_team_stats.csv`,
           { cache: 'no-store' }
         );
 
         if (!response.ok) {
           throw new Error(
-            `Could not load ${player.name}'s yearly statistics`
+            `Could not load ${player.name}'s team statistics`
           );
         }
 
         const text = await response.text();
-        const playerYearly = parseCSV(text);
 
         return {
           name: player.name,
-          yearly: playerYearly
+          yearly: parseCSV(text)
         };
       })
     );
 
-    title.textContent = `${yearlyStatLabels[stat]} by Year`;
+    // ---------------------------------------------------------
+    // LABEL
+    // ---------------------------------------------------------
+
+    const label =
+      statsMode === 'team'
+        ? yearlyStatLabels[stat] || stat
+        : yearlyStatLabels[stat] || stat;
+
+    title.textContent =
+      `${statsMode === 'team' ? 'Team' : 'Solo'} ${label} by Year`;
+
     container.style.display = '';
 
-    // Start with selected player
-    const datasets = [{
-      label: statsPlayers.find(
+    // ---------------------------------------------------------
+    // SELECTED PLAYER DATASET
+    // ---------------------------------------------------------
+
+    const selectedPlayerName =
+      statsPlayers.find(
         player => player.folder === playerFolder
-      )?.name || 'Selected Player',
+      )?.name || 'Selected Player';
 
-      data: selectedValues,
+    const datasets = [
+      {
+        label: selectedPlayerName,
 
-      borderColor: '#d9b902',
-      backgroundColor: '#d9b902',
+        data: selectedValues,
 
-      borderWidth: 3,
-      pointRadius: 4,
-      pointHoverRadius: 5,
+        borderColor: '#d9b902',
+        backgroundColor: '#d9b902',
 
-      tension: 0.25,
-      spanGaps: false
-    }];
+        borderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 5,
 
-    // Add every other player in gray
+        tension: 0.25,
+        spanGaps: false
+      }
+    ];
+
+    // ---------------------------------------------------------
+    // OTHER PLAYERS
+    // ---------------------------------------------------------
+
     otherPlayerData.forEach(player => {
-      const playerByYear = new Map(
-        player.yearly.map(row => [Number(row.year), row])
-      );
+
+      const playerByYear = new Map();
+
+      player.yearly.forEach(row => {
+        const year = Number(row.year);
+
+        if (!playerByYear.has(year)) {
+          playerByYear.set(year, row);
+        }
+      });
 
       const values = allYears.map(year => {
         const row = playerByYear.get(year);
@@ -2234,12 +2817,16 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
           return null;
         }
 
-        const value = Number(row[stat]);
-        return Number.isFinite(value) ? value : null;
+        const value = Number(row[csvField]);
+
+        return Number.isFinite(value)
+          ? value
+          : null;
       });
 
       datasets.push({
         label: player.name,
+
         data: values,
 
         borderColor: 'rgba(0, 0, 0, 0.4)',
@@ -2253,6 +2840,10 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
         spanGaps: false
       });
     });
+
+    // ---------------------------------------------------------
+    // CREATE CHART
+    // ---------------------------------------------------------
 
     yearlyChart = new Chart(canvas, {
       type: 'line',
@@ -2276,6 +2867,7 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
             title: {
               display: true,
               text: 'Year',
+
               font: {
                 family: 'DM Sans'
               }
@@ -2285,7 +2877,8 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
           y: {
             title: {
               display: true,
-              text: yearlyStatLabels[stat],
+              text: label,
+
               font: {
                 family: 'DM Sans'
               }
@@ -2295,7 +2888,10 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
               precision: 0
             },
 
-            reverse: stat.includes('placement')
+            reverse:
+              stat === 'solo_placement' ||
+              stat === 'net_placement' ||
+              stat === 'team_placement'
           }
         },
 
@@ -2320,20 +2916,29 @@ async function showYearlyStat(stat, button, yearly, playerFolder) {
     });
 
   } catch (error) {
-    console.error('Yearly chart error:', error);
+    console.error(
+      'Yearly chart error:',
+      error
+    );
 
     container.style.display = '';
     title.textContent = 'Chart unavailable';
   }
 }
 
-async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
+async function openScorecard(
+  year,
+  encodedPlayerFolder,
+  encodedPlayerName,
+  mode = 'solo'
+) {
   const playerFolder = decodeURIComponent(encodedPlayerFolder);
   const playerName = decodeURIComponent(encodedPlayerName);
 
   const content = document.getElementById('scorecard-content');
   const yearLabel = document.getElementById('scorecard-year');
   const courseLabel = document.getElementById('scorecard-course');
+  const playerLabel = document.getElementById('scorecard-player');
 
   openM('mod-scorecard');
 
@@ -2345,7 +2950,10 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
   `;
 
   try {
-    // courses.csv and rounds.csv are in the working directory
+    // ---------------------------------------------------------
+    // LOAD SOURCE DATA
+    // ---------------------------------------------------------
+
     const [coursesResponse, roundsResponse] = await Promise.all([
       fetch('courses.csv', {
         cache: 'no-store'
@@ -2370,26 +2978,25 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
     const courses = parseCSV(coursesText);
     const rounds = parseCSV(roundsText);
 
-    // Find course information for the selected year
+    // ---------------------------------------------------------
+    // FIND COURSE
+    // ---------------------------------------------------------
+
     const course = courses.find(
       row => Number(row.year) === Number(year)
     );
 
     if (!course) {
-      throw new Error(`No course information found for ${year}`);
+      throw new Error(
+        `No course information found for ${year}`
+      );
     }
 
-    // Find the player's individual round for the selected year.
-    //
-    // The player column is stored as a JSON string, e.g.
-    // ["Raymond"]
-    //
-    // Team rounds look like:
-    // ["Tom","Raymond"]
-    //
-    // We only accept a row where the player array contains exactly
-    // one name and that name matches the selected player.
-    const round = rounds.find(row => {
+    // ---------------------------------------------------------
+    // FIND SOLO ROUND
+    // ---------------------------------------------------------
+
+    const soloRound = rounds.find(row => {
       if (Number(row.year) !== Number(year)) {
         return false;
       }
@@ -2399,28 +3006,89 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
       }
 
       try {
-        const players = JSON.parse(row.player);
+        const roundPlayers = JSON.parse(row.player);
 
         return (
-          Array.isArray(players) &&
-          players.length === 1 &&
-          players[0] === playerName
+          Array.isArray(roundPlayers) &&
+          roundPlayers.length === 1 &&
+          roundPlayers[0] === playerName
         );
       } catch {
         return false;
       }
     });
 
-    if (!round) {
+    // ---------------------------------------------------------
+    // FIND TEAM ROUND
+    // ---------------------------------------------------------
+
+    const teamRound = rounds.find(row => {
+      if (Number(row.year) !== Number(year)) {
+        return false;
+      }
+
+      if (!row.player) {
+        return false;
+      }
+
+      try {
+        const roundPlayers = JSON.parse(row.player);
+
+        return (
+          Array.isArray(roundPlayers) &&
+          roundPlayers.length > 1 &&
+          roundPlayers.includes(playerName)
+        );
+      } catch {
+        return false;
+      }
+    });
+
+    // ---------------------------------------------------------
+    // VERIFY REQUIRED ROUND(S)
+    // ---------------------------------------------------------
+
+    if (mode === 'solo' && !soloRound) {
       throw new Error(
         `No individual scorecard found for ${playerName} in ${year}`
       );
     }
 
+    if (mode === 'team' && !teamRound) {
+      throw new Error(
+        `No team scorecard found for ${playerName} in ${year}`
+      );
+    }
+
+    if (
+      mode === 'combined' &&
+      !soloRound &&
+      !teamRound
+    ) {
+      throw new Error(
+        `No scorecard found for ${playerName} in ${year}`
+      );
+    }
+
+    // ---------------------------------------------------------
+    // HEADER
+    // ---------------------------------------------------------
+
     yearLabel.textContent = year;
 
-    document.getElementById('scorecard-player').textContent =
-      playerName;
+    if (mode === 'team' && teamRound) {
+      try {
+        const teamPlayers = JSON.parse(teamRound.player);
+
+        playerLabel.textContent =
+          teamPlayers.join(' & ');
+      } catch {
+        playerLabel.textContent = playerName;
+      }
+    } else {
+      // Solo and Combined both use the individual player name.
+      playerLabel.textContent = playerName;
+    }
 
     courseLabel.textContent =
       course.course_name || 'Course';
@@ -2430,6 +3098,10 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
 
     document.getElementById('scorecard-slope').textContent =
       `Slope ${course.slope ?? '—'}`;
+
+    // ---------------------------------------------------------
+    // COURSE DATA
+    // ---------------------------------------------------------
 
     const holes = Array.from(
       { length: 18 },
@@ -2448,39 +3120,154 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
       hole => course[`hole${hole}_par`]
     );
 
-    const scores = holes.map(
-      hole => round[`hole${hole}`]
-    );
+    // ---------------------------------------------------------
+    // BUILD SCORE ROWS
+    // ---------------------------------------------------------
+
+    const scoreRows = [];
+
+    if (
+      (mode === 'solo' || mode === 'combined') &&
+      soloRound
+    ) {
+      scoreRows.push({
+        label: 'Score',
+        round: soloRound
+      });
+    }
+
+    if (
+      (mode === 'team' || mode === 'combined') &&
+      teamRound
+    ) {
+      scoreRows.push({
+        label: mode === 'combined' ? 'Team' : 'Score',
+        round: teamRound
+      });
+    }
+
+    // ---------------------------------------------------------
+    // TOTAL HELPERS
+    // ---------------------------------------------------------
+
+    function getScoreTotals(round) {
+      const scores = holes.map(
+        hole => round[`hole${hole}`]
+      );
+
+      const frontScore = scores
+        .slice(0, 9)
+        .reduce(
+          (sum, value) => sum + (Number(value) || 0),
+          0
+        );
+
+      const backScore = scores
+        .slice(9, 18)
+        .reduce(
+          (sum, value) => sum + (Number(value) || 0),
+          0
+        );
+
+      return {
+        scores,
+        frontScore,
+        backScore,
+        totalScore: frontScore + backScore
+      };
+    }
 
     const frontYardage = yardages
       .slice(0, 9)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+      .reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      );
 
     const backYardage = yardages
       .slice(9, 18)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+      .reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      );
 
-    const totalYardage = frontYardage + backYardage;
+    const totalYardage =
+      frontYardage + backYardage;
 
     const frontPar = pars
       .slice(0, 9)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+      .reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      );
 
     const backPar = pars
       .slice(9, 18)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+      .reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      );
 
-    const totalPar = frontPar + backPar;
+    const totalPar =
+      frontPar + backPar;
 
-    const frontScore = scores
-      .slice(0, 9)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+    // ---------------------------------------------------------
+    // SCORE CELL HELPER
+    // ---------------------------------------------------------
 
-    const backScore = scores
-      .slice(9, 18)
-      .reduce((sum, value) => sum + (Number(value) || 0), 0);
+    function renderScoreCells(
+      round,
+      startIndex,
+      endIndex
+    ) {
+      return holes
+        .slice(startIndex, endIndex)
+        .map((hole, localIndex) => {
+          const actualIndex =
+            startIndex + localIndex;
 
-    const totalScore = frontScore + backScore;
+          const score =
+            round[`hole${hole}`];
+
+          const par =
+            Number(pars[actualIndex]);
+
+          const s =
+            Number(score);
+
+          let cls = '';
+
+          if (
+            Number.isFinite(s) &&
+            Number.isFinite(par)
+          ) {
+            if (s <= par - 2) {
+              cls = 'eagle';
+            } else if (s === par - 1) {
+              cls = 'birdie';
+            } else if (s === par + 1) {
+              cls = 'bogey';
+            } else if (s >= par + 2) {
+              cls = 'double-bogey';
+            }
+          }
+
+          return `
+            <td class="score ${cls}">
+              <span class="score-mark">
+                <span class="score-number">
+                  ${score ?? '—'}
+                </span>
+              </span>
+            </td>
+          `;
+        })
+        .join('');
+    }
+
+    // ---------------------------------------------------------
+    // RENDER
+    // ---------------------------------------------------------
 
     content.innerHTML = `
       <div class="scorecard-table-wrap">
@@ -2515,14 +3302,21 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
                 value => `<td>${value ?? '—'}</td>`
               ).join('')}
 
-              <td class="summary">${frontYardage}</td>
+              <td class="summary">
+                ${frontYardage}
+              </td>
 
               ${yardages.slice(9, 18).map(
                 value => `<td>${value ?? '—'}</td>`
               ).join('')}
 
-              <td class="summary">${backYardage}</td>
-              <td class="summary">${totalYardage}</td>
+              <td class="summary">
+                ${backYardage}
+              </td>
+
+              <td class="summary">
+                ${totalYardage}
+              </td>
             </tr>
 
             <!-- HANDICAP -->
@@ -2551,86 +3345,60 @@ async function openScorecard(year, encodedPlayerFolder, encodedPlayerName) {
                 value => `<td>${value ?? '—'}</td>`
               ).join('')}
 
-              <td class="summary">${frontPar}</td>
+              <td class="summary">
+                ${frontPar}
+              </td>
 
               ${pars.slice(9, 18).map(
                 value => `<td>${value ?? '—'}</td>`
               ).join('')}
 
-              <td class="summary">${backPar}</td>
-              <td class="summary">${totalPar}</td>
+              <td class="summary">
+                ${backPar}
+              </td>
+
+              <td class="summary">
+                ${totalPar}
+              </td>
             </tr>
 
-            <!-- SCORE -->
-            <tr>
-              <td class="label">Score</td>
+            <!-- SCORE ROW(S) -->
+            ${scoreRows.map(scoreRow => {
+              const totals =
+                getScoreTotals(scoreRow.round);
 
-              ${scores.slice(0, 9).map((score, i) => {
-                const par = Number(pars[i]);
-                const s = Number(score);
-
-                let cls = '';
-
-                if (
-                  Number.isFinite(s) &&
-                  Number.isFinite(par)
-                ) {
-                  if (s <= par - 2) {
-                    cls = 'eagle';
-                  } else if (s === par - 1) {
-                    cls = 'birdie';
-                  } else if (s === par + 1) {
-                    cls = 'bogey';
-                  } else if (s >= par + 2) {
-                    cls = 'double-bogey';
-                  }
-                }
-
-                return `
-                  <td class="score ${cls}">
-                    <span class="score-mark">
-                      <span class="score-number">${score ?? '—'}</span>
-                    </span>
+              return `
+                <tr>
+                  <td class="label">
+                    ${scoreRow.label}
                   </td>
-                `;
-              }).join('')}
 
-              <td class="summary">${frontScore}</td>
+                  ${renderScoreCells(
+                    scoreRow.round,
+                    0,
+                    9
+                  )}
 
-              ${scores.slice(9, 18).map((score, i) => {
-                const actualIndex = i + 9;
-                const par = Number(pars[actualIndex]);
-                const s = Number(score);
-
-                let cls = '';
-
-                if (
-                  Number.isFinite(s) &&
-                  Number.isFinite(par)
-                ) {
-                  if (s <= par - 2) {
-                    cls = 'eagle';
-                  } else if (s === par - 1) {
-                    cls = 'birdie';
-                  } else if (s === par + 1) {
-                    cls = 'bogey';
-                  } else if (s >= par + 2) {
-                    cls = 'double-bogey';
-                  }
-                }
-
-                return `
-                  <td class="score ${cls}">
-                    <span class="score-mark">
-                      <span class="score-number">${score ?? '—'}</span>
-                    </span>
+                  <td class="summary">
+                    ${totals.frontScore}
                   </td>
-                `;
-              }).join('')}
 
-              <td class="summary">${backScore}</td>
-              <td class="summary">${totalScore}</td>
-            </tr>
+                  ${renderScoreCells(
+                    scoreRow.round,
+                    9,
+                    18
+                  )}
+
+                  <td class="summary">
+                    ${totals.backScore}
+                  </td>
+
+                  <td class="summary">
+                    ${totals.totalScore}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
 
           </tbody>
         </table>
@@ -2661,23 +3429,17 @@ function formatCareerValue(stat, value) {
     return '—';
   }
 
+  const formatted = value.toFixed(1);
+
   if (stat === 'birdie_percentage') {
-    return `${value}%`;
+    return `${formatted}%`;
   }
 
-  if (
-    stat.includes('average') ||
-    stat.includes('_score') ||
-    stat === 'par3_average' ||
-    stat === 'par4_average' ||
-    stat === 'par5_average'
-  ) {
-    return Number.isInteger(value)
-      ? value
-      : value.toFixed(1);
-  }
+  return formatted;
+}
 
-  return value;
+function getCareerRankingValue(stats, stat) {
+  return stats[stat];
 }
 
 async function showCareerRanking(stat, direction, selectedFolder) {
@@ -2730,10 +3492,11 @@ async function showCareerRanking(stat, direction, selectedFolder) {
           );
         }
 
-        const stats = await response.json();
+        const allTimeStats = await response.json();
+        const modeData = getStatsModeData(allTimeStats);
 
         const yearsPlayed = new Set(
-          (stats.years_played || []).map(Number)
+          (allTimeStats.personal?.years_played || []).map(Number)
         );
 
         const playedEveryYear =
@@ -2742,7 +3505,7 @@ async function showCareerRanking(stat, direction, selectedFolder) {
         return {
           name: player.name,
           folder: player.folder,
-          value: Number(stats[stat]),
+          value: Number(getCareerRankingValue(modeData.section, stat)),
           playedEveryYear
         };
       })
@@ -2898,9 +3661,14 @@ async function getAllTournamentYears() {
   return await loadCourseYears();
 }
 
+
+
 // INIT
-// seed();
-loadYear(DB.get('activeYear')||2026);
+loadYear(DB.get('activeYear') || 2026);
+
+statsMode = DB.get('statsMode') || 'solo';
+updateStatsModePicker();
+
 renderHome();
 renderAllTimeRecords();
 loadStatsPlayers();

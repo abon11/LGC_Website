@@ -218,12 +218,16 @@ def empty_player():
         "gross_scores": [],
         "net_scores": [],
 
+        "front_relative_to_par": [],
+        "back_relative_to_par": [],
+
         # Team statistics
         "team_rounds": 0,
         "team_placements": [],
         "team_first_placements": 0,
         "total_team_gross_score": 0,
         "total_team_relative_to_par": 0,
+        "most_birdies_single_round": 0,
 
         "total_team_birdies": 0,
         "total_team_eagles": 0,
@@ -291,6 +295,9 @@ def empty_player():
         "team_par4_holes": 0,
         "team_par3_strokes": 0,
         "team_par3_holes": 0,
+
+        "team_front_relative_to_par": [],
+        "team_back_relative_to_par": [],
     }
 
 
@@ -454,6 +461,38 @@ def calculate_all(rounds, courses):
                 # Personal participation
                 summary["years_played"].add(year)
 
+                front_rel = sum(
+                    team_round["holes"][hole] - course["par"][hole]
+                    for hole in range(1, 10)
+                    if team_round["holes"][hole] is not None
+                )
+
+                back_rel = sum(
+                    team_round["holes"][hole] - course["par"][hole]
+                    for hole in range(10, 19)
+                    if team_round["holes"][hole] is not None
+                )
+
+                front_holes = sum(
+                    team_round["holes"][hole] is not None
+                    for hole in range(1, 10)
+                )
+
+                back_holes = sum(
+                    team_round["holes"][hole] is not None
+                    for hole in range(10, 19)
+                )
+
+                if front_holes:
+                    summary["team_front_relative_to_par"].append(
+                        front_rel
+                    )
+
+                if back_holes:
+                    summary["team_back_relative_to_par"].append(
+                        back_rel
+                    )
+
                 # Team placement
                 summary["team_rounds"] += 1
                 summary["team_placements"].append(placement)
@@ -471,6 +510,11 @@ def calculate_all(rounds, courses):
                 summary["total_team_dbl_bogeys"] += metrics["double_bogeys"]
                 summary["total_team_trp_bogeys"] += metrics["triple_bogeys"]
                 summary["total_team_qud_bogeys"] += metrics["quad_bogeys"]
+
+                summary["most_birdies_single_round"] = max(
+                    summary["most_birdies_single_round"],
+                    metrics["birdies"] + metrics["eagles"],
+                )
 
                 # Team scoring distributions by par type
                 for par in (3, 4, 5):
@@ -567,6 +611,39 @@ def calculate_all(rounds, courses):
 
         # Player summary
         summary = players[player]
+
+        front_rel = sum(
+            round_data["holes"][hole] - course["par"][hole]
+            for hole in range(1, 10)
+            if round_data["holes"][hole] is not None
+        )
+
+        back_rel = sum(
+            round_data["holes"][hole] - course["par"][hole]
+            for hole in range(10, 19)
+            if round_data["holes"][hole] is not None
+        )
+
+        front_holes = sum(
+            round_data["holes"][hole] is not None
+            for hole in range(1, 10)
+        )
+
+        back_holes = sum(
+            round_data["holes"][hole] is not None
+            for hole in range(10, 19)
+        )
+
+        if front_holes:
+            summary["front_relative_to_par"].append(
+                front_rel
+            )
+
+        if back_holes:
+            summary["back_relative_to_par"].append(
+                back_rel
+            )
+
         summary["years_played"].add(year)
         summary["solo_rounds"] += 1
 
@@ -689,6 +766,14 @@ def build_solo_stats(summary):
         "best_net_score": min(
             summary["net_scores"],
             default=None,
+        ),
+
+        "front_average_relative_to_par": average(
+            summary["front_relative_to_par"]
+        ),
+
+        "back_average_relative_to_par": average(
+            summary["back_relative_to_par"]
         ),
 
         "total_eagles": summary["total_eagles"],
@@ -828,6 +913,16 @@ def build_team_stats(summary):
             if team_rounds
             else None
         ),
+
+        "front_average_relative_to_par": average(
+            summary["team_front_relative_to_par"]
+        ),
+
+        "back_average_relative_to_par": average(
+            summary["team_back_relative_to_par"]
+        ),
+
+        "most_birdies_single_round": summary["most_birdies_single_round"],
 
         "total_eagles": summary["total_team_eagles"],
         "total_birdies": summary["total_team_birdies"],

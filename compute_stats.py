@@ -164,6 +164,7 @@ def empty_player():
         "solo_first_placements": 0,
         "total_gross_score": 0,
         "total_net_score": 0,
+
         "total_birdies": 0,
         "total_eagles": 0,
         "total_pars": 0,
@@ -171,6 +172,49 @@ def empty_player():
         "total_dbl_bogeys": 0,
         "total_trp_bogeys": 0,
         "total_qud_bogeys": 0,
+
+        # Solo scoring distribution by par type
+        "par3_eagles": 0,
+        "par3_birdies": 0,
+        "par3_pars": 0,
+        "par3_bogeys": 0,
+        "par3_dbl_bogeys": 0,
+        "par3_trp_bogeys": 0,
+        "par3_qud_bogeys": 0,
+
+        "par4_eagles": 0,
+        "par4_birdies": 0,
+        "par4_pars": 0,
+        "par4_bogeys": 0,
+        "par4_dbl_bogeys": 0,
+        "par4_trp_bogeys": 0,
+        "par4_qud_bogeys": 0,
+
+        "par5_eagles": 0,
+        "par5_birdies": 0,
+        "par5_pars": 0,
+        "par5_bogeys": 0,
+        "par5_dbl_bogeys": 0,
+        "par5_trp_bogeys": 0,
+        "par5_qud_bogeys": 0,
+
+        # Solo scoring distribution by hole segment
+        "front_eagles": 0,
+        "front_birdies": 0,
+        "front_pars": 0,
+        "front_bogeys": 0,
+        "front_dbl_bogeys": 0,
+        "front_trp_bogeys": 0,
+        "front_qud_bogeys": 0,
+
+        "back_eagles": 0,
+        "back_birdies": 0,
+        "back_pars": 0,
+        "back_bogeys": 0,
+        "back_dbl_bogeys": 0,
+        "back_trp_bogeys": 0,
+        "back_qud_bogeys": 0,
+
         "gross_scores": [],
         "net_scores": [],
 
@@ -180,6 +224,7 @@ def empty_player():
         "team_first_placements": 0,
         "total_team_gross_score": 0,
         "total_team_relative_to_par": 0,
+
         "total_team_birdies": 0,
         "total_team_eagles": 0,
         "total_team_pars": 0,
@@ -187,6 +232,49 @@ def empty_player():
         "total_team_dbl_bogeys": 0,
         "total_team_trp_bogeys": 0,
         "total_team_qud_bogeys": 0,
+
+        # Team scoring distribution by par type
+        "team_par3_eagles": 0,
+        "team_par3_birdies": 0,
+        "team_par3_pars": 0,
+        "team_par3_bogeys": 0,
+        "team_par3_dbl_bogeys": 0,
+        "team_par3_trp_bogeys": 0,
+        "team_par3_qud_bogeys": 0,
+
+        "team_par4_eagles": 0,
+        "team_par4_birdies": 0,
+        "team_par4_pars": 0,
+        "team_par4_bogeys": 0,
+        "team_par4_dbl_bogeys": 0,
+        "team_par4_trp_bogeys": 0,
+        "team_par4_qud_bogeys": 0,
+
+        "team_par5_eagles": 0,
+        "team_par5_birdies": 0,
+        "team_par5_pars": 0,
+        "team_par5_bogeys": 0,
+        "team_par5_dbl_bogeys": 0,
+        "team_par5_trp_bogeys": 0,
+        "team_par5_qud_bogeys": 0,
+
+        # Team scoring distribution by hole segment
+        "team_front_eagles": 0,
+        "team_front_birdies": 0,
+        "team_front_pars": 0,
+        "team_front_bogeys": 0,
+        "team_front_dbl_bogeys": 0,
+        "team_front_trp_bogeys": 0,
+        "team_front_qud_bogeys": 0,
+
+        "team_back_eagles": 0,
+        "team_back_birdies": 0,
+        "team_back_pars": 0,
+        "team_back_bogeys": 0,
+        "team_back_dbl_bogeys": 0,
+        "team_back_trp_bogeys": 0,
+        "team_back_qud_bogeys": 0,
+
         "team_gross_scores": [],
 
         # Stroke statistics
@@ -208,10 +296,13 @@ def empty_player():
 
 def calculate_round_metrics(round_data, course):
     """Calculate stroke-based statistics for one round."""
+
     metrics = {
         "gross_score": round_data["gross"],
         "net_score": round_data["net"],
         "relative_to_par": round_data["relative_to_par"],
+
+        # Overall scoring distribution
         "birdies": 0,
         "eagles": 0,
         "pars": 0,
@@ -219,12 +310,26 @@ def calculate_round_metrics(round_data, course):
         "double_bogeys": 0,
         "triple_bogeys": 0,
         "quad_bogeys": 0,
+
+        # Stroke counts by par type
         "par3_strokes": 0,
         "par4_strokes": 0,
         "par5_strokes": 0,
+
         "par3_holes": 0,
         "par4_holes": 0,
         "par5_holes": 0,
+    }
+
+    # Use the abbreviated names used by the player summaries.
+    scoring_field = {
+        "eagles": "eagles",
+        "birdies": "birdies",
+        "pars": "pars",
+        "bogeys": "bogeys",
+        "double_bogeys": "dbl_bogeys",
+        "triple_bogeys": "trp_bogeys",
+        "quad_bogeys": "qud_bogeys",
     }
 
     for hole in HOLES:
@@ -234,25 +339,69 @@ def calculate_round_metrics(round_data, course):
         if strokes is None or par is None:
             continue
 
-        metrics[f"par{int(par)}_strokes"] += strokes
-        metrics[f"par{int(par)}_holes"] += 1
+        par = int(par)
+
+        # -----------------------------------------------------
+        # STROKES BY PAR TYPE
+        # -----------------------------------------------------
+
+        if par in (3, 4, 5):
+            metrics[f"par{par}_strokes"] += strokes
+            metrics[f"par{par}_holes"] += 1
+
+        # -----------------------------------------------------
+        # DETERMINE SCORING CATEGORY
+        # -----------------------------------------------------
 
         difference = strokes - par
 
         if difference <= -2:
-            metrics["eagles"] += 1
+            category = "eagles"
         elif difference == -1:
-            metrics["birdies"] += 1
+            category = "birdies"
         elif difference == 0:
-            metrics["pars"] += 1
+            category = "pars"
         elif difference == 1:
-            metrics["bogeys"] += 1
+            category = "bogeys"
         elif difference == 2:
-            metrics["double_bogeys"] += 1
+            category = "double_bogeys"
         elif difference == 3:
-            metrics["triple_bogeys"] += 1
-        elif difference >= 4:
-            metrics["quad_bogeys"] += 1
+            category = "triple_bogeys"
+        else:
+            category = "quad_bogeys"
+
+        # -----------------------------------------------------
+        # OVERALL DISTRIBUTION
+        # -----------------------------------------------------
+
+        metrics[category] += 1
+
+        # -----------------------------------------------------
+        # PAR-TYPE DISTRIBUTION
+        # -----------------------------------------------------
+
+        if par in (3, 4, 5):
+            field = scoring_field[category]
+
+            key = f"par{par}_{field}"
+
+            metrics[key] = (
+                metrics.get(key, 0) + 1
+            )
+
+        # -----------------------------------------------------
+        # FRONT / BACK DISTRIBUTION
+        # -----------------------------------------------------
+
+        segment = "front" if hole <= 9 else "back"
+
+        field = scoring_field[category]
+
+        key = f"{segment}_{field}"
+
+        metrics[key] = (
+            metrics.get(key, 0) + 1
+        )
 
     return metrics
 
@@ -323,6 +472,35 @@ def calculate_all(rounds, courses):
                 summary["total_team_trp_bogeys"] += metrics["triple_bogeys"]
                 summary["total_team_qud_bogeys"] += metrics["quad_bogeys"]
 
+                # Team scoring distributions by par type
+                for par in (3, 4, 5):
+                    for category in (
+                        "eagles",
+                        "birdies",
+                        "pars",
+                        "bogeys",
+                        "dbl_bogeys",
+                        "trp_bogeys",
+                        "qud_bogeys",
+                    ):
+                        summary[f"team_par{par}_{category}"] += (
+                            metrics.get(f"par{par}_{category}", 0)
+                        )
+
+                # Team scoring distributions by front / back
+                for segment in ("front", "back"):
+                    for category in (
+                        "eagles",
+                        "birdies",
+                        "pars",
+                        "bogeys",
+                        "dbl_bogeys",
+                        "trp_bogeys",
+                        "qud_bogeys",
+                    ):
+                        summary[f"team_{segment}_{category}"] += (
+                            metrics.get(f"{segment}_{category}", 0)
+                        )
                 # Team par-type averages
                 for par in (3, 4, 5):
                     summary[f"team_par{par}_strokes"] += metrics[f"par{par}_strokes"]
@@ -402,6 +580,36 @@ def calculate_all(rounds, courses):
         summary["total_dbl_bogeys"] += metrics["double_bogeys"]
         summary["total_trp_bogeys"] += metrics["triple_bogeys"]
         summary["total_qud_bogeys"] += metrics["quad_bogeys"]
+
+        # Solo scoring distributions by par type
+        for par in (3, 4, 5):
+            for category in (
+                "eagles",
+                "birdies",
+                "pars",
+                "bogeys",
+                "dbl_bogeys",
+                "trp_bogeys",
+                "qud_bogeys",
+            ):
+                summary[f"par{par}_{category}"] += (
+                    metrics.get(f"par{par}_{category}", 0)
+                )
+
+        # Solo scoring distributions by front / back
+        for segment in ("front", "back"):
+            for category in (
+                "eagles",
+                "birdies",
+                "pars",
+                "bogeys",
+                "dbl_bogeys",
+                "trp_bogeys",
+                "qud_bogeys",
+            ):
+                summary[f"{segment}_{category}"] += (
+                    metrics.get(f"{segment}_{category}", 0)
+                )
 
         summary["gross_scores"].append(metrics["gross_score"])
         summary["net_scores"].append(metrics["net_score"])
@@ -490,6 +698,48 @@ def build_solo_stats(summary):
         "total_dbl_bogeys": summary["total_dbl_bogeys"],
         "total_trp_bogeys": summary["total_trp_bogeys"],
         "total_qud_bogeys": summary["total_qud_bogeys"],
+
+        # Scoring distribution by par type
+        "par3_eagles": summary["par3_eagles"],
+        "par3_birdies": summary["par3_birdies"],
+        "par3_pars": summary["par3_pars"],
+        "par3_bogeys": summary["par3_bogeys"],
+        "par3_dbl_bogeys": summary["par3_dbl_bogeys"],
+        "par3_trp_bogeys": summary["par3_trp_bogeys"],
+        "par3_qud_bogeys": summary["par3_qud_bogeys"],
+
+        "par4_eagles": summary["par4_eagles"],
+        "par4_birdies": summary["par4_birdies"],
+        "par4_pars": summary["par4_pars"],
+        "par4_bogeys": summary["par4_bogeys"],
+        "par4_dbl_bogeys": summary["par4_dbl_bogeys"],
+        "par4_trp_bogeys": summary["par4_trp_bogeys"],
+        "par4_qud_bogeys": summary["par4_qud_bogeys"],
+
+        "par5_eagles": summary["par5_eagles"],
+        "par5_birdies": summary["par5_birdies"],
+        "par5_pars": summary["par5_pars"],
+        "par5_bogeys": summary["par5_bogeys"],
+        "par5_dbl_bogeys": summary["par5_dbl_bogeys"],
+        "par5_trp_bogeys": summary["par5_trp_bogeys"],
+        "par5_qud_bogeys": summary["par5_qud_bogeys"],
+
+        # Scoring distribution by front / back
+        "front_eagles": summary["front_eagles"],
+        "front_birdies": summary["front_birdies"],
+        "front_pars": summary["front_pars"],
+        "front_bogeys": summary["front_bogeys"],
+        "front_dbl_bogeys": summary["front_dbl_bogeys"],
+        "front_trp_bogeys": summary["front_trp_bogeys"],
+        "front_qud_bogeys": summary["front_qud_bogeys"],
+
+        "back_eagles": summary["back_eagles"],
+        "back_birdies": summary["back_birdies"],
+        "back_pars": summary["back_pars"],
+        "back_bogeys": summary["back_bogeys"],
+        "back_dbl_bogeys": summary["back_dbl_bogeys"],
+        "back_trp_bogeys": summary["back_trp_bogeys"],
+        "back_qud_bogeys": summary["back_qud_bogeys"],
 
         "par3_average": (
             round(
@@ -586,6 +836,48 @@ def build_team_stats(summary):
         "total_dbl_bogeys": summary["total_team_dbl_bogeys"],
         "total_trp_bogeys": summary["total_team_trp_bogeys"],
         "total_qud_bogeys": summary["total_team_qud_bogeys"],
+
+        # Scoring distribution by par type
+        "par3_eagles": summary["team_par3_eagles"],
+        "par3_birdies": summary["team_par3_birdies"],
+        "par3_pars": summary["team_par3_pars"],
+        "par3_bogeys": summary["team_par3_bogeys"],
+        "par3_dbl_bogeys": summary["team_par3_dbl_bogeys"],
+        "par3_trp_bogeys": summary["team_par3_trp_bogeys"],
+        "par3_qud_bogeys": summary["team_par3_qud_bogeys"],
+
+        "par4_eagles": summary["team_par4_eagles"],
+        "par4_birdies": summary["team_par4_birdies"],
+        "par4_pars": summary["team_par4_pars"],
+        "par4_bogeys": summary["team_par4_bogeys"],
+        "par4_dbl_bogeys": summary["team_par4_dbl_bogeys"],
+        "par4_trp_bogeys": summary["team_par4_trp_bogeys"],
+        "par4_qud_bogeys": summary["team_par4_qud_bogeys"],
+
+        "par5_eagles": summary["team_par5_eagles"],
+        "par5_birdies": summary["team_par5_birdies"],
+        "par5_pars": summary["team_par5_pars"],
+        "par5_bogeys": summary["team_par5_bogeys"],
+        "par5_dbl_bogeys": summary["team_par5_dbl_bogeys"],
+        "par5_trp_bogeys": summary["team_par5_trp_bogeys"],
+        "par5_qud_bogeys": summary["team_par5_qud_bogeys"],
+
+        # Scoring distribution by front / back
+        "front_eagles": summary["team_front_eagles"],
+        "front_birdies": summary["team_front_birdies"],
+        "front_pars": summary["team_front_pars"],
+        "front_bogeys": summary["team_front_bogeys"],
+        "front_dbl_bogeys": summary["team_front_dbl_bogeys"],
+        "front_trp_bogeys": summary["team_front_trp_bogeys"],
+        "front_qud_bogeys": summary["team_front_qud_bogeys"],
+
+        "back_eagles": summary["team_back_eagles"],
+        "back_birdies": summary["team_back_birdies"],
+        "back_pars": summary["team_back_pars"],
+        "back_bogeys": summary["team_back_bogeys"],
+        "back_dbl_bogeys": summary["team_back_dbl_bogeys"],
+        "back_trp_bogeys": summary["team_back_trp_bogeys"],
+        "back_qud_bogeys": summary["team_back_qud_bogeys"],
 
         "par3_average": (
             round(

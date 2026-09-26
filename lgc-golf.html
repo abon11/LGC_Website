@@ -707,6 +707,71 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   color:var(--tm);
 }
 
+.career-rank-controls {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-left:auto;
+  flex-shrink:0;
+}
+
+.career-rank-toggle {
+  display:flex;
+  align-items:center;
+  background:rgba(255,255,255,.7);
+  border-radius:7px;
+  padding:2px;
+}
+
+.career-rank-toggle-button {
+  border:none;
+  border-radius:5px;
+  padding:4px 7px;
+  font-family:'DM Sans',sans-serif;
+  font-size:8px;
+  font-weight:600;
+  color:var(--ts);
+  background:transparent;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+
+.career-rank-toggle-button.active {
+  background:var(--gd);
+  color:white;
+}
+
+.career-rank-og12 {
+  display:flex;
+  align-items:center;
+  background:rgba(255,255,255,.7);
+  border-radius:7px;
+  padding:2px;
+}
+
+.career-rank-og12.active {
+  background:var(--gold);
+}
+
+.career-rank-og12-button {
+  border:none;
+  border-radius:5px;
+  padding:4px 7px;
+  font-family:'DM Sans',sans-serif;
+  font-size:8px;
+  font-weight:600;
+  color:var(--ts);
+  background:transparent;
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+
+.career-rank-og12.active .career-rank-og12-button {
+  color:var(--gd);
+}
+
 @media (max-width:699px) {
   .career-overview {
     grid-template-columns:1fr;
@@ -1138,6 +1203,8 @@ let yearlyChart = null;
 let selectedStatsPlayerFolder = null;
 let statsMode = 'solo';
 let scoringView = 'overall';
+let rankingOG12 = false;
+let currentRankingConfig = null;
 
 // DB
 const DB={
@@ -2394,13 +2461,6 @@ function renderPlayerStats(
             stats.total_net_score,
             'total_net_score',
             'lower'
-          )}
-
-          ${statBox(
-            'Birdie %',
-            formatPercent(stats.birdie_percentage),
-            'birdie_percentage',
-            'higher'
           )}
 
           ${statBox(
@@ -4429,7 +4489,7 @@ function formatCareerValue(
     'solo_rounds',
     'team_rounds',
     'total_rounds',
-    'solo_first_placements',
+    'solo_first_places',
     'team_wins'
   ];
 
@@ -4597,6 +4657,23 @@ function getAverageRankingValue(
   return value / rounds;
 }
 
+function setRankingOG12(enabled) {
+  rankingOG12 = enabled;
+
+  if (!currentRankingConfig) {
+    return;
+  }
+
+  showCareerRanking(
+    currentRankingConfig.stat,
+    currentRankingConfig.direction,
+    currentRankingConfig.selectedFolder,
+    currentRankingConfig.labelOverride,
+    currentRankingConfig.rankingMode,
+    currentRankingConfig.totalStatOverride
+  );
+}
+
 async function showCareerRanking(
   stat,
   direction,
@@ -4605,6 +4682,16 @@ async function showCareerRanking(
   rankingMode = 'average',
   totalStatOverride = null
 ) {
+
+  currentRankingConfig = {
+    stat,
+    direction,
+    selectedFolder,
+    labelOverride,
+    rankingMode,
+    totalStatOverride
+  };
+
   const container =
     document.getElementById('career-rank-content');
 
@@ -4684,76 +4771,67 @@ async function showCareerRanking(
     ">
       <span>${label}</span>
 
-      ${
-        hasTotalView
-          ? `
-            <span
-              style="
-                display:flex;
-                background:rgba(255,255,255,.7);
-                border-radius:7px;
-                padding:2px;
-                margin-left:auto;
-                flex-shrink:0;
-              "
-            >
-              <button
-                type="button"
-                onclick="
-                  showCareerRanking(
-                    '${stat}',
-                    '${direction}',
-                    '${selectedFolder}',
-                    '${labelOverride || ''}',
-                    'average',
-                    '${totalStat || ''}'
-                  )
-                "
-                style="
-                  border:none;
-                  border-radius:5px;
-                  padding:4px 7px;
-                  font-family:'DM Sans',sans-serif;
-                  font-size:8px;
-                  font-weight:600;
-                  color:${rankingMode === 'average' ? 'var(--gd)' : 'var(--ts)'};
-                  background:${rankingMode === 'average' ? 'white' : 'transparent'};
-                  cursor:pointer;
-                "
-              >
-                AVG
-              </button>
+      <div class="career-rank-controls">
 
-              <button
-                type="button"
-                onclick="
-                  showCareerRanking(
-                    '${stat}',
-                    '${statButton?.dataset.totalDirection || direction}',
-                    '${selectedFolder}',
-                    '${labelOverride || ''}',
-                    'total',
-                    '${totalStat || ''}'
-                  )
-                "
-                style="
-                  border:none;
-                  border-radius:5px;
-                  padding:4px 7px;
-                  font-family:'DM Sans',sans-serif;
-                  font-size:8px;
-                  font-weight:600;
-                  color:${rankingMode === 'total' ? 'var(--gd)' : 'var(--ts)'};
-                  background:${rankingMode === 'total' ? 'white' : 'transparent'};
-                  cursor:pointer;
-                "
-              >
-                TOTAL
-              </button>
-            </span>
-          `
-          : ''
-      }
+        ${
+          hasTotalView
+            ? `
+              <span class="career-rank-toggle">
+
+                <button
+                  type="button"
+                  class="career-rank-toggle-button ${
+                    rankingMode === 'average' ? 'active' : ''
+                  }"
+                  onclick="
+                    showCareerRanking(
+                      '${stat}',
+                      '${direction}',
+                      '${selectedFolder}',
+                      '${labelOverride || ''}',
+                      'average',
+                      '${totalStat || ''}'
+                    )
+                  "
+                >
+                  AVG
+                </button>
+
+                <button
+                  type="button"
+                  class="career-rank-toggle-button ${
+                    rankingMode === 'total' ? 'active' : ''
+                  }"
+                  onclick="
+                    showCareerRanking(
+                      '${stat}',
+                      '${statButton?.dataset.totalDirection || direction}',
+                      '${selectedFolder}',
+                      '${labelOverride || ''}',
+                      'total',
+                      '${totalStat || ''}'
+                    )
+                  "
+                >
+                  TOTAL
+                </button>
+
+              </span>
+            `
+            : ''
+        }
+
+        <span class="career-rank-og12 ${rankingOG12 ? 'active' : ''}">
+          <button
+            type="button"
+            class="career-rank-og12-button"
+            onclick="setRankingOG12(${!rankingOG12})"
+          >
+            OG 12
+          </button>
+        </span>
+
+      </div>
     </div>
   `;
 
@@ -4841,7 +4919,8 @@ async function showCareerRanking(
             name: player.name,
             folder: player.folder,
             value: rankingValue,
-            playedEveryYear
+            playedEveryYear,
+            rounds
           };
         })
       );
@@ -4850,19 +4929,47 @@ async function showCareerRanking(
      * Total mode is only available for cumulative statistics,
      * and those rankings require complete participation.
      */
+    /*
+     * OG 12 = twelve players with the most rounds played
+     * in the currently selected stats mode.
+     */
+    let og12Players = players;
+
+    if (rankingOG12) {
+      og12Players = [...players]
+        .filter(player => Number.isFinite(player.rounds))
+        .sort((a, b) => b.rounds - a.rounds)
+        .slice(0, 12);
+    }
+
+    /*
+     * Normally Total mode for cumulative statistics requires
+     * complete participation.
+     *
+     * OG 12 is the exception for counting statistics:
+     * once OG 12 is enabled, those players remain eligible
+     * even if they have not played every tournament.
+     *
+     * Total Gross / Total Net still require full participation.
+     */
     const requiresFullParticipation =
       rankingMode === 'total' &&
+      !rankingOG12 &&
       (
         isCareerTotalStat(activeStat) ||
         isCareerScoringDistributionStat(activeStat)
       );
 
-    const eligiblePlayers =
-      requiresFullParticipation
-        ? players.filter(
-            player => player.playedEveryYear
-          )
-        : players;
+    let eligiblePlayers = rankingOG12
+      ? og12Players
+      : players;
+
+    if (requiresFullParticipation) {
+      eligiblePlayers =
+        eligiblePlayers.filter(
+          player => player.playedEveryYear
+        );
+    }
 
     const valid =
       eligiblePlayers.filter(
@@ -5096,6 +5203,65 @@ function isCareerScoringDistributionStat(stat) {
     'front_dbl_bogeys',
     'front_trp_bogeys',
     'front_qud_bogeys',
+    'back_eagles',
+    'back_birdies',
+    'back_pars',
+    'back_bogeys',
+    'back_dbl_bogeys',
+    'back_trp_bogeys',
+    'back_qud_bogeys',
+  ].includes(stat);
+}
+
+function isCareerCountingStat(stat) {
+  return [
+    'solo_rounds',
+    'team_rounds',
+    'total_rounds',
+
+    'solo_first_placements',
+    'team_wins',
+
+    'total_eagles',
+    'total_birdies',
+    'total_pars',
+    'total_bogeys',
+    'total_dbl_bogeys',
+    'total_trp_bogeys',
+    'total_qud_bogeys',
+
+    'par3_eagles',
+    'par3_birdies',
+    'par3_pars',
+    'par3_bogeys',
+    'par3_dbl_bogeys',
+    'par3_trp_bogeys',
+    'par3_qud_bogeys',
+
+    'par4_eagles',
+    'par4_birdies',
+    'par4_pars',
+    'par4_bogeys',
+    'par4_dbl_bogeys',
+    'par4_trp_bogeys',
+    'par4_qud_bogeys',
+
+    'par5_eagles',
+    'par5_birdies',
+    'par5_pars',
+    'par5_bogeys',
+    'par5_dbl_bogeys',
+    'par5_trp_bogeys',
+    'par5_qud_bogeys',
+
+    'front_eagles',
+    'front_birdies',
+    'front_pars',
+    'front_bogeys',
+    'front_dbl_bogeys',
+    'front_trp_bogeys',
+    'front_qud_bogeys',
+
     'back_eagles',
     'back_birdies',
     'back_pars',

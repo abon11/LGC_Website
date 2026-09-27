@@ -231,6 +231,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   background:var(--gp);
 }
 
+.career-rank-row {
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.career-rank-row::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 8px;
+  z-index: 0;
+  background: transparent;
+  transition: background .12s;
+}
+
+.career-rank-row:hover::before {
+  background: rgba(26, 58, 26, 0.08);
+}
+
+.career-rank-row.selected::before {
+  background: rgba(201, 168, 76, 0.16);
+}
+
+.career-rank-row.selected:hover::before {
+  background: rgba(201, 168, 76, 0.28);
+}
+
 .chart-wrap {
   position: relative;
   width: 100%;
@@ -1228,6 +1258,8 @@ let currentRankingConfig = null;
 let handicapChart = null;
 let frontBackAverageChart = null;
 let handicapOG12 = false;
+let currentYearlyChartConfig = null;
+let preserveStatsScroll = false;
 
 // DB
 const DB={
@@ -1966,6 +1998,12 @@ async function loadStatsPlayers() {
 }
 
 async function loadPlayerStats(folder) {
+  const savedScrollY =
+    preserveStatsScroll
+      ? window.scrollY
+      : null;
+  preserveStatsScroll = false;
+
   selectedStatsPlayerFolder = folder;
   const content = document.getElementById('stats-content');
 
@@ -2019,7 +2057,24 @@ async function loadPlayerStats(folder) {
     const teamYearlyText = await teamCsvResponse.text();
     const yearlyTeam = parseCSV(teamYearlyText);
 
-    renderPlayerStats(player.name, folder, allTime, yearly, yearlyTeam);
+    renderPlayerStats(
+      player.name,
+      folder,
+      allTime,
+      yearly,
+      yearlyTeam
+    );
+
+    if (savedScrollY != null) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({
+            top: savedScrollY,
+            behavior: 'instant'
+          });
+        });
+      });
+    }
 
   } catch (error) {
     console.error('Player stats error:', error);
@@ -3335,6 +3390,30 @@ function renderPlayerStats(
       );
 
     });
+
+  // ---------------------------------------------------------
+  // RESTORE YEARLY CHART AFTER SWITCHING PLAYERS
+  // ---------------------------------------------------------
+
+  if (
+    currentYearlyChartConfig &&
+    currentYearlyChartConfig.statsMode === statsMode
+  ) {
+    const yearlyStatButton =
+      document.querySelector(
+        `#stats-content .stat-header[data-stat="${currentYearlyChartConfig.stat}"]`
+      );
+
+    if (yearlyStatButton) {
+      showYearlyStat(
+        currentYearlyChartConfig.stat,
+        yearlyStatButton,
+        yearly,
+        yearlyTeam,
+        playerFolder
+      );
+    }
+  }
 
   // ---------------------------------------------------------
   // HANDICAP CHART
@@ -6130,6 +6209,13 @@ async function showYearlyStat(
     return;
   }
 
+  // Remember the currently displayed yearly statistic
+  // so it can follow us when switching players.
+  currentYearlyChartConfig = {
+    stat,
+    statsMode,
+  };
+
   // Highlight selected header
   document
     .querySelectorAll('#stats-content .stat-header')
@@ -6410,6 +6496,153 @@ async function showYearlyStat(
               }
             }
           }
+        },
+
+        onClick: function(event, elements) {
+
+          if (!elements.length) {
+            return;
+          }
+
+          const element = elements[0];
+
+          const datasetIndex =
+            element.datasetIndex;
+
+          const dataIndex =
+            element.index;
+
+          const clickedValue =
+            Number(
+              yearlyChart.data.datasets[
+                datasetIndex
+              ].data[dataIndex]
+            );
+
+          if (!Number.isFinite(clickedValue)) {
+            return;
+          }
+
+          /*
+           * Determine how many players share this
+           * exact value in this exact year.
+           */
+          const playersAtPoint =
+            yearlyChart.data.datasets.filter(dataset => {
+
+              const value =
+                Number(
+                  dataset.data[dataIndex]
+                );
+
+              return (
+                Number.isFinite(value) &&
+                value === clickedValue
+              );
+
+            });
+
+          /*
+           * Only navigate when exactly one player
+           * occupies the point.
+           */
+          if (playersAtPoint.length !== 1) {
+            return;
+          }
+
+          const targetDataset =
+            playersAtPoint[0];
+
+          /*
+           * The dataset label is the player's name.
+           * Convert that back to the stats player entry
+           * so we can get their folder.
+           */
+          const targetPlayer =
+            statsPlayers.find(
+              player =>
+                player.name === targetDataset.label
+            );
+
+          if (!targetPlayer) {
+            return;
+          }
+
+          /*
+           * Do not navigate if this is already the
+           * currently selected player.
+           */
+          if (
+            targetPlayer.folder ===
+            selectedStatsPlayerFolder
+          ) {
+            return;
+          }
+
+          /*
+           * Keep the current yearly statistic selected.
+           * renderPlayerStats() will automatically restore
+           * the chart after the new player's stats load.
+           */
+          currentYearlyChartConfig = {
+            stat,
+            statsMode
+          };
+
+          preserveStatsScroll = true;
+
+          loadPlayerStats(
+            targetPlayer.folder
+          );
+        },
+
+        onHover: function(event, elements) {
+
+          if (!elements.length) {
+            event.native.target.style.cursor =
+              'default';
+
+            return;
+          }
+
+          const element = elements[0];
+
+          const dataIndex =
+            element.index;
+
+          const clickedValue =
+            Number(
+              yearlyChart.data.datasets[
+                element.datasetIndex
+              ].data[dataIndex]
+            );
+
+          if (!Number.isFinite(clickedValue)) {
+            event.native.target.style.cursor =
+              'default';
+
+            return;
+          }
+
+          const playersAtPoint =
+            yearlyChart.data.datasets.filter(dataset => {
+
+              const value =
+                Number(
+                  dataset.data[dataIndex]
+                );
+
+              return (
+                Number.isFinite(value) &&
+                value === clickedValue
+              );
+
+            });
+
+          event.native.target.style.cursor =
+            playersAtPoint.length === 1
+              ? 'pointer'
+              : 'default';
         }
       }
     });
@@ -7617,6 +7850,42 @@ function isPersonalCareerStat(stat) {
   ].includes(stat);
 }
 
+async function openRankedPlayer(folder) {
+  const savedStatsMode = statsMode;
+  const savedScoringView = scoringView;
+  const savedRankingOG12 = rankingOG12;
+  const savedRankingConfig = currentRankingConfig
+    ? { ...currentRankingConfig }
+    : null;
+
+  /*
+   * Keep the view mode and scoring view exactly as they were.
+   */
+  statsMode = savedStatsMode;
+  scoringView = savedScoringView;
+  rankingOG12 = savedRankingOG12;
+
+  await loadPlayerStats(folder);
+
+  /*
+   * loadPlayerStats() has now rendered the new player's page.
+   * Restore the ranking itself on that page.
+   */
+  if (!savedRankingConfig) {
+    return;
+  }
+
+  showCareerRanking(
+    savedRankingConfig.stat,
+    savedRankingConfig.direction,
+    folder,
+    savedRankingConfig.labelOverride,
+    savedRankingConfig.rankingMode,
+    savedRankingConfig.totalStatOverride,
+    savedRankingConfig.sourceStatsMode
+  );
+}
+
 async function showCareerRanking(
   stat,
   direction,
@@ -8082,6 +8351,8 @@ async function showCareerRanking(
                 career-rank-row
                 ${selected ? 'selected' : ''}
               "
+              style="cursor:pointer;"
+              onclick="openRankedPlayer('${player.folder}')"
             >
 
               <div class="career-rank-number">

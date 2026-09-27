@@ -73,6 +73,7 @@ def load_courses(path):
             courses[row["course_id"]] = {
                 "course_id": row["course_id"],
                 "year": int(row["year"]),
+                "payjumps": number(row.get("payjumps")),
                 "name": row["course_name"],
                 "rating": number(row.get("rating")),
                 "slope": number(row.get("slope")),
@@ -156,6 +157,9 @@ def load_rounds(path, courses):
 def empty_player():
     return {
         "years_played": set(),
+
+        "total_paid": 0.0,
+        "total_earned": 0.0,
 
         # Solo statistics
         "solo_rounds": 0,
@@ -567,6 +571,10 @@ def calculate_all(rounds, courses):
         gross_ranked = rank_items(solo_rounds, "gross")
         net_ranked = rank_items(solo_rounds, "net")
 
+        # ---------------------------------------------------------
+        # SOLO GROSS / NET PLACEMENTS
+        # ---------------------------------------------------------
+
         for round_data, placement in gross_ranked:
             player = round_data["players"][0]
 
@@ -579,6 +587,96 @@ def calculate_all(rounds, courses):
             yearly[player][year]["net_placement"] = placement
             players[player]["net_placements"].append(placement)
 
+        # ---------------------------------------------------------
+        # MONEY
+        #
+        # Each player pays:
+        #     payjumps * net-place
+        #
+        # Tied players split the payment corresponding to all
+        # positions occupied by the tie.
+        #
+        # Example:
+        #   Two players tied for 3rd:
+        #   average of 3rd and 4th payments.
+        # ---------------------------------------------------------
+
+        if net_ranked:
+            course = courses[
+                net_ranked[0][0]["course_id"]
+            ]
+
+            payjumps = course.get("payjumps")
+
+            if payjumps is not None:
+                payjumps = float(payjumps)
+
+                # Group players by competition rank.
+                rank_groups = defaultdict(list)
+
+                for round_data, placement in net_ranked:
+                    rank_groups[placement].append(round_data)
+
+                for placement, tied_rounds in rank_groups.items():
+
+                    tie_count = len(tied_rounds)
+
+                    # Average the payments for all positions occupied
+                    # by this tie group.
+                    payment = (
+                        sum(
+                            payjumps * position
+                            for position in range(
+                                placement,
+                                placement + tie_count
+                            )
+                        )
+                        / tie_count
+                    )
+
+                    for round_data in tied_rounds:
+                        player = round_data["players"][0]
+
+                        players[player]["total_paid"] += payment
+
+        # ---------------------------------------------------------
+        # WINNINGS
+        #
+        # A team finishing 1st receives half of the total pot.
+        #
+        # Total pot = sum(payjumps * n), n=1..12
+        # Winner's share = half of that.
+        # ---------------------------------------------------------
+        # Find the winning team for this year.
+        team_rounds = team_rounds_by_year.get(year, [])
+
+        if team_rounds:
+            ranked_teams = rank_items(
+                team_rounds,
+                "gross"
+            )
+
+            if ranked_teams:
+                winning_team = ranked_teams[0][0]
+
+                course = courses[
+                    winning_team["course_id"]
+                ]
+
+                payjumps = course.get("payjumps")
+
+                if payjumps is not None:
+                    payjumps = float(payjumps)
+
+                    total_pot = sum(
+                        payjumps * position
+                        for position in range(1, 13)
+                    )
+
+                    winner_share = total_pot / 2
+
+                    for player in winning_team["players"]:
+                        players[player]["total_earned"] += winner_share
     # ---------------------------------------------------------
     # SOLO ROUND STATISTICS
     # ---------------------------------------------------------
@@ -1191,7 +1289,24 @@ def write_outputs(output_dir, yearly, players, winning_rounds, rounds, courses):
                 "years_played": sorted(
                     summary["years_played"]
                 ),
+
+                "total_paid": round(
+                    summary["total_paid"],
+                    2,
+                ),
+
+                "total_earned": round(
+                    summary["total_earned"],
+                    2,
+                ),
+
+                "net_earnings": round(
+                    summary["total_earned"]
+                    - summary["total_paid"],
+                    2,
+                ),
             },
+
             "solo": build_solo_stats(summary),
             "team": build_team_stats(summary),
         }

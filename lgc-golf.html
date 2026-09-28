@@ -127,14 +127,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .fab{position:fixed;bottom:calc(82px + var(--sb));right:18px;width:50px;height:50px;border-radius:50%;background:var(--gold);color:var(--gd);border:none;font-size:26px;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(201,168,76,.4);cursor:pointer;z-index:99;transition:transform .15s;}
 .fab:active{transform:scale(.92);}
 
-/* TRIP */
-.ir{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
-.ir:last-child{border-bottom:none;}
-.ii{width:34px;height:34px;border-radius:9px;background:var(--gp);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
-.il{font-size:10px;letter-spacing:.5px;color:var(--ts);margin-bottom:2px;font-weight:500;text-transform:uppercase;}
-.iv{font-size:14px;color:var(--td);}
-.ie{margin-left:auto;font-size:12px;color:var(--gl);padding:4px 10px;border:1px solid var(--gl);border-radius:8px;background:none;font-family:'DM Sans',sans-serif;cursor:pointer;flex-shrink:0;}
-
 /* YEAR ROW */
 .yr{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;cursor:pointer;}
 .yr:last-child{border-bottom:none;}
@@ -927,13 +919,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 
 <nav class="bnav">
   <button class="ni active" onclick="showPage('home',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
     Home
   </button>
-  <button class="ni" onclick="showPage('rules',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    Rules
-  </button>
+
   <button class="ni" onclick="showPage('standings',this)">
     <!-- Trophy silhouette -->
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
@@ -942,19 +934,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
       <path d="M17.5 4.5H19c.8 0 1.5.7 1.5 1.5v2c0 2-1.4 3.6-3 4V10.5c.9-.4 1.5-1.4 1.5-2.5V6.5h-1.5v-2z"/>
       <rect x="8" y="20" width="8" height="2.5" rx="1.2"/>
     </svg>
-    Standings
+    Tournament Insights
   </button>
+
   <button class="ni" onclick="showPage('stats',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <line x1="18" y1="20" x2="18" y2="10"/>
+      <line x1="12" y1="20" x2="12" y2="4"/>
+      <line x1="6" y1="20" x2="6" y2="14"/>
+    </svg>
     Stats
   </button>
-  <button class="ni" onclick="showPage('photos',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-    Photos
-  </button>
-  <button class="ni" onclick="showPage('trip',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    Trip
+
+  <button class="ni" onclick="showPage('rules',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>
+    Rules
   </button>
 </nav>
 
@@ -996,7 +995,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     <div class="rs">
       <div class="rst">Handicaps &amp; Payouts</div>
       <div class="rn" style="margin-bottom:12px;">Net score (gross - handicap) determines your contribution. Pay in $3 increments — lowest net pays $3, up to $36 for last. Add $1 flat for trophy engraving.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        column-gap:32px;
+      ">
         <div class="pr"><span class="pp">1st</span><span>$4</span></div><div class="pr"><span class="pp">2nd</span><span>$7</span></div>
         <div class="pr"><span class="pp">3rd</span><span>$10</span></div><div class="pr"><span class="pp">4th</span><span>$13</span></div>
         <div class="pr"><span class="pp">5th</span><span>$16</span></div><div class="pr"><span class="pp">6th</span><span>$19</span></div>
@@ -1076,29 +1079,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   </div>
 </main>
 
-<!-- PHOTOS -->
-<main id="page-photos" class="pg">
-  <div class="es" style="padding-top:60px;">
-    <div class="ei">📸</div>
-    <div class="et">Photo Album coming soon</div>
-    <div class="esub">Year-by-year photos and memories will live here.</div>
-  </div>
-</main>
-
-<!-- TRIP -->
-<main id="page-trip" class="pg">
-  <div class="card">
-    <div class="ct" id="trip-yr-lbl">2026 Trip</div>
-    <div class="ir"><div class="ii">📅</div><div style="flex:1;"><div class="il">Dates</div><div class="iv" id="tf-dates">Not set</div></div><button class="ie" onclick="editTrip('dates')">Edit</button></div>
-    <div class="ir"><div class="ii">🏠</div><div style="flex:1;"><div class="il">Host / Airbnb</div><div class="iv" id="tf-airbnb">Not set</div></div><button class="ie" onclick="editTrip('airbnb')">Edit</button></div>
-    <div class="ir"><div class="ii">📍</div><div style="flex:1;"><div class="il">Address</div><div class="iv" id="tf-address">Not set</div></div><button class="ie" onclick="editTrip('address')">Edit</button></div>
-    <div class="ir"><div class="ii">🔑</div><div style="flex:1;"><div class="il">Airbnb Code</div><div class="iv" id="tf-code">Not set</div></div><button class="ie" onclick="editTrip('code')">Edit</button></div>
-    <div class="ir"><div class="ii">⛳</div><div style="flex:1;"><div class="il">Course</div><div class="iv" id="tf-course">Not set</div></div><button class="ie" onclick="editTrip('course')">Edit</button></div>
-    <div class="ir"><div class="ii">⏰</div><div style="flex:1;"><div class="il">Tee Times</div><div class="iv" id="tf-teetimes">Not set</div></div><button class="ie" onclick="editTrip('teetimes')">Edit</button></div>
-    <div class="ir" style="border-bottom:none;"><div class="ii">📝</div><div style="flex:1;"><div class="il">Notes</div><div class="iv" id="tf-notes">Not set</div></div><button class="ie" onclick="editTrip('notes')">Edit</button></div>
-  </div>
-</main>
-
 <!-- MODALS -->
 <div class="mo" id="mod-year"><div class="ms"><div class="mh"></div><div class="mt">Select Year</div><div id="yr-list"></div><div style="height:10px;"></div><button class="bo" onclick="closeM('mod-year')">Close</button></div></div>
 
@@ -1123,11 +1103,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   <div class="fg"><label class="fl">Handicap</label><input type="number" class="fi" id="pl-hcp"></div>
   <div class="fg"><label class="fl">Buy-in ($)</label><input type="number" class="fi" id="pl-buyin"></div>
   <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-player')">Cancel</button><button class="bp" style="flex:2;" onclick="savePlayer()">Add</button></div>
-</div></div>
-
-<div class="mo" id="mod-trip"><div class="ms"><div class="mh"></div><div class="mt" id="trip-edit-lbl">Edit</div>
-  <div class="fg"><input type="text" class="fi" id="trip-edit-val"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-trip')">Cancel</button><button class="bp" style="flex:2;" onclick="saveTripF()">Save</button></div>
 </div></div>
 
 <div class="mo" id="mod-money"><div class="ms"><div class="mh"></div><div class="mt">Money Info</div>
@@ -1313,8 +1288,7 @@ function setStatsMode(mode) {
   }
 }
 
-let AY=2026, players=[], scores={}, teams=[], tripInfo={}, editTripKey='';
-const TLABELS={dates:'Dates',airbnb:'Host / Airbnb',address:'Address',code:'Airbnb Code',course:'Course',teetimes:'Tee Times',notes:'Notes'};
+let AY=2026, players=[], scores={}, teams=[];
 
 // NAV
 function showPage(n,btn){
@@ -1324,7 +1298,6 @@ function showPage(n,btn){
   btn.classList.add('active');
   if(n==='home')      renderHome();
   if(n==='standings') renderStandings();
-  if(n==='trip')      renderTrip();
 }
 
 // YEAR
@@ -1333,7 +1306,6 @@ function loadYear(yr){
   players =DB.get('players_'+yr) ||[];
   scores  =DB.get('scores_'+yr)  ||{};
   teams   =DB.get('teams_'+yr)   ||[];
-  tripInfo=DB.get('trip_'+yr)    ||{};
   document.getElementById('active-year-label').textContent=yr;
 }
 
@@ -1684,32 +1656,6 @@ function renderHome(){
       <div style="font-size:13px;text-align:right;min-width:62px;" class="${nc}">${ns}</div>
     </div>`;
   }).join('')}`;
-}
-
-// TRIP
-function renderTrip(){
-  const t=DB.get('trip_'+AY)||{};
-  document.getElementById('trip-yr-lbl').textContent=AY+' Trip';
-  Object.keys(TLABELS).forEach(f=>{const el=document.getElementById('tf-'+f);if(el)el.textContent=t[f]||'Not set';});
-}
-
-function editTrip(f){
-  editTripKey=f;
-  document.getElementById('trip-edit-lbl').textContent='Edit '+TLABELS[f];
-  document.getElementById('trip-edit-val').value=(DB.get('trip_'+AY)||{})[f]||'';
-  openM('mod-trip');
-}
-
-function saveTripF(){
-  const t=DB.get('trip_'+AY)||{};
-  t[editTripKey]=document.getElementById('trip-edit-val').value.trim();
-  DB.set('trip_'+AY,t); tripInfo=t;
-  if(editTripKey==='course'){
-    const all=DB.get('years')||[];
-    const y=all.find(y=>y.year===AY);
-    if(y){y.course=t.course;DB.set('years',all);}
-  }
-  closeM('mod-trip'); renderTrip(); renderHome();
 }
 
 // MONEY

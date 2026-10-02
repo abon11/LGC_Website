@@ -89,15 +89,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .fi{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--td);background:white;outline:none;-webkit-appearance:none;}
 .fi:focus{border-color:var(--gl);}
 
-/* TEAM */
-.tc{background:var(--gd);border-radius:var(--r);padding:15px;margin-bottom:10px;color:white;}
-.tl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;font-weight:500;}
-.tps{display:flex;gap:10px;align-items:center;}
-.tp{flex:1;background:rgba(255,255,255,.08);border-radius:10px;padding:10px;}
-.tpr{font-size:9px;opacity:.5;letter-spacing:.5px;text-transform:uppercase;}
-.tpn{font-size:13px;font-weight:500;margin-top:2px;}
-.tpsc{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold);margin-top:4px;}
-
 /* MODAL */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center;}
 .mo.open{display:flex;}
@@ -130,7 +121,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 /* YEAR ROW */
 .yr{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:12px;cursor:pointer;}
 .yr:last-child{border-bottom:none;}
-.yt{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gd);min-width:50px;}
 
 /* MONEY */
 .np{color:#2d7a2d;font-weight:600;}.nn{color:#c0392b;font-weight:600;}.nz{color:var(--ts);}
@@ -144,12 +134,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .ht tr:last-child td{border-bottom:none;}
 
 /* STATS */
-.stats-grid {
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:8px;
-}
-
 .stat-box {
   background:var(--gp);
   border-radius:10px;
@@ -169,18 +153,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   font-size:20px;
   font-weight:700;
   color:var(--gd);
-}
-
-@media (min-width:700px) {
-  .stats-grid {
-    grid-template-columns:repeat(4, 1fr);
-  }
-}
-
-.stats-overview {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
 }
 
 .stats-chart-card {
@@ -224,6 +196,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 }
 
 .career-rank-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
   cursor: pointer;
   border-radius: 8px;
 }
@@ -258,13 +235,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   width: 100%;
   max-width: 320px;
   margin: 0 auto;
-}
-
-@media (min-width:700px) {
-  .stats-overview {
-    grid-template-columns: 1.4fr 1fr;
-    align-items: start;
-  }
 }
 
 .years-bar {
@@ -342,9 +312,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 }
 
 .scorecard-course {
-  font-size: 12px;
-  color: var(--ts);
-  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tm);
+  margin-top: 4px;
 }
 
 .scorecard-close {
@@ -436,13 +407,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   line-height: 1;
 }
 
-/* Birdie */
-.score.birdie .score-mark {
-  border: 1.2px solid var(--gd);
-  border-radius: 50%;
-}
-
-/* Eagle */
+/* Birdie / Eagle (eagle adds an inner ring) */
+.score.birdie .score-mark,
 .score.eagle .score-mark {
   border: 1.2px solid var(--gd);
   border-radius: 50%;
@@ -456,12 +422,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   border-radius: 50%;
 }
 
-/* Bogey */
-.score.bogey .score-mark {
-  border: 1.2px solid var(--gd);
-}
-
-/* Double bogey+ */
+/* Bogey / Double bogey+ (double adds an inner square) */
+.score.bogey .score-mark,
 .score.double-bogey .score-mark {
   border: 1.2px solid var(--gd);
 }
@@ -492,31 +454,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   background: var(--gd);
   color: rgba(255,255,255,.8);
   font-weight: 600;
+  font-size: 9px;
+  letter-spacing: .5px;
+  text-transform: uppercase;
 }
 
 .scorecard-table td.summary {
   background: var(--gp);
   color: var(--gd);
   font-weight: 600;
-}
-
-.scorecard-table td.summary {
   font-family: 'DM Sans', sans-serif;
   font-size: 15px;
 }
 
-.scorecard-table th.summary {
-  color: rgba(255,255,255,.8);
-  font-size: 9px;
-  letter-spacing: .5px;
-  text-transform: uppercase;
-}
-
-.scorecard-table td.label {
-  background: var(--gp);
-  color: var(--gd);
-}
-
+/* Must stay after .par-row td so the Par label keeps weight 600. */
 .scorecard-table td.label,
 .scorecard-table th.label {
   font-weight: 600;
@@ -537,13 +488,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .scorecard-title-dot {
   color: var(--gold);
   font-size: 24px;
-}
-
-.scorecard-course {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--tm);
-  margin-top: 4px;
 }
 
 .scorecard-course-info {
@@ -643,35 +587,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   font-size:11px;
 }
 
-.career-rank-row {
-  display:flex;
-  align-items:center;
-  gap:7px;
-  padding:6px 0;
-}
-
-.career-rank-row {
-  position:relative;
-  display:flex;
-  align-items:center;
-  gap:7px;
-  padding:6px 0;
-}
-
 .career-rank-row.selected {
   background:transparent;
-}
-
-.career-rank-row.selected::before {
-  content:'';
-  position:absolute;
-  left:-6px;
-  right:-6px;
-  top:1px;
-  bottom:1px;
-  background:rgba(201,168,76,.16);
-  border-radius:8px;
-  z-index:0;
 }
 
 .career-rank-row > * {
@@ -958,18 +875,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 </nav>
 
 <!-- HOME -->
-<main id="page-home" class="pg active">
-  <div class="sc" style="margin-bottom:12px;">
-    <div class="sl">Course — <span id="home-yr-label">2026</span></div>
-    <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:white;line-height:1.2;" id="home-course">—</div>
-    <div class="sd" id="home-loc"></div>
-  </div>
-  <div class="card"><div class="ct">Day 1 Leader</div><div id="home-d1"></div></div>
-  <div class="card"><div class="ct">Scramble Champions</div><div id="home-scram"></div></div>
-  <div class="card"><div class="ct">Past Champions</div><div id="home-champs"></div></div>
-  <div class="card"><div class="ct">All-Time Records</div><div id="home-at"></div></div>
-  <div class="card"><div class="ct">All-Time Money</div><div id="home-money"></div></div>
-</main>
+<main id="page-home" class="pg active"></main>
 
 <!-- RULES -->
 <main id="page-rules" class="pg">
@@ -1080,15 +986,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 </main>
 
 <!-- MODALS -->
-<div class="mo" id="mod-year"><div class="ms"><div class="mh"></div><div class="mt">Select Year</div><div id="yr-list"></div><div style="height:10px;"></div><button class="bo" onclick="closeM('mod-year')">Close</button></div></div>
-
-<div class="mo" id="mod-add-year"><div class="ms"><div class="mh"></div><div class="mt">Add Year</div>
-  <div class="fg"><label class="fl">Year</label><input type="number" class="fi" id="ny-yr" placeholder="e.g. 2027"></div>
-  <div class="fg"><label class="fl">Course</label><input type="text" class="fi" id="ny-course" placeholder="e.g. Pebble Beach"></div>
-  <div class="fg"><label class="fl">Winning Team</label><input type="text" class="fi" id="ny-winner" placeholder="e.g. Bon & Baker"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-add-year')">Cancel</button><button class="bp" style="flex:2;" onclick="saveNewYear()">Add</button></div>
-</div></div>
-
 <div class="mo" id="mod-score"><div class="ms"><div class="mh"></div><div class="mt">Enter Score</div>
   <div class="fg"><label class="fl">Player</label><select class="fi" id="sc-player"><option value="">Select…</option></select></div>
   <div class="fg"><label class="fl">Day</label><select class="fi" id="sc-day"><option value="1">Day 1 — Stroke Play</option><option value="2">Day 2 — Scramble</option></select></div>
@@ -1242,6 +1139,167 @@ const DB={
   set(k,v){localStorage.setItem('lgc_'+k,JSON.stringify(v));}
 };
 
+// ---------------------------------------------------------
+// DATA FILES
+//
+// The CSV / JSON files don't change while the page is open,
+// so each one is fetched once and shared by every chart,
+// ranking and scorecard. Failed requests are not cached,
+// so they are retried on the next call.
+// ---------------------------------------------------------
+
+const dataCache = new Map();
+
+function fetchDataFile(path) {
+  if (!dataCache.has(path)) {
+    const request = fetch(path, { cache: 'no-store' })
+      .then(async response => {
+        if (!response.ok) {
+          return { ok: false };
+        }
+
+        const data = path.endsWith('.json')
+          ? await response.json()
+          : parseCSV(await response.text());
+
+        return { ok: true, data };
+      });
+
+    request.then(
+      result => { if (!result.ok) dataCache.delete(path); },
+      () => dataCache.delete(path)
+    );
+
+    dataCache.set(path, request);
+  }
+
+  return dataCache.get(path);
+}
+
+async function loadData(path, errorMessage = `Could not load ${path}`) {
+  const result = await fetchDataFile(path);
+
+  if (!result.ok) {
+    throw new Error(errorMessage);
+  }
+
+  return result.data;
+}
+
+function loadAllTimeStats(player) {
+  return loadData(
+    `stats/${player.folder}/all_time_stats.json`,
+    `Could not load ${player.name}'s stats`
+  );
+}
+
+function parseRoundPlayers(round) {
+  try {
+    const roundPlayers = JSON.parse(round.player || '[]');
+
+    return Array.isArray(roundPlayers) ? roundPlayers : null;
+  } catch {
+    return null;
+  }
+}
+
+function getModeRounds(section, mode) {
+  return mode === 'team'
+    ? Number(section.team_rounds) || 0
+    : Number(section.solo_rounds) || 0;
+}
+
+/*
+ * OG 12 = twelve players with the most rounds played
+ * in the given stats mode (ties keep players.json order).
+ */
+function topTwelveByRounds(players) {
+  return [...players]
+    .sort((a, b) => b.rounds - a.rounds)
+    .slice(0, 12);
+}
+
+// ---------------------------------------------------------
+// SCORING CATEGORIES
+// ---------------------------------------------------------
+
+const SCORING_CATEGORIES = [
+  { label: 'Eagles',        field: 'eagles',     direction: 'higher', color: '#b34faf' },
+  { label: 'Birdies',       field: 'birdies',    direction: 'higher', color: '#6cd1e0' },
+  { label: 'Pars',          field: 'pars',       direction: 'higher', color: '#3ab57c' },
+  { label: 'Bogeys',        field: 'bogeys',     direction: 'lower',  color: '#D9A441' },
+  { label: 'Double Bogeys', field: 'dbl_bogeys', direction: 'lower',  color: '#C94636' },
+  { label: 'Triple Bogeys', field: 'trp_bogeys', direction: 'lower',  color: '#61201d' },
+  { label: 'Quads+',        field: 'qud_bogeys', direction: 'lower',  color: '#000000' }
+];
+
+// Stat-name prefix for each slice of the scoring distribution.
+const SCORING_SEGMENTS = [
+  { prefix: 'total_', label: '' },
+  { prefix: 'par3_',  label: 'Par 3 ' },
+  { prefix: 'par4_',  label: 'Par 4 ' },
+  { prefix: 'par5_',  label: 'Par 5 ' },
+  { prefix: 'front_', label: 'Front 9 ' },
+  { prefix: 'back_',  label: 'Back 9 ' }
+];
+
+// e.g. total_birdies, par3_dbl_bogeys, back_qud_bogeys
+const SCORING_DISTRIBUTION_STATS = SCORING_SEGMENTS.flatMap(
+  segment => SCORING_CATEGORIES.map(
+    category => `${segment.prefix}${category.field}`
+  )
+);
+
+// ---------------------------------------------------------
+// SHARED CHART HELPERS
+// ---------------------------------------------------------
+
+const HOLE_NUMBERS = Array.from({ length: 18 }, (_, index) => index + 1);
+
+function formatRelativeToParTick(value) {
+  return value === 0
+    ? 'E'
+    : value > 0
+      ? `+${value}`
+      : value;
+}
+
+function formatRelativeToPar(value) {
+  return value === 0
+    ? 'E'
+    : value > 0
+      ? `+${value.toFixed(2)}`
+      : value.toFixed(2);
+}
+
+function setPointerCursor(event, elements) {
+  event.native.target.style.cursor =
+    elements.length
+      ? 'pointer'
+      : 'default';
+}
+
+function lineDataset(
+  label,
+  data,
+  color,
+  borderWidth,
+  pointRadius,
+  pointHoverRadius
+) {
+  return {
+    label,
+    data,
+    borderColor: color,
+    backgroundColor: color,
+    borderWidth,
+    pointRadius,
+    pointHoverRadius,
+    tension: 0.25,
+    spanGaps: false
+  };
+}
+
 function openStatsModePicker() {
   updateStatsModePicker();
   openM('mod-stats-mode');
@@ -1296,7 +1354,6 @@ function showPage(n,btn){
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   btn.classList.add('active');
-  if(n==='home')      renderHome();
   if(n==='standings') renderStandings();
 }
 
@@ -1306,34 +1363,6 @@ function loadYear(yr){
   players =DB.get('players_'+yr) ||[];
   scores  =DB.get('scores_'+yr)  ||{};
   teams   =DB.get('teams_'+yr)   ||[];
-  document.getElementById('active-year-label').textContent=yr;
-}
-
-function openYearPicker(){
-  const all=DB.get('years')||[];
-  document.getElementById('yr-list').innerHTML=
-    all.map(y=>`<div class="yr" onclick="switchYear(${y.year});closeM('mod-year');">
-      <span class="yt">${y.year}</span>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:500;">${y.course||'Course TBD'}</div>
-      <div style="font-size:12px;color:var(--gold);">${y.winner?'🏆 '+y.winner:'In progress'}</div></div>
-      ${y.year===AY?'<span style="color:var(--gold);">✓</span>':'<span style="color:var(--ts);">›</span>'}
-    </div>`).join('')
-    +`<div style="height:12px;"></div><button class="bo" onclick="closeM('mod-year');openM('mod-add-year');">+ Add Year</button>`;
-  openM('mod-year');
-}
-
-function switchYear(yr){loadYear(yr);renderHome();}
-
-function saveNewYear(){
-  const yr=parseInt(document.getElementById('ny-yr').value);
-  if(!yr)return;
-  const all=DB.get('years')||[];
-  if(!all.find(y=>y.year===yr)){
-    all.push({year:yr,course:document.getElementById('ny-course').value.trim(),winner:document.getElementById('ny-winner').value.trim()});
-    all.sort((a,b)=>b.year-a.year);
-    DB.set('years',all);
-  }
-  closeM('mod-add-year');
 }
 
 // PLAYERS
@@ -1367,7 +1396,7 @@ function saveScore(){
   scores[name]['day'+day]={total:gross,net,hcp:p?p.hcp:0,birdies:birds,holes:[]};
   DB.set('scores_'+AY,scores);
   ['sc-gross','sc-net','sc-birds'].forEach(id=>document.getElementById(id).value='');
-  closeM('mod-score'); renderStandings(); renderHome();
+  closeM('mod-score'); renderStandings();
 }
 
 // TEAMS
@@ -1507,157 +1536,6 @@ function renderStMoney(){
   <div style="height:70px;"></div>`;
 }
 
-// HOME
-function renderHome(){
-  const yr=AY;
-  const trip=DB.get('trip_'+yr)||{};
-  const sc  =DB.get('scores_'+yr)||{};
-  const tm  =DB.get('teams_'+yr)||[];
-  const pl  =DB.get('players_'+yr)||[];
-  const yrs =DB.get('years')||[];
-  const yrObj=yrs.find(y=>y.year===yr)||{};
-
-  document.getElementById('home-yr-label').textContent=yr;
-  document.getElementById('home-course').textContent=trip.course||yrObj.course||'Course TBD';
-  document.getElementById('home-loc').textContent=trip.address||'';
-
-  // Day 1 leader
-  const d1el=document.getElementById('home-d1');
-  const d1=pl.map(p=>({name:p.name,d:sc[p.name]?.day1})).filter(e=>e.d).sort((a,b)=>a.d.total-b.d.total);
-  if(!d1.length){d1el.innerHTML=`<div class="esub" style="padding:8px 0;">No scores yet</div>`;}
-  else{const t=d1[0];d1el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;">
-    <span style="font-size:26px;">🥇</span>
-    <div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gd);">${t.name}</div>
-    <div style="font-size:13px;color:var(--ts);">Gross ${t.d.total} · Net ${t.d.net}</div></div></div>`;}
-
-  // Scramble champ
-  const scel=document.getElementById('home-scram');
-  const wt=[...tm].filter(t=>t.teamScore).sort((a,b)=>a.teamScore-b.teamScore)[0];
-  if(!wt){scel.innerHTML=`<div class="esub" style="padding:8px 0;">${tm.length?'Scores not entered yet':'Teams not set yet'}</div>`;}
-  else{
-    const rel=wt.scrambleRel!=null?(wt.scrambleRel===0?'E':wt.scrambleRel>0?'+'+wt.scrambleRel:wt.scrambleRel):'';
-    scel.innerHTML=`<div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-size:26px;">🏆</span>
-      <div><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gd);">${wt.captain} &amp; ${wt.crew}</div>
-      <div style="font-size:13px;color:var(--ts);">${wt.teamScore}${rel?' ('+rel+')':''}</div></div></div>`;
-  }
-
-  // Past champs
-  const chel=document.getElementById('home-champs');
-  const past=yrs.filter(y=>y.winner&&y.year!==yr).sort((a,b)=>b.year-a.year);
-  if(!past.length){chel.innerHTML=`<div class="esub" style="padding:8px 0;">No past champions yet</div>`;}
-  else{chel.innerHTML=past.map(y=>{
-    const t2=(DB.get('teams_'+y.year)||[]).filter(t=>t.teamScore).sort((a,b)=>a.teamScore-b.teamScore)[0];
-    const s=t2?(` · ${t2.teamScore}`+(t2.scrambleRel!=null?' ('+(t2.scrambleRel===0?'E':t2.scrambleRel>0?'+'+t2.scrambleRel:t2.scrambleRel)+')':'')):'';
-    return `<div class="lbr">
-      <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--ts);min-width:44px;">${y.year}</div>
-      <div style="flex:1;"><div class="pn">🏆 ${y.winner}</div><div class="ps">${y.course||''}${s}</div></div>
-    </div>`;
-  }).join('');}
-
-  // All-time records
-  const atel=document.getElementById('home-at');
-  const rec=DB.get('alltime_records');
-  const atp=DB.get('alltime_players')||[];
-  const topG=atp.length?[...atp].sort((a,b)=>a.allTimeScore-b.allTimeScore)[0]:null;
-  const topB=atp.length?[...atp].sort((a,b)=>b.birdies-a.birdies)[0]:null;
-  const topW=atp.length?[...atp].sort((a,b)=>b.wins-a.wins)[0]:null;
-  if(!rec){atel.innerHTML=`<div class="esub" style="padding:8px 0;">No records yet</div>`;}
-  else{
-    atel.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Gross</div>
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestGross.score}</div>
-        <div style="font-size:11px;color:var(--ts);">${rec.lowestGross.player} · ${rec.lowestGross.year}</div>
-      </div>
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Net</div>
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestNet.score}</div>
-        <div style="font-size:11px;color:var(--ts);">${rec.lowestNet.player} · ${rec.lowestNet.year}</div>
-      </div>
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Best Team</div>
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">${rec.lowestTeamScore.score}</div>
-        <div style="font-size:11px;color:var(--ts);">${rec.lowestTeamScore.players} · ${rec.lowestTeamScore.year}</div>
-      </div>
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">LGC Birdies</div>
-        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold);">${rec.totalLGCBirdies} 🐦</div>
-        <div style="font-size:11px;color:var(--ts);">all time</div>
-      </div>
-    </div>
-    ${topG?`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <div style="background:var(--gd);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Most Wins</div>
-        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topW.wins}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topW.name}</div>
-      </div>
-      <div style="background:var(--gd);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Top Birdies</div>
-        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topB.birdies}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topB.name}</div>
-      </div>
-      <div style="background:var(--gd);border-radius:10px;padding:11px;">
-        <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">Best Scorer</div>
-        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);">${topG.allTimeScore}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.55);">${topG.name}</div>
-      </div>
-    </div>`:''}`;
-  }
-
-  // All-time money
-  const mel=document.getElementById('home-money');
-  const mYrs=[2023,2024,2025];
-  const ledger={};
-  mYrs.forEach(y=>{
-    const m=DB.get('money_'+y); const p2=DB.get('players_'+y)||[];
-    if(!m)return;
-    p2.forEach(p=>{
-      if(!p.buyin&&!(m.winners||[]).includes(p.name))return;
-      if(!ledger[p.name])ledger[p.name]={paid:0,earned:0,wins:0};
-      const isW=(m.winners||[]).includes(p.name);
-      ledger[p.name].paid+=(p.buyin||0);
-      ledger[p.name].earned+=isW?(m.perWinner||0):0;
-      if(isW)ledger[p.name].wins++;
-    });
-  });
-  const mrows=Object.entries(ledger).map(([n,d])=>({name:n,...d,net:d.earned-d.paid})).sort((a,b)=>b.net-a.net);
-  const bw=mrows[0]; const bl=[...mrows].sort((a,b)=>a.net-b.net)[0];
-  const tot=mYrs.reduce((s,y)=>{const m=DB.get('money_'+y);return s+(m?m.totalPot:0);},0);
-
-  mel.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-    ${bw?`<div style="background:var(--gold);border-radius:10px;padding:11px;">
-      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gd);opacity:.65;margin-bottom:3px;">All-Time Winner</div>
-      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--gd);">${bw.name}</div>
-      <div style="font-size:12px;font-weight:600;color:var(--gd);">+$${bw.net.toFixed(2)}</div>
-    </div>`:''}
-    ${bl?`<div style="background:var(--gd);border-radius:10px;padding:11px;">
-      <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;">All-Time Loser</div>
-      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--gold);">${bl.name}</div>
-      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.6);">-$${Math.abs(bl.net).toFixed(2)}</div>
-    </div>`:''}
-  </div>
-  <div style="background:var(--gp);border-radius:10px;padding:11px;margin-bottom:10px;">
-    <div style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);margin-bottom:3px;">Total Wagered</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gd);">$${tot}</div>
-    <div style="font-size:11px;color:var(--ts);">across all years</div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr auto auto;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border);">
-    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);">Player</div>
-    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;padding-right:10px;">Paid In</div>
-    <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;">Net</div>
-  </div>
-  ${mrows.map(r=>{
-    const nc=r.net>0?'np':r.net<0?'nn':'nz';
-    const ns=r.net>0?'+$'+r.net.toFixed(2):r.net<0?'-$'+Math.abs(r.net).toFixed(2):'$0';
-    return `<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
-      <div style="font-size:13px;font-weight:${r.wins?'600':'400'};color:var(--td);">${r.name}${r.wins?(' 🏆').repeat(Math.min(r.wins,3)):''}</div>
-      <div style="font-size:12px;color:var(--ts);text-align:right;padding-right:10px;">-$${r.paid.toFixed(2)}</div>
-      <div style="font-size:13px;text-align:right;min-width:62px;" class="${nc}">${ns}</div>
-    </div>`;
-  }).join('')}`;
-}
-
 // MONEY
 function openMoneyModal(){
   const m=DB.get('money_'+AY)||{};
@@ -1681,52 +1559,13 @@ function saveMoney(){
   const all=DB.get('years')||[];
   const y=all.find(y=>y.year===AY);
   if(y&&m.winners.length){y.winner=m.winners.join(' & ');DB.set('years',all);}
-  closeM('mod-money'); renderStMoney(); renderHome();
+  closeM('mod-money'); renderStMoney();
 }
 
 // MODALS
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
-// SEED
-function lowestBy(players, field, section = 'solo') {
-  const valid = players.filter(
-    player => player[section]?.[field] != null
-  );
-
-  if (!valid.length) return [];
-
-  const best = Math.min(
-    ...valid.map(player => Number(player[section][field]))
-  );
-
-  return valid.filter(
-    player => Number(player[section][field]) === best
-  );
-}
-
-function highestBy(players, field, section = 'solo') {
-  const valid = players.filter(
-    player => player[section]?.[field] != null
-  );
-
-  if (!valid.length) return [];
-
-  const best = Math.max(
-    ...valid.map(player => Number(player[section][field]))
-  );
-
-  return valid.filter(
-    player => Number(player[section][field]) === best
-  );
-}
-
-function playerNames(players) {
-  return players.length
-    ? players.map(player => player.personal?.player || '—').join(' & ')
-    : '—';
-}
 
 function openStatsPlayerPicker() {
   const list = document.getElementById('stats-player-list');
@@ -1782,151 +1621,11 @@ function openStatsPlayerPicker() {
   openM('mod-stats-player');
 }
 
-async function renderAllTimeRecords() {
-  const element = document.getElementById('home-at');
-
-  try {
-    const playersResponse = await fetch(
-      'stats/players.json',
-      { cache: 'no-store' }
-    );
-
-    if (!playersResponse.ok) {
-      throw new Error('Could not load players.json');
-    }
-
-    const playerList = await playersResponse.json();
-
-    const playerStats = await Promise.all(
-      playerList.map(async player => {
-        const response = await fetch(
-          `stats/${encodeURIComponent(player.folder)}/all_time_stats.json`,
-          { cache: 'no-store' }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Could not load ${player.name}'s stats`);
-        }
-
-        return response.json();
-      })
-    );
-
-    const bestGrossPlayers = lowestBy(
-      playerStats,
-      'best_gross_score',
-      'solo'
-    );
-
-    const bestNetPlayers = lowestBy(
-      playerStats,
-      'best_net_score',
-      'solo'
-    );
-
-    const bestAverageGrossPlayers = lowestBy(
-      playerStats,
-      'average_gross_score',
-      'solo'
-    );
-
-    const mostWinsPlayers = highestBy(
-      playerStats,
-      'team_wins',
-      'team'
-    );
-
-    const mostBirdiesPlayers = highestBy(
-      playerStats,
-      'total_birdies',
-      'solo'
-    );
-
-    const totalBirdies = playerStats.reduce(
-      (total, player) =>
-        total + (Number(player.solo?.total_birdies) || 0),
-      0
-    );
-
-    element.innerHTML = `
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div class="stat-box-label">Best Gross</div>
-        <div class="stat-box-value">
-          ${bestGrossPlayers[0]?.solo?.best_gross_score ?? '—'}
-        </div>
-        <div class="ps">
-          ${playerNames(bestGrossPlayers)}
-        </div>
-      </div>
-
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div class="stat-box-label">Best Net</div>
-        <div class="stat-box-value">
-          ${bestNetPlayers[0]?.solo?.best_net_score ?? '—'}
-        </div>
-        <div class="ps">
-          ${playerNames(bestNetPlayers)}
-        </div>
-      </div>
-
-      <div style="background:var(--gp);border-radius:10px;padding:11px;">
-        <div class="stat-box-label">Best Average Gross</div>
-        <div class="stat-box-value">
-          ${bestAverageGrossPlayers[0]?.solo?.average_gross_score ?? '—'}
-        </div>
-        <div class="ps">
-          ${playerNames(bestAverageGrossPlayers)}
-        </div>
-      </div>
-
-      <div style="background:var(--gd);border-radius:10px;padding:11px;">
-        <div class="stat-box-label" style="color:white;">
-          Most Wins
-        </div>
-        <div class="stat-box-value" style="color:var(--gold);">
-          ${mostWinsPlayers[0]?.team?.team_wins ?? '—'} 🏆
-        </div>
-        <div style="font-size:11px;color:white;">
-          ${playerNames(mostWinsPlayers)}
-        </div>
-      </div>
-
-      <div style="background:var(--gd);border-radius:10px;padding:11px;">
-        <div class="stat-box-label" style="color:white;">
-          Most Birdies
-        </div>
-        <div class="stat-box-value" style="color:var(--gold);">
-          ${mostBirdiesPlayers[0]?.solo?.total_birdies ?? '—'} 🐦
-        </div>
-        <div style="font-size:11px;color:white;">
-          ${playerNames(mostBirdiesPlayers)}
-        </div>
-      </div>
-    `;
-  } catch (error) {
-    console.error('All-time records error:', error);
-
-    element.innerHTML = `
-      <div class="esub" style="padding:8px 0;">
-        Record book unavailable
-      </div>
-    `;
-  }
-}
-
 let statsPlayers = [];
 
 async function loadStatsPlayers() {
   try {
-    const response = await fetch('stats/players.json', {
-      cache: 'no-store'
-    });
-
-    if (!response.ok) {
-      throw new Error('Could not load stats/players.json');
-    }
-
-    statsPlayers = await response.json();
+    statsPlayers = await loadData('stats/players.json');
 
   } catch (error) {
     console.error(error);
@@ -1969,39 +1668,15 @@ async function loadPlayerStats(folder) {
   const player = statsPlayers.find(p => p.folder === folder);
 
   try {
-    const [
-      jsonResponse,
-      csvResponse,
-      teamCsvResponse
-    ] = await Promise.all([
-      fetch(`stats/${folder}/all_time_stats.json`, {
-        cache: 'no-store'
-      }),
-
-      fetch(`stats/${folder}/yearly_stats.csv`, {
-        cache: 'no-store'
-      }),
-
-      fetch(`stats/${folder}/yearly_team_stats.csv`, {
-        cache: 'no-store'
-      })
-    ]);
-
-    if (
-      !jsonResponse.ok ||
-      !csvResponse.ok ||
-      !teamCsvResponse.ok
-    ) {
-      throw new Error('Could not load player statistics');
-    }
-
-    const allTime = await jsonResponse.json();
-
-    const yearlyText = await csvResponse.text();
-    const yearly = parseCSV(yearlyText);
-
-    const teamYearlyText = await teamCsvResponse.text();
-    const yearlyTeam = parseCSV(teamYearlyText);
+    const [allTime, yearly, yearlyTeam] = await Promise.all(
+      [
+        `stats/${folder}/all_time_stats.json`,
+        `stats/${folder}/yearly_stats.csv`,
+        `stats/${folder}/yearly_team_stats.csv`
+      ].map(path =>
+        loadData(path, 'Could not load player statistics')
+      )
+    );
 
     renderPlayerStats(
       player.name,
@@ -2035,14 +1710,6 @@ async function loadPlayerStats(folder) {
   }
 }
 
-function getCareerStat(allTime, stat) {
-  if (stat === 'team_wins' || stat === 'average_team_placement') {
-    return allTime.team?.[stat];
-  }
-
-  return allTime.solo?.[stat];
-}
-
 function getStatsModeData(allTime, mode = statsMode) {
   const solo = allTime.solo || {};
   const team = allTime.team || {};
@@ -2065,189 +1732,26 @@ function getStatsModeData(allTime, mode = statsMode) {
   const teamRounds = Number(team.team_rounds) || 0;
   const totalRounds = soloRounds + teamRounds;
 
+  const sum = key =>
+    (Number(solo[key]) || 0) +
+    (Number(team[key]) || 0);
+
+  const weighted = (soloKey, teamKey = soloKey) =>
+    weightedAverage(
+      solo[soloKey],
+      soloRounds,
+      team[teamKey],
+      teamRounds
+    );
+
   const combined = {
     solo_rounds: totalRounds,
 
-    total_gross_score:
-      (Number(solo.total_gross_score) || 0) +
-      (Number(team.total_gross_score) || 0),
-
-    total_eagles:
-      (Number(solo.total_eagles) || 0) +
-      (Number(team.total_eagles) || 0),
-
-    total_birdies:
-      (Number(solo.total_birdies) || 0) +
-      (Number(team.total_birdies) || 0),
-
-    total_pars:
-      (Number(solo.total_pars) || 0) +
-      (Number(team.total_pars) || 0),
-
-    total_bogeys:
-      (Number(solo.total_bogeys) || 0) +
-      (Number(team.total_bogeys) || 0),
-
-    total_dbl_bogeys:
-      (Number(solo.total_dbl_bogeys) || 0) +
-      (Number(team.total_dbl_bogeys) || 0),
-
-    total_trp_bogeys:
-      (Number(solo.total_trp_bogeys) || 0) +
-      (Number(team.total_trp_bogeys) || 0),
-
-    total_qud_bogeys:
-      (Number(solo.total_qud_bogeys) || 0) +
-      (Number(team.total_qud_bogeys) || 0),
-
-    par3_eagles:
-      (Number(solo.par3_eagles) || 0) +
-      (Number(team.par3_eagles) || 0),
-
-    par3_birdies:
-      (Number(solo.par3_birdies) || 0) +
-      (Number(team.par3_birdies) || 0),
-
-    par3_pars:
-      (Number(solo.par3_pars) || 0) +
-      (Number(team.par3_pars) || 0),
-
-    par3_bogeys:
-      (Number(solo.par3_bogeys) || 0) +
-      (Number(team.par3_bogeys) || 0),
-
-    par3_dbl_bogeys:
-      (Number(solo.par3_dbl_bogeys) || 0) +
-      (Number(team.par3_dbl_bogeys) || 0),
-
-    par3_trp_bogeys:
-      (Number(solo.par3_trp_bogeys) || 0) +
-      (Number(team.par3_trp_bogeys) || 0),
-
-    par3_qud_bogeys:
-      (Number(solo.par3_qud_bogeys) || 0) +
-      (Number(team.par3_qud_bogeys) || 0),
-
-    par4_eagles:
-      (Number(solo.par4_eagles) || 0) +
-      (Number(team.par4_eagles) || 0),
-
-    par4_birdies:
-      (Number(solo.par4_birdies) || 0) +
-      (Number(team.par4_birdies) || 0),
-
-    par4_pars:
-      (Number(solo.par4_pars) || 0) +
-      (Number(team.par4_pars) || 0),
-
-    par4_bogeys:
-      (Number(solo.par4_bogeys) || 0) +
-      (Number(team.par4_bogeys) || 0),
-
-    par4_dbl_bogeys:
-      (Number(solo.par4_dbl_bogeys) || 0) +
-      (Number(team.par4_dbl_bogeys) || 0),
-
-    par4_trp_bogeys:
-      (Number(solo.par4_trp_bogeys) || 0) +
-      (Number(team.par4_trp_bogeys) || 0),
-
-    par4_qud_bogeys:
-      (Number(solo.par4_qud_bogeys) || 0) +
-      (Number(team.par4_qud_bogeys) || 0),
-
-    par5_eagles:
-      (Number(solo.par5_eagles) || 0) +
-      (Number(team.par5_eagles) || 0),
-
-    par5_birdies:
-      (Number(solo.par5_birdies) || 0) +
-      (Number(team.par5_birdies) || 0),
-
-    par5_pars:
-      (Number(solo.par5_pars) || 0) +
-      (Number(team.par5_pars) || 0),
-
-    par5_bogeys:
-      (Number(solo.par5_bogeys) || 0) +
-      (Number(team.par5_bogeys) || 0),
-
-    par5_dbl_bogeys:
-      (Number(solo.par5_dbl_bogeys) || 0) +
-      (Number(team.par5_dbl_bogeys) || 0),
-
-    par5_trp_bogeys:
-      (Number(solo.par5_trp_bogeys) || 0) +
-      (Number(team.par5_trp_bogeys) || 0),
-
-    par5_qud_bogeys:
-      (Number(solo.par5_qud_bogeys) || 0) +
-      (Number(team.par5_qud_bogeys) || 0),
-
-    front_eagles:
-      (Number(solo.front_eagles) || 0) +
-      (Number(team.front_eagles) || 0),
-
-    front_birdies:
-      (Number(solo.front_birdies) || 0) +
-      (Number(team.front_birdies) || 0),
-
-    front_pars:
-      (Number(solo.front_pars) || 0) +
-      (Number(team.front_pars) || 0),
-
-    front_bogeys:
-      (Number(solo.front_bogeys) || 0) +
-      (Number(team.front_bogeys) || 0),
-
-    front_dbl_bogeys:
-      (Number(solo.front_dbl_bogeys) || 0) +
-      (Number(team.front_dbl_bogeys) || 0),
-
-    front_trp_bogeys:
-      (Number(solo.front_trp_bogeys) || 0) +
-      (Number(team.front_trp_bogeys) || 0),
-
-    front_qud_bogeys:
-      (Number(solo.front_qud_bogeys) || 0) +
-      (Number(team.front_qud_bogeys) || 0),
-
-    back_eagles:
-      (Number(solo.back_eagles) || 0) +
-      (Number(team.back_eagles) || 0),
-
-    back_birdies:
-      (Number(solo.back_birdies) || 0) +
-      (Number(team.back_birdies) || 0),
-
-    back_pars:
-      (Number(solo.back_pars) || 0) +
-      (Number(team.back_pars) || 0),
-
-    back_bogeys:
-      (Number(solo.back_bogeys) || 0) +
-      (Number(team.back_bogeys) || 0),
-
-    back_dbl_bogeys:
-      (Number(solo.back_dbl_bogeys) || 0) +
-      (Number(team.back_dbl_bogeys) || 0),
-
-    back_trp_bogeys:
-      (Number(solo.back_trp_bogeys) || 0) +
-      (Number(team.back_trp_bogeys) || 0),
-
-    back_qud_bogeys:
-      (Number(solo.back_qud_bogeys) || 0) +
-      (Number(team.back_qud_bogeys) || 0),
+    total_gross_score: sum('total_gross_score'),
 
     average_gross_score:
       totalRounds
-        ? (
-            (
-              (Number(solo.total_gross_score) || 0) +
-              (Number(team.total_gross_score) || 0)
-            ) / totalRounds
-          )
+        ? sum('total_gross_score') / totalRounds
         : null,
 
     best_gross_score: minDefined(
@@ -2256,20 +1760,10 @@ function getStatsModeData(allTime, mode = statsMode) {
     ),
 
     average_solo_placement:
-      weightedAverage(
-        solo.average_solo_placement,
-        soloRounds,
-        team.average_team_placement,
-        teamRounds
-      ),
+      weighted('average_solo_placement', 'average_team_placement'),
 
     average_team_placement:
-      weightedAverage(
-        solo.average_solo_placement,
-        soloRounds,
-        team.average_team_placement,
-        teamRounds
-      ),
+      weighted('average_solo_placement', 'average_team_placement'),
 
     solo_first_places:
       (Number(solo.solo_first_places) || 0) +
@@ -2279,30 +1773,15 @@ function getStatsModeData(allTime, mode = statsMode) {
       (Number(solo.solo_first_places) || 0) +
       (Number(team.team_wins) || 0),
 
-    par3_average:
-      weightedAverage(
-        solo.par3_average,
-        soloRounds,
-        team.par3_average,
-        teamRounds
-      ),
-
-    par4_average:
-      weightedAverage(
-        solo.par4_average,
-        soloRounds,
-        team.par4_average,
-        teamRounds
-      ),
-
-    par5_average:
-      weightedAverage(
-        solo.par5_average,
-        soloRounds,
-        team.par5_average,
-        teamRounds
-      )
+    par3_average: weighted('par3_average'),
+    par4_average: weighted('par4_average'),
+    par5_average: weighted('par5_average')
   };
+
+  // Eagles / birdies / ... for total, par 3/4/5 and front/back.
+  SCORING_DISTRIBUTION_STATS.forEach(stat => {
+    combined[stat] = sum(stat);
+  });
 
   combined.birdie_percentage =
     totalRounds
@@ -2355,6 +1834,168 @@ function setScoringView(view) {
   loadPlayerStats(selectedStatsPlayerFolder);
 }
 
+function getMostCommonTeammate(yearlyTeam) {
+  const teammateCounts = {};
+
+  yearlyTeam.forEach(row => {
+    (row.teammate || '')
+      .split(',')
+      .map(name => name.trim())
+      .filter(Boolean)
+      .forEach(teammate => {
+        teammateCounts[teammate] =
+          (teammateCounts[teammate] || 0) + 1;
+      });
+  });
+
+  const entries = Object.entries(teammateCounts);
+
+  if (!entries.length) {
+    return 'None';
+  }
+
+  const maxCount = Math.max(
+    ...entries.map(([, count]) => count)
+  );
+
+  const tiedTeammates = entries.filter(
+    ([, count]) => count === maxCount
+  );
+
+  // Three or more teammates tied for most = no clear answer.
+  return tiedTeammates.length <= 2
+    ? tiedTeammates
+        .map(([name, count]) => `${name} (${count})`)
+        .join(', ')
+    : 'None';
+}
+
+function chartCard(
+  title,
+  canvasId,
+  height,
+  canvasMarginTop = 4,
+  cardStyle = ''
+) {
+  return `
+    <div
+      class="stats-chart-card"
+      ${cardStyle ? `style="${cardStyle}"` : ''}
+    >
+      <div class="stat-box-label">
+        ${title}
+      </div>
+
+      <div
+        style="
+          position:relative;
+          width:100%;
+          height:${height}px;
+          margin-top:${canvasMarginTop}px;
+        "
+      >
+        <canvas id="${canvasId}"></canvas>
+      </div>
+    </div>
+  `;
+}
+
+// ---------------------------------------------------------
+// YEAR-BY-YEAR TABLES
+// ---------------------------------------------------------
+
+const valueOrDash = field => row => row[field] || '—';
+const valueOrZero = field => row => row[field] || 0;
+
+const SCORING_COUNT_COLUMNS = [
+  { stat: 'eagles',        label: 'Eagles',  format: valueOrZero('eagles') },
+  { stat: 'birdies',       label: 'Birdies', format: valueOrZero('birdies') },
+  { stat: 'pars',          label: 'Pars',    format: valueOrZero('pars') },
+  { stat: 'bogeys',        label: 'Bogeys',  format: valueOrZero('bogeys') },
+  { stat: 'double_bogeys', label: 'Doubles', format: valueOrZero('double_bogeys') },
+  { stat: 'triple_bogeys', label: 'Triples', format: valueOrZero('triple_bogeys') },
+  { stat: 'quad_bogeys',   label: 'Quads+',  format: valueOrZero('quad_bogeys') }
+];
+
+const SOLO_YEARLY_COLUMNS = [
+  { stat: 'handicap',    label: 'HDCP',  format: valueOrDash('handicap') },
+  { stat: 'gross_score', label: 'Gross', format: valueOrDash('gross_score') },
+  { stat: 'net_score',   label: 'Net',   format: valueOrDash('net_score') },
+  ...SCORING_COUNT_COLUMNS,
+  { stat: 'solo_placement', label: 'Solo Rank', format: valueOrDash('solo_placement') },
+  { stat: 'net_placement',  label: 'Net Rank',  format: valueOrDash('net_placement') }
+];
+
+const TEAM_YEARLY_COLUMNS = [
+  { stat: null,         label: 'Teammate', format: valueOrDash('teammate') },
+  { stat: 'team_score', label: 'Score',    format: valueOrDash('score') },
+  {
+    stat: 'relative_to_par',
+    label: 'Vs Par',
+    format: row =>
+      row.relative_to_par != null
+        ? Number(row.relative_to_par) === 0
+          ? 'E'
+          : Number(row.relative_to_par) > 0
+            ? `+${row.relative_to_par}`
+            : row.relative_to_par
+        : '—'
+  },
+  ...SCORING_COUNT_COLUMNS,
+  { stat: 'team_placement', label: 'Team Rank', format: valueOrDash('team_placement') }
+];
+
+function renderYearlyTable(
+  title,
+  cardClass,
+  columns,
+  rows,
+  scorecardMode,
+  playerFolder,
+  playerName
+) {
+  return `
+    <div class="${cardClass}">
+
+      <div class="ct">
+        ${title}
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="ht">
+
+          <thead>
+            <tr>
+              <th>Year</th>
+              ${columns.map(column =>
+                column.stat
+                  ? `<th class="stat-header" data-stat="${column.stat}">${column.label}</th>`
+                  : `<th>${column.label}</th>`
+              ).join('')}
+            </tr>
+          </thead>
+
+          <tbody>
+            ${rows.map(row => `
+              <tr>
+                <td
+                  class="scorecard-year-cell"
+                  onclick="openScorecard(${row.year}, '${encodeURIComponent(playerFolder)}', '${encodeURIComponent(playerName)}', '${scorecardMode}')"
+                >
+                  ${row.year}
+                </td>
+                ${columns.map(column => `<td>${column.format(row)}</td>`).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  `;
+}
+
 function renderPlayerStats(
   playerName,
   playerFolder,
@@ -2371,63 +2012,150 @@ function renderPlayerStats(
 
   const content = document.getElementById('stats-content');
 
-  // ---------------------------------------------------------
-  // MOST COMMON TEAMMATE
-  // ---------------------------------------------------------
+  const scoringViewButton = (view, label) => `
+    <button
+      type="button"
+      class="scoring-view-button ${scoringView === view ? 'active' : ''}"
+      onclick="setScoringView('${view}')"
+    >
+      ${label}
+    </button>
+  `;
 
-  let mostCommonTeammateDisplay = 'None';
+  const combinedLeftColumn = `
+    <!-- COMBINED: PERSONAL EARNINGS -->
+    <div
+      class="career-stats"
+      id="career-stats-grid"
+    >
+      ${statBox('Net Earnings', allTime.personal?.net_earnings, 'net_earnings', 'higher', formatMoneyValue)}
+      ${statBox('Total Paid', allTime.personal?.total_paid, 'total_paid', 'lower', formatMoneyValue)}
+      ${statBox('Total Earned', allTime.personal?.total_earned, 'total_earned', 'higher', formatMoneyValue)}
+    </div>
 
-  if (statsMode === 'team') {
-    const teammateCounts = {};
+    ${chartCard('Average Relative to Par by Hole Handicap', 'handicap-chart', 240, 8, 'margin-top:6px;')}
+    ${chartCard('Average Relative to Par by Hole Type', 'par-average-chart', 200, 4, 'margin-top:6px;')}
+  `;
 
-    yearlyTeam.forEach(row => {
-      const teammateString = row.teammate || '';
-
-      if (!teammateString) {
-        return;
+  const soloTeamLeftColumn = `
+    <!-- SOLO / TEAM: CAREER STATS -->
+    <div
+      class="career-stats"
+      id="career-stats-grid"
+    >
+      ${
+        statsMode === 'solo'
+          ? statBox('Solo Rounds', stats.solo_rounds, 'solo_rounds', 'higher')
+          : statBox('Team Rounds', stats.team_rounds, 'team_rounds', 'higher')
       }
 
-      const teammates = teammateString
-        .split(',')
-        .map(name => name.trim())
-        .filter(Boolean);
+      ${statBox('Best Gross', stats.best_gross_score, 'best_gross_score', 'lower')}
 
-      teammates.forEach(teammate => {
-        teammateCounts[teammate] =
-          (teammateCounts[teammate] || 0) + 1;
-      });
-    });
+      ${
+        statsMode === 'solo'
+          ? statBox('Best Net', stats.best_net_score, 'best_net_score', 'lower')
+          : statBox('Most Birdies', stats.most_birdies_single_round, 'most_birdies_single_round', 'higher')
+      }
 
-    const entries =
-      Object.entries(teammateCounts);
-
-    if (entries.length) {
-      const maxCount =
-        Math.max(
-          ...entries.map(
-            ([, count]) => count
-          )
-        );
-
-      const tiedTeammates =
-        entries.filter(
-          ([, count]) => count === maxCount
-        );
-
-      if (tiedTeammates.length === 1) {
-        mostCommonTeammateDisplay =
-          `${tiedTeammates[0][0]} (${tiedTeammates[0][1]})`;
-      } else if (tiedTeammates.length === 2) {
-        mostCommonTeammateDisplay =
-          tiedTeammates
-            .map(
-              ([name, count]) =>
-                `${name} (${count})`
+      ${
+        statsMode === 'solo'
+          ? statPairBox(
+              'Avg Solo Place', stats.average_solo_placement, 'average_solo_placement', 'lower',
+              'Solo 1st Places', stats.solo_first_places, 'solo_first_places', 'higher'
             )
-            .join(', ');
+          : statPairBox(
+              'Avg Team Place', stats.average_team_placement, 'average_team_placement', 'lower',
+              'Team Wins', stats.team_wins, 'team_wins', 'higher'
+            )
       }
-    }
-  }
+
+      ${statPairBox(
+        'Avg Gross', stats.average_gross_score, 'average_gross_score', 'lower',
+        'Total Gross', stats.total_gross_score, 'total_gross_score', 'lower'
+      )}
+
+      ${
+        statsMode === 'solo'
+          ? statPairBox(
+              'Avg Net', stats.average_net_score, 'average_net_score', 'lower',
+              'Total Net', stats.total_net_score, 'total_net_score', 'lower'
+            )
+          : `
+            <div
+              class="stat-box stat-box-pair"
+              style="
+                display:flex;
+                flex-direction:column;
+                justify-content:center;
+              "
+            >
+              <div class="stat-pair-label">
+                Most Common Teammate
+              </div>
+
+              <div
+                style="
+                  font-family:'DM Sans',sans-serif;
+                  font-size:13px;
+                  font-weight:600;
+                  color:var(--gd);
+                  line-height:1.2;
+                  margin-top:5px;
+                "
+              >
+                ${getMostCommonTeammate(yearlyTeam)}
+              </div>
+            </div>
+          `
+      }
+    </div>
+
+    <!-- HANDICAP CHART -->
+    <div
+      class="stats-chart-card"
+      style="margin-top:6px;"
+    >
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:4px;
+        "
+      >
+        <div class="stat-box-label" style="margin-bottom:0;">
+          Average Relative to Par by Hole Handicap
+        </div>
+
+        <span
+          id="handicap-og12-toggle"
+          class="career-rank-og12 ${handicapOG12 ? 'active' : ''}"
+        >
+          <button
+            id="handicap-og12-button"
+            type="button"
+            class="career-rank-og12-button"
+            onclick="toggleHandicapOG12()"
+          >
+            OG 12
+          </button>
+        </span>
+      </div>
+
+      <div
+        style="
+          position:relative;
+          width:100%;
+          height:220px;
+          margin-top:6px;
+        "
+      >
+        <canvas id="handicap-chart"></canvas>
+      </div>
+    </div>
+
+    ${chartCard('Average Relative to Par — Front 9 vs Back 9', 'front-back-average-chart', 80, 4, 'margin-top:6px;')}
+  `;
 
   content.innerHTML = `
     <div
@@ -2465,788 +2193,75 @@ function renderPlayerStats(
         Career Summary
       </div>
 
-    <div class="career-overview">
+      <div class="career-overview">
 
-      <!-- LEFT COLUMN -->
-      <div>
-
-        ${
-          statsMode === 'combined'
-            ? `
-              <!-- COMBINED: PERSONAL EARNINGS -->
-              <div
-                class="career-stats"
-                id="career-stats-grid"
-              >
-
-                ${personalStatBox(
-                  'Net Earnings',
-                  allTime.personal?.net_earnings,
-                  'net_earnings',
-                  'higher'
-                )}
-
-                ${personalStatBox(
-                  'Total Paid',
-                  allTime.personal?.total_paid,
-                  'total_paid',
-                  'lower'
-                )}
-
-                ${personalStatBox(
-                  'Total Earned',
-                  allTime.personal?.total_earned,
-                  'total_earned',
-                  'higher'
-                )}
-
-              </div>
-
-              <!-- COMBINED: SOLO VS TEAM HANDICAP -->
-              <div
-                class="stats-chart-card"
-                style="margin-top:6px;"
-              >
-
-                <div class="stat-box-label">
-                  Average Relative to Par by Hole Handicap
-                </div>
-
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:240px;
-                    margin-top:8px;
-                  "
-                >
-                  <canvas id="handicap-chart"></canvas>
-                </div>
-
-              </div>
-
-              <div
-                class="stats-chart-card"
-                style="margin-top:6px;"
-              >
-                <div class="stat-box-label">
-                  Average Relative to Par by Hole Type
-                </div>
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:200px;
-                    margin-top:4px;
-                  "
-                >
-                  <canvas id="par-average-chart"></canvas>
-                </div>
-              </div>
-            `
-            : `
-              <!-- SOLO / TEAM: EXISTING CAREER STATS -->
-              <div
-                class="career-stats"
-                id="career-stats-grid"
-              >
-
-                ${
-                  statsMode === 'solo'
-                    ? statBox(
-                        'Solo Rounds',
-                        stats.solo_rounds,
-                        'solo_rounds',
-                        'higher'
-                      )
-                    : statBox(
-                        'Team Rounds',
-                        stats.team_rounds,
-                        'team_rounds',
-                        'higher'
-                      )
-                }
-
-                ${
-                  statBox(
-                    'Best Gross',
-                    stats.best_gross_score,
-                    'best_gross_score',
-                    'lower'
-                  )
-                }
-
-                ${
-                  statsMode === 'solo'
-                    ? statBox(
-                        'Best Net',
-                        stats.best_net_score,
-                        'best_net_score',
-                        'lower'
-                      )
-                    : statBox(
-                        'Most Birdies',
-                        stats.most_birdies_single_round,
-                        'most_birdies_single_round',
-                        'higher'
-                      )
-                }
-
-                ${
-                  statsMode === 'solo'
-                    ? statPairBox(
-                        'Avg Solo Place',
-                        stats.average_solo_placement,
-                        'average_solo_placement',
-                        'lower',
-                        'Solo 1st Places',
-                        stats.solo_first_places,
-                        'solo_first_places',
-                        'higher'
-                      )
-                    : statPairBox(
-                        'Avg Team Place',
-                        stats.average_team_placement,
-                        'average_team_placement',
-                        'lower',
-                        'Team Wins',
-                        stats.team_wins,
-                        'team_wins',
-                        'higher'
-                      )
-                }
-
-                ${statPairBox(
-                  'Avg Gross',
-                  stats.average_gross_score,
-                  'average_gross_score',
-                  'lower',
-                  'Total Gross',
-                  stats.total_gross_score,
-                  'total_gross_score',
-                  'lower'
-                )}
-
-                ${
-                  statsMode === 'solo'
-                    ? statPairBox(
-                        'Avg Net',
-                        stats.average_net_score,
-                        'average_net_score',
-                        'lower',
-                        'Total Net',
-                        stats.total_net_score,
-                        'total_net_score',
-                        'lower'
-                      )
-                    : `
-                      <div
-                        class="stat-box stat-box-pair"
-                        style="
-                          display:flex;
-                          flex-direction:column;
-                          justify-content:center;
-                        "
-                      >
-                        <div class="stat-pair-label">
-                          Most Common Teammate
-                        </div>
-
-                        <div
-                          id="most-played-partner"
-                          style="
-                            font-family:'DM Sans',sans-serif;
-                            font-size:13px;
-                            font-weight:600;
-                            color:var(--gd);
-                            line-height:1.2;
-                            margin-top:5px;
-                          "
-                        >
-                          ${mostCommonTeammateDisplay}
-                        </div>
-                      </div>
-                    `
-                }
-
-              </div>
-
-              <!-- HANDICAP CHART -->
-              <div
-                class="stats-chart-card"
-                style="margin-top:6px;"
-              >
-
-                <div
-                  style="
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
-                    gap:4px;
-                  "
-                >
-                  <div class="stat-box-label" style="margin-bottom:0;">
-                    Average Relative to Par by Hole Handicap
-                  </div>
-
-                  <span
-                    id="handicap-og12-toggle"
-                    class="career-rank-og12 ${handicapOG12 ? 'active' : ''}"
-                  >
-                    <button
-                      id="handicap-og12-button"
-                      type="button"
-                      class="career-rank-og12-button"
-                      onclick="toggleHandicapOG12()"
-                    >
-                      OG 12
-                    </button>
-                  </span>
-                </div>
-
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:220px;
-                    margin-top:6px;
-                  "
-                >
-                  <canvas id="handicap-chart"></canvas>
-                </div>
-
-              </div>
-
-              <!-- FRONT / BACK -->
-              <div
-                class="stats-chart-card"
-                style="margin-top:6px;"
-              >
-                <div class="stat-box-label">
-                  Average Relative to Par — Front 9 vs Back 9
-                </div>
-
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:80px;
-                    margin-top:4px;
-                  "
-                >
-                  <canvas id="front-back-average-chart"></canvas>
-                </div>
-              </div>
-            `
-        }
-
-      </div>
-
-
-      <!-- CENTER: CAREER RANK -->
-      <div class="career-rank-card">
-
-        <div
-          class="stat-box-label"
-          id="career-rank-title"
-        >
-          Select a stat
+        <!-- LEFT COLUMN -->
+        <div>
+          ${statsMode === 'combined' ? combinedLeftColumn : soloTeamLeftColumn}
         </div>
 
-        <div id="career-rank-content">
+        <!-- CENTER: CAREER RANK -->
+        <div class="career-rank-card">
 
-          <div class="career-rank-empty">
-            <div>↔</div>
-            <span>
-              Click a statistic to see overall rankings.
-            </span>
+          <div
+            class="stat-box-label"
+            id="career-rank-title"
+          >
+            Select a stat
+          </div>
+
+          <div id="career-rank-content">
+            <div class="career-rank-empty">
+              <div>↔</div>
+              <span>
+                Click a statistic to see overall rankings.
+              </span>
+            </div>
           </div>
 
         </div>
 
-      </div>
+        <!-- RIGHT: CHARTS -->
+        <div class="career-chart-column">
 
-      <!-- RIGHT: CHARTS -->
-      <div class="career-chart-column">
+          <!-- SCORING DISTRIBUTION -->
+          <div class="stats-chart-card">
 
-        <!-- SCORING DISTRIBUTION -->
-        <div class="stats-chart-card">
+            <div class="stat-box-label">
+              ${modeLabel} Scoring Distribution
+            </div>
 
-          <div class="stat-box-label">
-            ${modeLabel} Scoring Distribution
+            <div class="chart-wrap">
+              <canvas id="scoring-chart"></canvas>
+            </div>
+
+            <div class="scoring-view-toggle">
+              ${scoringViewButton('overall', 'Overall')}
+              ${scoringViewButton('par', 'Par 3 / 4 / 5')}
+              ${scoringViewButton('frontback', 'Front 9 / Back 9')}
+              ${statsMode === 'combined' ? scoringViewButton('soloteam', 'Solo / Team') : ''}
+            </div>
+
           </div>
 
-          <div class="chart-wrap">
-            <canvas id="scoring-chart"></canvas>
-          </div>
-
-          <div class="scoring-view-toggle">
-
-            <button
-              type="button"
-              class="scoring-view-button ${
-                scoringView === 'overall'
-                  ? 'active'
-                  : ''
-              }"
-              onclick="setScoringView('overall')"
-            >
-              Overall
-            </button>
-
-            <button
-              type="button"
-              class="scoring-view-button ${
-                scoringView === 'par'
-                  ? 'active'
-                  : ''
-              }"
-              onclick="setScoringView('par')"
-            >
-              Par 3 / 4 / 5
-            </button>
-
-            <button
-              type="button"
-              class="scoring-view-button ${
-                scoringView === 'frontback'
-                  ? 'active'
-                  : ''
-              }"
-              onclick="setScoringView('frontback')"
-            >
-              Front 9 / Back 9
-            </button>
-            ${
-              statsMode === 'combined'
-                ? `
-                  <button
-                    type="button"
-                    class="scoring-view-button ${
-                      scoringView === 'soloteam'
-                        ? 'active'
-                        : ''
-                    }"
-                    onclick="setScoringView('soloteam')"
-                  >
-                    Solo / Team
-                  </button>
-                `
-                : ''
-            }
-          </div>
+          ${
+            statsMode === 'combined'
+              ? chartCard('Average Relative to Par — Front 9 vs Back 9', 'front-back-average-chart', 150)
+              : chartCard('Average Relative to Par by Hole Type', 'par-average-chart', 100)
+          }
 
         </div>
 
-        ${
-          statsMode === 'combined'
-            ? `
-              <!-- COMBINED: FRONT / BACK -->
-              <div class="stats-chart-card">
-
-                <div class="stat-box-label">
-                  Average Relative to Par — Front 9 vs Back 9
-                </div>
-
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:150px;
-                    margin-top:4px;
-                  "
-                >
-                  <canvas id="front-back-average-chart"></canvas>
-                </div>
-
-              </div>
-            `
-            : `
-              <!-- SOLO / TEAM: PAR 3 / 4 / 5 -->
-              <div class="stats-chart-card">
-
-                <div class="stat-box-label">
-                  Average Relative to Par by Hole Type
-                </div>
-
-                <div
-                  style="
-                    position:relative;
-                    width:100%;
-                    height:100px;
-                    margin-top:4px;
-                  "
-                >
-                  <canvas id="par-average-chart"></canvas>
-                </div>
-
-              </div>
-            `
-        }
-
       </div>
-
     </div>
 
     <!-- YEAR-BY-YEAR -->
     ${
       statsMode === 'combined'
         ? ''
-
         : statsMode === 'solo'
-          ? `
-            <div class="card yearly-stats-card">
-
-              <div class="ct">
-                Solo — Year-by-Year
-              </div>
-
-              <div style="overflow-x:auto;">
-
-                <table class="ht">
-
-                  <thead>
-                    <tr>
-                      <th>Year</th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="handicap"
-                      >
-                        HDCP
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="gross_score"
-                      >
-                        Gross
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="net_score"
-                      >
-                        Net
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="eagles"
-                      >
-                        Eagles
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="birdies"
-                      >
-                        Birdies
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="pars"
-                      >
-                        Pars
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="bogeys"
-                      >
-                        Bogeys
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="double_bogeys"
-                      >
-                        Doubles
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="triple_bogeys"
-                      >
-                        Triples
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="quad_bogeys"
-                      >
-                        Quads+
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="solo_placement"
-                      >
-                        Solo Rank
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="net_placement"
-                      >
-                        Net Rank
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-
-                    ${yearly.map(row => `
-                      <tr>
-
-                        <td
-                          class="scorecard-year-cell"
-                          onclick="openScorecard(
-                            ${row.year},
-                            '${encodeURIComponent(playerFolder)}',
-                            '${encodeURIComponent(playerName)}',
-                            'solo'
-                          )"
-                        >
-                          ${row.year}
-                        </td>
-
-                        <td>
-                          ${row.handicap || '—'}
-                        </td>
-
-                        <td>
-                          ${row.gross_score || '—'}
-                        </td>
-
-                        <td>
-                          ${row.net_score || '—'}
-                        </td>
-
-                        <td>
-                          ${row.eagles || 0}
-                        </td>
-
-                        <td>
-                          ${row.birdies || 0}
-                        </td>
-
-                        <td>
-                          ${row.pars || 0}
-                        </td>
-
-                        <td>
-                          ${row.bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.double_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.triple_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.quad_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.solo_placement || '—'}
-                        </td>
-
-                        <td>
-                          ${row.net_placement || '—'}
-                        </td>
-
-                      </tr>
-                    `).join('')}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </div>
-          `
-
-          : `
-            <div class="card">
-
-              <div class="ct">
-                Team — Year-by-Year
-              </div>
-
-              <div style="overflow-x:auto;">
-
-                <table class="ht">
-
-                  <thead>
-                    <tr>
-
-                      <th>Year</th>
-
-                      <th>Teammate</th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="team_score"
-                      >
-                        Score
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="relative_to_par"
-                      >
-                        Vs Par
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="eagles"
-                      >
-                        Eagles
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="birdies"
-                      >
-                        Birdies
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="pars"
-                      >
-                        Pars
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="bogeys"
-                      >
-                        Bogeys
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="double_bogeys"
-                      >
-                        Doubles
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="triple_bogeys"
-                      >
-                        Triples
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="quad_bogeys"
-                      >
-                        Quads+
-                      </th>
-
-                      <th
-                        class="stat-header"
-                        data-stat="team_placement"
-                      >
-                        Team Rank
-                      </th>
-
-                    </tr>
-                  </thead>
-
-                  <tbody>
-
-                    ${yearlyTeam.map(row => `
-                      <tr>
-
-                        <td
-                          class="scorecard-year-cell"
-                          onclick="openScorecard(
-                            ${row.year},
-                            '${encodeURIComponent(playerFolder)}',
-                            '${encodeURIComponent(playerName)}',
-                            'team'
-                          )"
-                        >
-                          ${row.year}
-                        </td>
-
-                        <td>
-                          ${row.teammate || '—'}
-                        </td>
-
-                        <td>
-                          ${row.score || '—'}
-                        </td>
-
-                        <td>
-                          ${
-                            row.relative_to_par != null
-                              ? Number(
-                                  row.relative_to_par
-                                ) === 0
-                                ? 'E'
-                                : Number(
-                                    row.relative_to_par
-                                  ) > 0
-                                  ? `+${row.relative_to_par}`
-                                  : row.relative_to_par
-                              : '—'
-                          }
-                        </td>
-
-                        <td>
-                          ${row.eagles || 0}
-                        </td>
-
-                        <td>
-                          ${row.birdies || 0}
-                        </td>
-
-                        <td>
-                          ${row.pars || 0}
-                        </td>
-
-                        <td>
-                          ${row.bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.double_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.triple_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.quad_bogeys || 0}
-                        </td>
-
-                        <td>
-                          ${row.team_placement || '—'}
-                        </td>
-
-                      </tr>
-                    `).join('')}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </div>
-          `
+          ? renderYearlyTable('Solo — Year-by-Year', 'card yearly-stats-card', SOLO_YEARLY_COLUMNS, yearly, 'solo', playerFolder, playerName)
+          : renderYearlyTable('Team — Year-by-Year', 'card', TEAM_YEARLY_COLUMNS, yearlyTeam, 'team', playerFolder, playerName)
     }
 
     <!-- YEARLY CHART -->
@@ -3271,70 +2286,19 @@ function renderPlayerStats(
   `;
 
   // ---------------------------------------------------------
-  // TEAM-SPECIFIC ASYNC STATS
-  // ---------------------------------------------------------
-
-// ---------------------------------------------------------
-// TEAM-SPECIFIC ASYNC STATS
-// ---------------------------------------------------------
-
-  if (statsMode === 'team') {
-    getMostBirdiesInRound(playerFolder)
-      .then(mostBirdies => {
-
-        const birdieElement =
-          document.getElementById(
-            'team-most-birdies'
-          );
-
-        if (birdieElement) {
-          birdieElement.textContent =
-            mostBirdies != null
-              ? mostBirdies
-              : '—';
-        }
-
-      })
-      .catch(error => {
-        console.error(
-          'Team career statistic error:',
-          error
-        );
-
-        const birdieElement =
-          document.getElementById(
-            'team-most-birdies'
-          );
-
-        if (birdieElement) {
-          birdieElement.textContent = '—';
-        }
-      });
-  }
-
-  // ---------------------------------------------------------
   // CAREER STAT BUTTONS
   // ---------------------------------------------------------
 
   document
-    .querySelectorAll(
-      '#career-stats-grid .stat-box-clickable'
-    )
+    .querySelectorAll('#career-stats-grid .stat-box-clickable')
     .forEach(button => {
-
-      button.addEventListener(
-        'click',
-        () => {
-
-          showCareerRanking(
-            button.dataset.careerStat,
-            button.dataset.direction,
-            selectedStatsPlayerFolder
-          );
-
-        }
-      );
-
+      button.addEventListener('click', () => {
+        showCareerRanking(
+          button.dataset.careerStat,
+          button.dataset.direction,
+          selectedStatsPlayerFolder
+        );
+      });
     });
 
   // ---------------------------------------------------------
@@ -3362,1143 +2326,315 @@ function renderPlayerStats(
   }
 
   // ---------------------------------------------------------
-  // HANDICAP CHART
+  // CHARTS
   // ---------------------------------------------------------
 
-  renderHandicapChart(
-    playerName,
-    playerFolder
-  );
-
-  renderFrontBackAverageChart(
-    stats,
-    playerFolder,
-    solo,
-    team
-  );
-
-  renderParAverageChart(
-    stats,
-    playerFolder,
-    solo,
-    team
-  );
-
-  // ---------------------------------------------------------
-  // YEARS PLAYED
-  // ---------------------------------------------------------
-
-  renderYearsPlayed(
-    allTime,
-    playerFolder,
-    playerName
-  );
+  renderHandicapChart(playerName, playerFolder);
+  renderFrontBackAverageChart(stats, playerFolder, solo, team);
+  renderParAverageChart(stats, playerFolder, solo, team);
+  renderYearsPlayed(allTime, playerFolder, playerName);
 
   // ---------------------------------------------------------
   // YEARLY TABLE HEADERS
   // ---------------------------------------------------------
 
   document
-    .querySelectorAll(
-      '#stats-content .stat-header'
-    )
+    .querySelectorAll('#stats-content .stat-header')
     .forEach(button => {
-
-      button.addEventListener(
-        'click',
-        () => {
-
-          showYearlyStat(
-            button.dataset.stat,
-            button,
-            yearly,
-            yearlyTeam,
-            playerFolder
-          );
-
-        }
-      );
-
+      button.addEventListener('click', () => {
+        showYearlyStat(
+          button.dataset.stat,
+          button,
+          yearly,
+          yearlyTeam,
+          playerFolder
+        );
+      });
     });
 
-  // ---------------------------------------------------------
-  // SCORING CHART
-  // ---------------------------------------------------------
+  renderScoringChart(stats, solo, team);
+}
 
-  const chartCanvas =
-    document.getElementById(
-      'scoring-chart'
-    );
+// ---------------------------------------------------------
+// SCORING DISTRIBUTION DOUGHNUT
+// ---------------------------------------------------------
+
+function percentLabel(context, label) {
+  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+
+  const pct = total
+    ? (context.raw / total * 100).toFixed(1)
+    : 0;
+
+  return `${label}: ${context.raw} (${pct}%)`;
+}
+
+/*
+ * Multi-ring doughnut: one ring per entry in `rings`
+ * (dataset 0 is drawn innermost), one slice per
+ * scoring category. Clicking a slice calls
+ * onSelect(ring, category).
+ */
+function createScoringRingChart(
+  canvas,
+  rings,
+  {
+    legendIndexes,
+    cutout = null,
+    onSelect
+  }
+) {
+  return new Chart(canvas, {
+    type: 'doughnut',
+
+    data: {
+      labels: legendIndexes.map(
+        index => SCORING_CATEGORIES[index].label
+      ),
+
+      datasets: rings.map(ring => ({
+        label: ring.label,
+        data: ring.data,
+        backgroundColor: SCORING_CATEGORIES.map(category => category.color),
+        borderColor: '#FFFFFF',
+        borderWidth: 2,
+        weight: 1
+      }))
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+
+      ...(cutout ? { cutout } : {}),
+
+      onClick: function(event, elements) {
+        if (!elements.length) {
+          return;
+        }
+
+        const ring = rings[elements[0].datasetIndex];
+        const category = SCORING_CATEGORIES[elements[0].index];
+
+        if (!ring || !category) {
+          return;
+        }
+
+        onSelect(ring, category);
+      },
+
+      onHover: setPointerCursor,
+
+      plugins: {
+        legend: {
+          position: 'bottom',
+
+          labels: {
+            font: {
+              family: 'DM Sans'
+            },
+
+            padding: 12,
+
+            generateLabels: function() {
+              return legendIndexes.map(index => ({
+                text: SCORING_CATEGORIES[index].label,
+                fillStyle: SCORING_CATEGORIES[index].color,
+                strokeStyle: '#FFFFFF',
+                lineWidth: 2,
+                hidden: false,
+                index
+              }));
+            }
+          }
+        },
+
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              const ring = rings[context[0].datasetIndex];
+
+              return ring ? ring.label : '';
+            },
+
+            label: function(context) {
+              const category = SCORING_CATEGORIES[context.dataIndex];
+
+              return percentLabel(context, category ? category.label : '');
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/*
+ * Rings split by stat prefix (par 3/4/5 or front/back 9).
+ * Only categories that appear in at least one ring get
+ * a legend entry.
+ */
+function createSegmentRingChart(canvas, stats, segments) {
+  const rings = segments.map(segment => ({
+    ...segment,
+    data: SCORING_CATEGORIES.map(
+      category => Number(stats?.[`${segment.prefix}${category.field}`]) || 0
+    )
+  }));
+
+  const legendIndexes = SCORING_CATEGORIES
+    .map((_, index) => index)
+    .filter(index => rings.some(ring => Number(ring.data[index]) > 0));
+
+  return createScoringRingChart(canvas, rings, {
+    legendIndexes,
+
+    onSelect: (ring, category) => {
+      const stat = `${ring.prefix}${category.field}`;
+
+      showCareerRanking(
+        stat,
+        category.direction,
+        selectedStatsPlayerFolder,
+        `${ring.label} ${category.label}`,
+        'average',
+        stat
+      );
+    }
+  });
+}
+
+function renderScoringChart(stats, solo, team) {
+  const chartCanvas = document.getElementById('scoring-chart');
 
   if (scoringChart) {
     scoringChart.destroy();
     scoringChart = null;
   }
 
-  const scoringCategories = [
-    {
-      label: 'Eagles',
-      direction: 'higher',
-      color: '#b34faf'
-    },
-    {
-      label: 'Birdies',
-      direction: 'higher',
-      color: '#6cd1e0'
-    },
-    {
-      label: 'Pars',
-      direction: 'higher',
-      color: '#3ab57c'
-    },
-    {
-      label: 'Bogeys',
-      direction: 'lower',
-      color: '#D9A441'
-    },
-    {
-      label: 'Double Bogeys',
-      direction: 'lower',
-      color: '#C94636'
-    },
-    {
-      label: 'Triple Bogeys',
-      direction: 'lower',
-      color: '#61201d'
-    },
-    {
-      label: 'Quads+',
-      direction: 'lower',
-      color: '#000000'
-    }
-  ];
-
-  // ---------------------------------------------------------
-  // OVERALL SCORING DATA
-  // ---------------------------------------------------------
-
-  const overallStatMap = {
-    'Eagles': 'total_eagles',
-    'Birdies': 'total_birdies',
-    'Pars': 'total_pars',
-    'Bogeys': 'total_bogeys',
-    'Double Bogeys': 'total_dbl_bogeys',
-    'Triple Bogeys': 'total_trp_bogeys',
-    'Quads+': 'total_qud_bogeys'
-  };
-
-  const overallScoringData =
-    scoringCategories.map(category => ({
-      ...category,
-
-      stat:
-        overallStatMap[category.label],
-
-      value:
-        Number(
-          stats[
-            overallStatMap[
-              category.label
-            ]
-          ]
-        ) || 0
-    }));
-
-  const filteredOverallData =
-    overallScoringData.filter(
-      item => item.value > 0
-    );
-
-  // ---------------------------------------------------------
-  // OVERALL DONUT
-  // ---------------------------------------------------------
-
   if (scoringView === 'overall') {
+    const overallData = SCORING_CATEGORIES
+      .map(category => ({
+        ...category,
+        stat: `total_${category.field}`,
+        value: Number(stats[`total_${category.field}`]) || 0
+      }))
+      .filter(item => item.value > 0);
 
-    scoringChart = new Chart(
-      chartCanvas,
-      {
-        type: 'doughnut',
+    scoringChart = new Chart(chartCanvas, {
+      type: 'doughnut',
 
-        data: {
-          labels:
-            filteredOverallData.map(
-              item => item.label
-            ),
+      data: {
+        labels: overallData.map(item => item.label),
 
-          datasets: [{
-            data:
-              filteredOverallData.map(
-                item => item.value
-              ),
+        datasets: [{
+          data: overallData.map(item => item.value),
+          backgroundColor: overallData.map(item => item.color),
+          borderColor: '#FFFFFF',
+          borderWidth: 2
+        }]
+      },
 
-            backgroundColor:
-              filteredOverallData.map(
-                item => item.color
-              ),
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
 
-            borderColor: '#FFFFFF',
-            borderWidth: 2
-          }]
+        onClick: function(event, elements) {
+          if (!elements.length) {
+            return;
+          }
+
+          const selected = overallData[elements[0].index];
+
+          if (!selected) {
+            return;
+          }
+
+          showCareerRanking(
+            selected.stat,
+            selected.direction,
+            selectedStatsPlayerFolder,
+            selected.label,
+            'average',
+            selected.stat
+          );
         },
 
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
+        onHover: setPointerCursor,
 
-          onClick: function(
-            event,
-            elements
-          ) {
-            if (!elements.length) {
-              return;
+        plugins: {
+          legend: {
+            position: 'bottom',
+
+            labels: {
+              font: {
+                family: 'DM Sans'
+              },
+
+              padding: 12
             }
-
-            const index =
-              elements[0].index;
-
-            const selected =
-              filteredOverallData[index];
-
-            if (!selected) {
-              return;
-            }
-
-            showCareerRanking(
-              selected.stat,
-              selected.direction,
-              selectedStatsPlayerFolder,
-              selected.label,
-              'average',
-              selected.stat
-            );
           },
 
-          onHover: function(
-            event,
-            elements
-          ) {
-            event.native.target.style.cursor =
-              elements.length
-                ? 'pointer'
-                : 'default';
-          },
-
-          plugins: {
-
-            legend: {
-              position: 'bottom',
-
-              labels: {
-                font: {
-                  family: 'DM Sans'
-                },
-
-                padding: 12
-              }
-            },
-
-            tooltip: {
-              callbacks: {
-
-                label: function(context) {
-
-                  const value =
-                    context.raw;
-
-                  const data =
-                    context.dataset.data;
-
-                  const total =
-                    data.reduce(
-                      (a, b) => a + b,
-                      0
-                    );
-
-                  const pct =
-                    total
-                      ? (
-                          value / total * 100
-                        ).toFixed(1)
-                      : 0;
-
-                  return `${context.label}: ${value} (${pct}%)`;
-                }
-
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return percentLabel(context, context.label);
               }
             }
-
           }
         }
       }
-    );
-
-  // ---------------------------------------------------------
-  // PAR 3 / 4 / 5
-  // ---------------------------------------------------------
+    });
 
   } else if (scoringView === 'par') {
-
-    const parData = [
-      {
-        label: 'Par 5',
-        prefix: 'par5_'
-      },
-      {
-        label: 'Par 4',
-        prefix: 'par4_'
-      },
-      {
-        label: 'Par 3',
-        prefix: 'par3_'
-      }
-    ];
-
-    function getParScoringValue(
-      statsObject,
-      prefix,
-      category
-    ) {
-      const suffixMap = {
-        'Eagles': 'eagles',
-        'Birdies': 'birdies',
-        'Pars': 'pars',
-        'Bogeys': 'bogeys',
-        'Double Bogeys': 'dbl_bogeys',
-        'Triple Bogeys': 'trp_bogeys',
-        'Quads+': 'qud_bogeys'
-      };
-
-      const suffix =
-        suffixMap[category];
-
-      if (!suffix) {
-        return 0;
-      }
-
-      return Number(
-        statsObject?.[
-          `${prefix}${suffix}`
-        ]
-      ) || 0;
-    }
-
-    const parDatasets =
-      parData.map(par => {
-
-        const values =
-          scoringCategories.map(
-            category =>
-              getParScoringValue(
-                stats,
-                par.prefix,
-                category.label
-              )
-          );
-
-        return {
-          label: par.label,
-          data: values,
-
-          backgroundColor:
-            scoringCategories.map(
-              category =>
-                category.color
-            ),
-
-          borderColor: '#FFFFFF',
-          borderWidth: 2,
-
-          weight: 1
-        };
-
-      });
-
-    const presentCategoryIndexes =
-      scoringCategories
-        .map(
-          (category, index) => {
-
-            const present =
-              parDatasets.some(
-                dataset =>
-                  Number(
-                    dataset.data[index]
-                  ) > 0
-              );
-
-            return present
-              ? index
-              : null;
-
-          }
-        )
-        .filter(
-          index => index !== null
-        );
-
-    scoringChart = new Chart(
-      chartCanvas,
-      {
-        type: 'doughnut',
-
-        data: {
-          labels:
-            presentCategoryIndexes.map(
-              index =>
-                scoringCategories[index].label
-            ),
-
-          datasets: parDatasets
-        },
-
-        options: {
-
-          responsive: true,
-          maintainAspectRatio: true,
-
-          onClick: function(
-            event,
-            elements
-          ) {
-            if (!elements.length) {
-              return;
-            }
-
-            const element =
-              elements[0];
-
-            const ringIndex =
-              element.datasetIndex;
-
-            const sliceIndex =
-              element.index;
-
-            const parRound =
-              parData[ringIndex];
-
-            const category =
-              scoringCategories[
-                sliceIndex
-              ];
-
-            if (
-              !parRound ||
-              !category
-            ) {
-              return;
-            }
-
-            const scoringFieldMap = {
-              'Eagles': 'eagles',
-              'Birdies': 'birdies',
-              'Pars': 'pars',
-              'Bogeys': 'bogeys',
-              'Double Bogeys': 'dbl_bogeys',
-              'Triple Bogeys': 'trp_bogeys',
-              'Quads+': 'qud_bogeys'
-            };
-
-            const scoringField =
-              scoringFieldMap[
-                category.label
-              ];
-
-            const parSpecificStat =
-              `${parRound.prefix}${scoringField}`;
-
-            showCareerRanking(
-              parSpecificStat,
-              category.direction,
-              selectedStatsPlayerFolder,
-              `${parRound.label} ${category.label}`,
-              'average',
-              parSpecificStat
-            );
-          },
-
-          onHover: function(
-            event,
-            elements
-          ) {
-            event.native.target.style.cursor =
-              elements.length
-                ? 'pointer'
-                : 'default';
-          },
-
-          plugins: {
-
-            legend: {
-              position: 'bottom',
-
-              labels: {
-                font: {
-                  family: 'DM Sans'
-                },
-
-                padding: 12,
-
-                generateLabels: function() {
-                  return presentCategoryIndexes.map(
-                    index => ({
-                      text:
-                        scoringCategories[
-                          index
-                        ].label,
-
-                      fillStyle:
-                        scoringCategories[
-                          index
-                        ].color,
-
-                      strokeStyle:
-                        '#FFFFFF',
-
-                      lineWidth: 2,
-
-                      hidden: false,
-
-                      index: index
-                    })
-                  );
-                }
-              }
-            },
-
-            tooltip: {
-              callbacks: {
-
-                title: function(
-                  context
-                ) {
-                  const ring =
-                    parData[
-                      context[0].datasetIndex
-                    ];
-
-                  return ring
-                    ? ring.label
-                    : '';
-                },
-
-                label: function(
-                  context
-                ) {
-                  const value =
-                    context.raw;
-
-                  const data =
-                    context.dataset.data;
-
-                  const total =
-                    data.reduce(
-                      (a, b) => a + b,
-                      0
-                    );
-
-                  const pct =
-                    total
-                      ? (
-                          value / total * 100
-                        ).toFixed(1)
-                      : 0;
-
-                  const category =
-                    scoringCategories[
-                      context.dataIndex
-                    ];
-
-                  const label =
-                    category
-                      ? category.label
-                      : '';
-
-                  return `${label}: ${value} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      }
-    );
-
-  // ---------------------------------------------------------
-  // FRONT / BACK
-  // ---------------------------------------------------------
-
-  } else if (
-    scoringView === 'frontback'
-  ) {
-
-    const segmentData = [
-      {
-        label: 'Back 9',
-        prefix: 'back_'
-      },
-      {
-        label: 'Front 9',
-        prefix: 'front_'
-      }
-    ];
-
-    function getSegmentScoringValue(
-      statsObject,
-      prefix,
-      category
-    ) {
-      const suffixMap = {
-        'Eagles': 'eagles',
-        'Birdies': 'birdies',
-        'Pars': 'pars',
-        'Bogeys': 'bogeys',
-        'Double Bogeys': 'dbl_bogeys',
-        'Triple Bogeys': 'trp_bogeys',
-        'Quads+': 'qud_bogeys'
-      };
-
-      const suffix =
-        suffixMap[category];
-
-      if (!suffix) {
-        return 0;
-      }
-
-      return Number(
-        statsObject?.[
-          `${prefix}${suffix}`
-        ]
-      ) || 0;
-    }
-
-    const segmentDatasets =
-      segmentData.map(segment => {
-
-        const values =
-          scoringCategories.map(
-            category =>
-              getSegmentScoringValue(
-                stats,
-                segment.prefix,
-                category.label
-              )
-          );
-
-        return {
-          label: segment.label,
-
-          data: values,
-
-          backgroundColor:
-            scoringCategories.map(
-              category =>
-                category.color
-            ),
-
-          borderColor: '#FFFFFF',
-          borderWidth: 2,
-
-          weight: 1
-        };
-
-      });
-
-    const presentCategoryIndexes =
-      scoringCategories
-        .map(
-          (category, index) => {
-
-            const present =
-              segmentDatasets.some(
-                dataset =>
-                  Number(
-                    dataset.data[index]
-                  ) > 0
-              );
-
-            return present
-              ? index
-              : null;
-
-          }
-        )
-        .filter(
-          index => index !== null
-        );
-
-    scoringChart = new Chart(
-      chartCanvas,
-      {
-        type: 'doughnut',
-
-        data: {
-          labels:
-            presentCategoryIndexes.map(
-              index =>
-                scoringCategories[
-                  index
-                ].label
-            ),
-
-          datasets:
-            segmentDatasets
-        },
-
-        options: {
-
-          responsive: true,
-          maintainAspectRatio: true,
-
-          onClick: function(
-            event,
-            elements
-          ) {
-            if (!elements.length) {
-              return;
-            }
-
-            const element =
-              elements[0];
-
-            const ringIndex =
-              element.datasetIndex;
-
-            const sliceIndex =
-              element.index;
-
-            const segment =
-              segmentData[ringIndex];
-
-            const category =
-              scoringCategories[
-                sliceIndex
-              ];
-
-            if (
-              !segment ||
-              !category
-            ) {
-              return;
-            }
-
-            const scoringFieldMap = {
-              'Eagles': 'eagles',
-              'Birdies': 'birdies',
-              'Pars': 'pars',
-              'Bogeys': 'bogeys',
-              'Double Bogeys': 'dbl_bogeys',
-              'Triple Bogeys': 'trp_bogeys',
-              'Quads+': 'qud_bogeys'
-            };
-
-            const scoringField =
-              scoringFieldMap[
-                category.label
-              ];
-
-            const segmentSpecificStat =
-              `${segment.prefix}${scoringField}`;
-
-            showCareerRanking(
-              segmentSpecificStat,
-              category.direction,
-              selectedStatsPlayerFolder,
-              `${segment.label} ${category.label}`,
-              'average',
-              segmentSpecificStat
-            );
-          },
-
-          onHover: function(
-            event,
-            elements
-          ) {
-            event.native.target.style.cursor =
-              elements.length
-                ? 'pointer'
-                : 'default';
-          },
-
-          plugins: {
-
-            legend: {
-              position: 'bottom',
-
-              labels: {
-                font: {
-                  family: 'DM Sans'
-                },
-
-                padding: 12,
-
-                generateLabels: function() {
-                  return presentCategoryIndexes.map(
-                    index => ({
-                      text:
-                        scoringCategories[
-                          index
-                        ].label,
-
-                      fillStyle:
-                        scoringCategories[
-                          index
-                        ].color,
-
-                      strokeStyle:
-                        '#FFFFFF',
-
-                      lineWidth: 2,
-
-                      hidden: false,
-
-                      index: index
-                    })
-                  );
-                }
-              }
-            },
-
-            tooltip: {
-              callbacks: {
-
-                title: function(
-                  context
-                ) {
-                  const segment =
-                    segmentData[
-                      context[0].datasetIndex
-                    ];
-
-                  return segment
-                    ? segment.label
-                    : '';
-                },
-
-                label: function(
-                  context
-                ) {
-                  const value =
-                    context.raw;
-
-                  const data =
-                    context.dataset.data;
-
-                  const total =
-                    data.reduce(
-                      (a, b) => a + b,
-                      0
-                    );
-
-                  const pct =
-                    total
-                      ? (
-                          value / total * 100
-                        ).toFixed(1)
-                      : 0;
-
-                  const category =
-                    scoringCategories[
-                      context.dataIndex
-                    ];
-
-                  const label =
-                    category
-                      ? category.label
-                      : '';
-
-                  return `${label}: ${value} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      }
-    );
-  // ---------------------------------------------------------
-  // SOLO / TEAM
-  // ---------------------------------------------------------
+    scoringChart = createSegmentRingChart(chartCanvas, stats, [
+      { label: 'Par 5', prefix: 'par5_' },
+      { label: 'Par 4', prefix: 'par4_' },
+      { label: 'Par 3', prefix: 'par3_' }
+    ]);
+
+  } else if (scoringView === 'frontback') {
+    scoringChart = createSegmentRingChart(chartCanvas, stats, [
+      { label: 'Back 9', prefix: 'back_' },
+      { label: 'Front 9', prefix: 'front_' }
+    ]);
 
   } else if (
     scoringView === 'soloteam' &&
     statsMode === 'combined'
   ) {
-
-    /*
-     * Dataset 0 = Solo
-     * Dataset 1 = Team
-     *
-     * Chart.js draws dataset 0 as the inner doughnut
-     * and dataset 1 as the outer doughnut.
-     */
-
-    const soloScoringData =
-      scoringCategories.map(category => ({
-        ...category,
-
-        stat:
-          overallStatMap[category.label],
-
-        value:
-          Number(
-            solo[
-              overallStatMap[
-                category.label
-              ]
-            ]
-          ) || 0
-      }));
-
-    const teamScoringData =
-      scoringCategories.map(category => ({
-        ...category,
-
-        stat:
-          overallStatMap[category.label],
-
-        value:
-          Number(
-            team[
-              overallStatMap[
-                category.label
-              ]
-            ]
-          ) || 0
-      }));
-
-    const soloValues =
-      soloScoringData.map(
-        item => item.value
-      );
-
-    const teamValues =
-      teamScoringData.map(
-        item => item.value
-      );
-
-    scoringChart = new Chart(
-      chartCanvas,
-      {
-        type: 'doughnut',
-
-        data: {
-          labels:
-            scoringCategories.map(
-              category => category.label
-            ),
-
-          datasets: [
-
-            // ---------------------------------------------
-            // INNER = SOLO
-            // ---------------------------------------------
-            {
-              label: 'Solo',
-
-              data: soloValues,
-
-              backgroundColor:
-                scoringCategories.map(
-                  category => category.color
-                ),
-
-              borderColor: '#FFFFFF',
-              borderWidth: 2,
-
-              weight: 1
-            },
-
-            // ---------------------------------------------
-            // OUTER = TEAM
-            // ---------------------------------------------
-            {
-              label: 'Team',
-
-              data: teamValues,
-
-              backgroundColor:
-                scoringCategories.map(
-                  category => category.color
-                ),
-
-              borderColor: '#FFFFFF',
-              borderWidth: 2,
-
-              weight: 1
-            }
-
-          ]
-        },
-
-        options: {
-
-          responsive: true,
-          maintainAspectRatio: true,
-
-          cutout: '35%',
-
-          onClick: function(
-            event,
-            elements
-          ) {
-
-            if (!elements.length) {
-              return;
-            }
-
-            const element =
-              elements[0];
-
-            const datasetIndex =
-              element.datasetIndex;
-
-            const sliceIndex =
-              element.index;
-
-            const category =
-              scoringCategories[sliceIndex];
-
-            if (!category) {
-              return;
-            }
-
-            /*
-            * Inner ring = Solo
-            * Outer ring = Team
-            */
-            const rankingSourceMode =
-              datasetIndex === 0
-                ? 'solo'
-                : 'team';
-
-            const rankingStat =
-              overallStatMap[category.label];
-
-            const rankingLabel =
-              rankingSourceMode === 'team'
-                ? `Team ${category.label}`
-                : `Solo ${category.label}`;
-
-            showCareerRanking(
-              rankingStat,
-              category.direction,
-              selectedStatsPlayerFolder,
-              rankingLabel,
-              'average',
-              rankingStat,
-              rankingSourceMode
-            );
-          },
-
-          onHover: function(
-            event,
-            elements
-          ) {
-            event.native.target.style.cursor =
-              elements.length
-                ? 'pointer'
-                : 'default';
-          },
-
-          plugins: {
-
-            legend: {
-              position: 'bottom',
-
-              labels: {
-                font: {
-                  family: 'DM Sans'
-                },
-
-                padding: 12,
-
-                generateLabels: function() {
-
-                  /*
-                   * One legend entry per scoring category.
-                   * The ring itself communicates Solo vs Team.
-                   */
-                  return scoringCategories.map(
-                    (category, index) => ({
-
-                      text:
-                        category.label,
-
-                      fillStyle:
-                        category.color,
-
-                      strokeStyle:
-                        '#FFFFFF',
-
-                      lineWidth: 2,
-
-                      hidden: false,
-
-                      index
-
-                    })
-                  );
-                }
-              }
-            },
-
-            tooltip: {
-
-              callbacks: {
-
-                title: function(context) {
-
-                  const ring =
-                    context[0].datasetIndex === 0
-                      ? 'Solo'
-                      : 'Team';
-
-                  return ring;
-                },
-
-                label: function(context) {
-
-                  const value =
-                    context.raw;
-
-                  const data =
-                    context.dataset.data;
-
-                  const total =
-                    data.reduce(
-                      (a, b) => a + b,
-                      0
-                    );
-
-                  const pct =
-                    total
-                      ? (
-                          value /
-                          total *
-                          100
-                        ).toFixed(1)
-                      : 0;
-
-                  const category =
-                    scoringCategories[
-                      context.dataIndex
-                    ];
-
-                  return (
-                    `${category.label}: ` +
-                    `${value} (${pct}%)`
-                  );
-                }
-
-              }
-
-            }
-
-          }
-        }
+    // Dataset 0 (inner ring) = Solo, dataset 1 (outer ring) = Team.
+    const rings = [
+      { label: 'Solo', mode: 'solo', section: solo },
+      { label: 'Team', mode: 'team', section: team }
+    ].map(ring => ({
+      ...ring,
+      data: SCORING_CATEGORIES.map(
+        category => Number(ring.section[`total_${category.field}`]) || 0
+      )
+    }));
+
+    scoringChart = createScoringRingChart(chartCanvas, rings, {
+      // One legend entry per category; the ring shows Solo vs Team.
+      legendIndexes: SCORING_CATEGORIES.map((_, index) => index),
+
+      cutout: '35%',
+
+      onSelect: (ring, category) => {
+        const stat = `total_${category.field}`;
+
+        showCareerRanking(
+          stat,
+          category.direction,
+          selectedStatsPlayerFolder,
+          `${ring.label} ${category.label}`,
+          'average',
+          stat,
+          ring.mode
+        );
       }
-    );
+    });
   }
-
 }
 
 async function renderHandicapChart(
@@ -4519,103 +2655,27 @@ async function renderHandicapChart(
 
   try {
     // -------------------------------------------------------
-    // LOAD RAW DATA
-    // -------------------------------------------------------
-
-    const [
-      coursesResponse,
-      roundsResponse
-    ] = await Promise.all([
-      fetch('courses.csv', {
-        cache: 'no-store'
-      }),
-
-      fetch('rounds.csv', {
-        cache: 'no-store'
-      })
-    ]);
-
-    if (!coursesResponse.ok) {
-      throw new Error(
-        'Could not load courses.csv'
-      );
-    }
-
-    if (!roundsResponse.ok) {
-      throw new Error(
-        'Could not load rounds.csv'
-      );
-    }
-
-    const courses =
-      parseCSV(
-        await coursesResponse.text()
-      );
-
-    const rounds =
-      parseCSV(
-        await roundsResponse.text()
-      );
-
-    // Map course data by year.
-    const coursesByYear = new Map();
-
-    courses.forEach(course => {
-      coursesByYear.set(
-        Number(course.year),
-        course
-      );
-    });
-
-    // -------------------------------------------------------
     // DETERMINE OG 12
-    //
-    // OG 12 = twelve players with the most rounds played
-    // in the currently selected stats mode.
     // -------------------------------------------------------
 
     const playerRoundCounts =
       await Promise.all(
         statsPlayers.map(async player => {
-          const response = await fetch(
-            `stats/${player.folder}/all_time_stats.json`,
-            { cache: 'no-store' }
-          );
-
-          if (!response.ok) {
-            throw new Error(
-              `Could not load ${player.name}'s stats`
-            );
-          }
-
-          const allTime =
-            await response.json();
-
-          const section =
-            getStatsModeData(allTime).section;
-
-          const rounds =
-            statsMode === 'team'
-              ? Number(section.team_rounds) || 0
-              : Number(section.solo_rounds) || 0;
+          const allTime = await loadAllTimeStats(player);
 
           return {
             ...player,
-            rounds
+            rounds: getModeRounds(
+              getStatsModeData(allTime).section,
+              statsMode
+            )
           };
         })
       );
 
     const og12Folders =
-      playerRoundCounts
-        .sort(
-          (a, b) =>
-            b.rounds - a.rounds
-        )
-        .slice(0, 12)
-        .map(
-          player => player.folder
-        );
+      topTwelveByRounds(playerRoundCounts)
+        .map(player => player.folder);
 
     // -------------------------------------------------------
     // ENABLE / DISABLE OG12 BUTTON
@@ -4625,577 +2685,101 @@ async function renderHandicapChart(
       og12Folders.includes(playerFolder);
 
     const og12Toggle =
-      document.getElementById(
-        'handicap-og12-toggle'
-      );
+      document.getElementById('handicap-og12-toggle');
 
     const og12Button =
-      document.getElementById(
-        'handicap-og12-button'
-      );
+      document.getElementById('handicap-og12-button');
 
     if (og12Toggle && og12Button) {
-
-      /*
-       * Non-OG12 players cannot activate
-       * the OG12 filter.
-       */
-      og12Button.disabled =
-        !selectedPlayerIsOG12;
+      // Non-OG12 players cannot activate the OG12 filter.
+      og12Button.disabled = !selectedPlayerIsOG12;
 
       og12Toggle.classList.toggle(
         'disabled',
         !selectedPlayerIsOG12
       );
 
-      /*
-       * If we switched to a player outside
-       * the OG12 while the filter was active,
-       * turn the filter off automatically.
-       */
+      // Switching to a non-OG12 player turns the filter off.
       if (!selectedPlayerIsOG12) {
         handicapOG12 = false;
-
-        og12Toggle.classList.remove(
-          'active'
-        );
+        og12Toggle.classList.remove('active');
       }
     }
 
-    // -------------------------------------------------------
-    // BUILD SELECTED PLAYER DATA
-    // -------------------------------------------------------
-
     const buildValues = totals =>
-      Array.from(
-        { length: 18 },
-        (_, index) => {
+      HOLE_NUMBERS.map(handicap => {
+        const entry = totals[handicap];
 
-          const handicap = index + 1;
-          const entry = totals[handicap];
-
-          return entry.count
-            ? entry.sum / entry.count
-            : null;
-        }
-      );
+        return entry.count
+          ? entry.sum / entry.count
+          : null;
+      });
 
     // -------------------------------------------------------
-    // COMBINED MODE
+    // COMBINED MODE: SOLO VS TEAM LINES
     // -------------------------------------------------------
 
     if (statsMode === 'combined') {
-
       const [soloTotals, teamTotals] =
         await Promise.all([
-          getPlayerHandicapTotals(
-            playerName,
-            'solo'
-          ),
-
-          getPlayerHandicapTotals(
-            playerName,
-            'team'
-          )
+          getPlayerHandicapTotals(playerName, 'solo'),
+          getPlayerHandicapTotals(playerName, 'team')
         ]);
 
-      const soloValues =
-        buildValues(soloTotals);
-
-      const teamValues =
-        buildValues(teamTotals);
-
-      // -----------------------------------------------------
-      // CREATE TWO-LINE COMBINED CHART
-      // -----------------------------------------------------
-
-      handicapChart =
-        new Chart(
-          canvas,
-          {
-            type: 'line',
-
-            data: {
-              labels: Array.from(
-                { length: 18 },
-                (_, index) => index + 1
-              ),
-
-              datasets: [
-                {
-                  label: 'Solo',
-
-                  data: soloValues,
-
-                  borderColor: '#d9b902',
-                  backgroundColor: '#d9b902',
-
-                  borderWidth: 3,
-                  pointRadius: 3.5,
-                  pointHoverRadius: 5,
-
-                  tension: 0.25,
-                  spanGaps: false
-                },
-
-                {
-                  label: 'Team',
-
-                  data: teamValues,
-
-                  borderColor: '#1a3a1a',
-                  backgroundColor: '#1a3a1a',
-
-                  borderWidth: 3,
-                  pointRadius: 3.5,
-                  pointHoverRadius: 5,
-
-                  tension: 0.25,
-                  spanGaps: false
-                }
-              ]
-            },
-
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-
-              interaction: {
-                mode: 'nearest',
-                intersect: true
-              },
-
-              scales: {
-
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Hole Handicap',
-
-                    font: {
-                      family: 'DM Sans'
-                    }
-                  },
-
-                  ticks: {
-                    precision: 0
-                  }
-                },
-
-                y: {
-                  title: {
-                    display: true,
-                    text: 'Relative to Par',
-
-                    font: {
-                      family: 'DM Sans'
-                    }
-                  },
-
-                  ticks: {
-                    callback: function(value) {
-
-                      if (value === 0) {
-                        return 'E';
-                      }
-
-                      return value > 0
-                        ? `+${value}`
-                        : value;
-                    }
-                  }
-                }
-
-              },
-
-              plugins: {
-
-                legend: {
-                  display: true,
-
-                  position: 'bottom',
-
-                  labels: {
-                    font: {
-                      family: 'DM Sans'
-                    },
-
-                    padding: 12,
-
-                    usePointStyle: true
-                  }
-                },
-
-                tooltip: {
-                  callbacks: {
-
-                    title: function(context) {
-                      return (
-                        `Hole Handicap: ${
-                          context[0].label
-                        }`
-                      );
-                    },
-
-                    label: function(context) {
-
-                      if (
-                        context.raw == null
-                      ) {
-                        return (
-                          `${context.dataset.label}: —`
-                        );
-                      }
-
-                      const value =
-                        Number(context.raw);
-
-                      const formatted =
-                        value === 0
-                          ? 'E'
-                          : value > 0
-                            ? `+${value.toFixed(2)}`
-                            : value.toFixed(2);
-
-                      return (
-                        `${context.dataset.label}: ${formatted}`
-                      );
-                    }
-
-                  }
-                }
-
-              }
-            }
-          }
-        );
+      handicapChart = createHandicapChart(
+        canvas,
+        [
+          lineDataset('Solo', buildValues(soloTotals), '#d9b902', 3, 3.5, 5),
+          lineDataset('Team', buildValues(teamTotals), '#1a3a1a', 3, 3.5, 5)
+        ],
+        true
+      );
 
       return;
     }
 
     // -------------------------------------------------------
-    // SOLO / TEAM MODE
+    // SOLO / TEAM MODE: SELECTED PLAYER VS FIELD
     // -------------------------------------------------------
-
-    // Existing selected-player totals
-
-    const totals = {};
-
-    for (
-      let handicap = 1;
-      handicap <= 18;
-      handicap++
-    ) {
-      totals[handicap] = {
-        sum: 0,
-        count: 0
-      };
-    }
-
-    rounds.forEach(round => {
-
-      if (Number(round.year) === 0) {
-        return;
-      }
-
-      let roundPlayers = [];
-
-      try {
-        roundPlayers =
-          JSON.parse(
-            round.player || '[]'
-          );
-      } catch {
-        return;
-      }
-
-      if (
-        !Array.isArray(roundPlayers) ||
-        !roundPlayers.includes(playerName)
-      ) {
-        return;
-      }
-
-      const isSolo =
-        roundPlayers.length === 1;
-
-      const isTeam =
-        roundPlayers.length > 1;
-
-      if (
-        statsMode === 'solo' &&
-        !isSolo
-      ) {
-        return;
-      }
-
-      if (
-        statsMode === 'team' &&
-        !isTeam
-      ) {
-        return;
-      }
-
-      const course =
-        coursesByYear.get(
-          Number(round.year)
-        );
-
-      if (!course) {
-        return;
-      }
-
-      for (
-        let hole = 1;
-        hole <= 18;
-        hole++
-      ) {
-
-        const score =
-          Number(
-            round[`hole${hole}`]
-          );
-
-        const par =
-          Number(
-            course[`hole${hole}_par`]
-          );
-
-        const holeHandicap =
-          Number(
-            course[`hole${hole}_hdcp`]
-          );
-
-        if (
-          !Number.isFinite(score) ||
-          !Number.isFinite(par) ||
-          !Number.isFinite(holeHandicap) ||
-          holeHandicap < 1 ||
-          holeHandicap > 18
-        ) {
-          continue;
-        }
-
-        totals[holeHandicap].sum +=
-          score - par;
-
-        totals[holeHandicap].count += 1;
-      }
-    });
 
     const selectedValues =
-      buildValues(totals);
-
-    // -------------------------------------------------------
-    // LOAD OTHER PLAYERS
-    // -------------------------------------------------------
+      buildValues(
+        await getPlayerHandicapTotals(playerName, statsMode)
+      );
 
     let otherPlayers =
       statsPlayers.filter(
-        player =>
-          player.folder !== playerFolder
+        player => player.folder !== playerFolder
       );
 
     if (handicapOG12) {
       otherPlayers =
         otherPlayers.filter(
-          player =>
-            og12Folders.includes(
-              player.folder
-            )
+          player => og12Folders.includes(player.folder)
         );
     }
 
     const otherPlayerData =
       await Promise.all(
-        otherPlayers.map(
-          async player => {
+        otherPlayers.map(async player => ({
+          name: player.name,
+          values: buildValues(
+            await getPlayerHandicapTotals(player.name, statsMode)
+          )
+        }))
+      );
 
-            const playerTotals =
-              await getPlayerHandicapTotals(
-                player.name,
-                statsMode
-              );
+    handicapChart = createHandicapChart(
+      canvas,
+      [
+        lineDataset(playerName, selectedValues, '#d9b902', 3, 3.5, 5),
 
-            const values =
-              buildValues(playerTotals);
-
-            return {
-              name: player.name,
-              values
-            };
-          }
+        ...otherPlayerData.map(player =>
+          lineDataset(player.name, player.values, 'rgba(0, 0, 0, 0.35)', 1.5, 2, 4)
         )
-      );
-
-    // -------------------------------------------------------
-    // DATASETS
-    // -------------------------------------------------------
-
-    const datasets = [
-      {
-        label: playerName,
-
-        data: selectedValues,
-
-        borderColor: '#d9b902',
-        backgroundColor: '#d9b902',
-
-        borderWidth: 3,
-        pointRadius: 3.5,
-        pointHoverRadius: 5,
-
-        tension: 0.25,
-        spanGaps: false
-      }
-    ];
-
-    otherPlayerData.forEach(
-      player => {
-
-        datasets.push({
-          label: player.name,
-
-          data: player.values,
-
-          borderColor:
-            'rgba(0, 0, 0, 0.35)',
-
-          backgroundColor:
-            'rgba(0, 0, 0, 0.35)',
-
-          borderWidth: 1.5,
-          pointRadius: 2,
-          pointHoverRadius: 4,
-
-          tension: 0.25,
-          spanGaps: false
-        });
-
-      }
+      ],
+      false
     );
-
-    // -------------------------------------------------------
-    // CREATE CHART
-    // -------------------------------------------------------
-
-    handicapChart =
-      new Chart(
-        canvas,
-        {
-          type: 'line',
-
-          data: {
-            labels: Array.from(
-              { length: 18 },
-              (_, index) =>
-                index + 1
-            ),
-
-            datasets
-          },
-
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            interaction: {
-              mode: 'nearest',
-              intersect: true
-            },
-
-            scales: {
-
-              x: {
-                title: {
-                  display: true,
-                  text: 'Hole Handicap',
-
-                  font: {
-                    family: 'DM Sans'
-                  }
-                },
-
-                ticks: {
-                  precision: 0
-                }
-              },
-
-              y: {
-                title: {
-                  display: true,
-                  text: 'Relative to Par',
-
-                  font: {
-                    family: 'DM Sans'
-                  }
-                },
-
-                ticks: {
-                  callback: function(value) {
-
-                    if (value === 0) {
-                      return 'E';
-                    }
-
-                    return value > 0
-                      ? `+${value}`
-                      : value;
-                  }
-                }
-              }
-
-            },
-
-            plugins: {
-
-              legend: {
-                display: false
-              },
-
-              tooltip: {
-                callbacks: {
-
-                  title: function(context) {
-                    return (
-                      `Hole Handicap: ${
-                        context[0].label
-                      }`
-                    );
-                  },
-
-                  label: function(context) {
-
-                    if (
-                      context.raw == null
-                    ) {
-                      return (
-                        `${context.dataset.label}: —`
-                      );
-                    }
-
-                    const value =
-                      Number(context.raw);
-
-                    const formatted =
-                      value === 0
-                        ? 'E'
-                        : value > 0
-                          ? `+${value.toFixed(2)}`
-                          : value.toFixed(2);
-
-                    return (
-                      `${context.dataset.label}: ${formatted}`
-                    );
-                  }
-
-                }
-              }
-
-            }
-          }
-        }
-      );
 
   } catch (error) {
 
@@ -5208,129 +2792,154 @@ async function renderHandicapChart(
   }
 }
 
+function createHandicapChart(canvas, datasets, showLegend) {
+  return new Chart(canvas, {
+    type: 'line',
+
+    data: {
+      labels: HOLE_NUMBERS,
+      datasets
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      interaction: {
+        mode: 'nearest',
+        intersect: true
+      },
+
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Hole Handicap',
+
+            font: {
+              family: 'DM Sans'
+            }
+          },
+
+          ticks: {
+            precision: 0
+          }
+        },
+
+        y: {
+          title: {
+            display: true,
+            text: 'Relative to Par',
+
+            font: {
+              family: 'DM Sans'
+            }
+          },
+
+          ticks: {
+            callback: formatRelativeToParTick
+          }
+        }
+      },
+
+      plugins: {
+        legend: showLegend
+          ? {
+              display: true,
+              position: 'bottom',
+
+              labels: {
+                font: {
+                  family: 'DM Sans'
+                },
+
+                padding: 12,
+                usePointStyle: true
+              }
+            }
+          : {
+              display: false
+            },
+
+        tooltip: {
+          callbacks: {
+            title: function(context) {
+              return `Hole Handicap: ${context[0].label}`;
+            },
+
+            label: function(context) {
+              if (context.raw == null) {
+                return `${context.dataset.label}: —`;
+              }
+
+              return `${context.dataset.label}: ${formatRelativeToPar(Number(context.raw))}`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 async function getPlayerHandicapTotals(
   playerName,
   mode = statsMode
 ) {
-  const [
-    coursesResponse,
-    roundsResponse
-  ] = await Promise.all([
-    fetch('courses.csv', {
-      cache: 'no-store'
-    }),
+  const errorMessage = 'Could not load handicap chart data';
 
-    fetch('rounds.csv', {
-      cache: 'no-store'
-    })
+  const [courses, rounds] = await Promise.all([
+    loadData('courses.csv', errorMessage),
+    loadData('rounds.csv', errorMessage)
   ]);
 
-  if (
-    !coursesResponse.ok ||
-    !roundsResponse.ok
-  ) {
-    throw new Error(
-      'Could not load handicap chart data'
-    );
-  }
-
-  const courses =
-    parseCSV(
-      await coursesResponse.text()
-    );
-
-  const rounds =
-    parseCSV(
-      await roundsResponse.text()
-    );
-
-  const coursesByYear = new Map();
-
-  courses.forEach(course => {
-    coursesByYear.set(
-      Number(course.year),
-      course
-    );
-  });
+  const coursesByYear = new Map(
+    courses.map(course => [Number(course.year), course])
+  );
 
   const totals = {};
 
-  for (
-    let handicap = 1;
-    handicap <= 18;
-    handicap++
-  ) {
+  HOLE_NUMBERS.forEach(handicap => {
     totals[handicap] = {
       sum: 0,
       count: 0
     };
-  }
+  });
 
   rounds.forEach(round => {
-
-    let roundPlayers = [];
-
-    try {
-      roundPlayers =
-        JSON.parse(round.player || '[]');
-    } catch {
+    if (Number(round.year) === 0) {
       return;
     }
 
+    const roundPlayers = parseRoundPlayers(round);
+
     if (
-      !Array.isArray(roundPlayers) ||
+      !roundPlayers ||
       !roundPlayers.includes(playerName)
     ) {
       return;
     }
 
-    const isSolo =
-      roundPlayers.length === 1;
+    const isSolo = roundPlayers.length === 1;
 
-    const isTeam =
-      roundPlayers.length > 1;
-
-    if (
-      mode === 'solo' &&
-      !isSolo
-    ) {
+    if (mode === 'solo' && !isSolo) {
       return;
     }
 
-    if (
-      mode === 'team' &&
-      !isTeam
-    ) {
+    if (mode === 'team' && isSolo) {
       return;
     }
 
     const course =
-      coursesByYear.get(
-        Number(round.year)
-      );
+      coursesByYear.get(Number(round.year));
 
     if (!course) {
       return;
     }
 
-    for (
-      let hole = 1;
-      hole <= 18;
-      hole++
-    ) {
-
-      const score =
-        Number(round[`hole${hole}`]);
-
-      const par =
-        Number(
-          course[`hole${hole}_par`]
-        );
-
-      const handicap =
-        Number(
-          course[`hole${hole}_hdcp`]
-        );
+    HOLE_NUMBERS.forEach(hole => {
+      const score = Number(round[`hole${hole}`]);
+      const par = Number(course[`hole${hole}_par`]);
+      const handicap = Number(course[`hole${hole}_hdcp`]);
 
       if (
         !Number.isFinite(score) ||
@@ -5339,14 +2948,12 @@ async function getPlayerHandicapTotals(
         handicap < 1 ||
         handicap > 18
       ) {
-        continue;
+        return;
       }
 
-      totals[handicap].sum +=
-        score - par;
-
+      totals[handicap].sum += score - par;
       totals[handicap].count++;
-    }
+    });
   });
 
   return totals;
@@ -5388,25 +2995,12 @@ function formatStatValue(value) {
   return Number(number.toFixed(2));
 }
 
-function statBox(label, value, key, direction = 'lower') {
-  return `
-    <button
-      class="stat-box stat-box-clickable"
-      data-career-stat="${key}"
-      data-direction="${direction}"
-      type="button"
-    >
-      <div class="stat-box-label">${label}</div>
-      <div class="stat-box-value">${formatStatValue(value)}</div>
-    </button>
-  `;
-}
-
-function personalStatBox(
+function statBox(
   label,
   value,
   key,
-  direction = 'higher'
+  direction = 'lower',
+  format = formatStatValue
 ) {
   return `
     <button
@@ -5416,9 +3010,7 @@ function personalStatBox(
       type="button"
     >
       <div class="stat-box-label">${label}</div>
-      <div class="stat-box-value">
-        ${formatMoneyValue(value)}
-      </div>
+      <div class="stat-box-value">${format(value)}</div>
     </button>
   `;
 }
@@ -5465,18 +3057,6 @@ function statPairBox(
       </div>
     </button>
   `;
-}
-
-function formatPercent(value) {
-  if (value == null) {
-    return '—';
-  }
-
-  const number = Number(value);
-
-  return Number.isFinite(number)
-    ? `${Number(number.toFixed(2))}%`
-    : '—';
 }
 
 function parseCSV(text) {
@@ -5532,16 +3112,7 @@ function parseCSV(text) {
 }
 
 async function loadCourseYears() {
-  const response = await fetch('courses.csv', {
-    cache: 'no-store'
-  });
-
-  if (!response.ok) {
-    throw new Error('Could not load courses.csv');
-  }
-
-  const text = await response.text();
-  const rows = parseCSV(text);
+  const rows = await loadData('courses.csv');
 
   return [...new Set(
     rows
@@ -5612,62 +3183,102 @@ function renderParAverageChart(
     parAverageChart = null;
   }
 
-  const labels = [
-    'Par 3',
-    'Par 4',
-    'Par 5'
-  ];
-
-  const isCombined =
+  const isCombined = Boolean(
     statsMode === 'combined' &&
     soloStats &&
-    teamStats;
-
-  const parValues = [3, 4, 5];
-
-  const soloValues = (
-    isCombined
-      ? parValues.map((par, index) => {
-          const value =
-            Number(
-              soloStats[
-                `par${par}_average`
-              ]
-            );
-
-          return Number.isFinite(value)
-            ? value - par
-            : null;
-        })
-      : parValues.map((par, index) => {
-          const value =
-            Number(
-              stats[
-                `par${par}_average`
-              ]
-            );
-
-          return Number.isFinite(value)
-            ? value - par
-            : null;
-        })
+    teamStats
   );
 
-  const teamValues = isCombined
-    ? parValues.map(par => {
-        const value =
-          Number(
-            teamStats[
-              `par${par}_average`
-            ]
-          );
+  const relativeToPar = source =>
+    [3, 4, 5].map(par => {
+      const value = Number(source[`par${par}_average`]);
 
-        return Number.isFinite(value)
-          ? value - par
-          : null;
-      })
-    : null;
+      return Number.isFinite(value)
+        ? value - par
+        : null;
+    });
 
+  parAverageChart = createRelativeToParBarChart(canvas, {
+    labels: ['Par 3', 'Par 4', 'Par 5'],
+    rankingStats: ['par3_average', 'par4_average', 'par5_average'],
+    playerFolder,
+    isCombined,
+    soloValues: relativeToPar(isCombined ? soloStats : stats),
+    teamValues: isCombined ? relativeToPar(teamStats) : null,
+    minAxisLimit: isCombined ? 2 : 0,
+    tooltipShowsDataset: true,
+    evenLabelLeftOfZero: false,
+    pluginId: 'parAverageValueLabels'
+  });
+}
+
+function renderFrontBackAverageChart(
+  stats,
+  playerFolder,
+  soloStats = null,
+  teamStats = null
+) {
+  const canvas =
+    document.getElementById('front-back-average-chart');
+
+  if (!canvas) {
+    return;
+  }
+
+  if (frontBackAverageChart) {
+    frontBackAverageChart.destroy();
+    frontBackAverageChart = null;
+  }
+
+  const isCombined = Boolean(
+    statsMode === 'combined' &&
+    soloStats &&
+    teamStats
+  );
+
+  const relativeToPar = source => [
+    Number(source.front_average_relative_to_par),
+    Number(source.back_average_relative_to_par)
+  ];
+
+  frontBackAverageChart = createRelativeToParBarChart(canvas, {
+    labels: ['Front 9', 'Back 9'],
+    rankingStats: ['front_average_relative_to_par', 'back_average_relative_to_par'],
+    playerFolder,
+    isCombined,
+    soloValues: relativeToPar(isCombined ? soloStats : stats),
+    teamValues: isCombined ? relativeToPar(teamStats) : null,
+    minAxisLimit: 2,
+    tooltipShowsDataset: false,
+    evenLabelLeftOfZero: true,
+    pluginId: 'frontBackAverageValueLabels'
+  });
+}
+
+/*
+ * Horizontal bar chart of strokes relative to par, with a
+ * symmetric x-axis around even par and value labels drawn
+ * beside the zero line. Combined mode shows Solo and Team
+ * bars; otherwise a single "Average" bar per row.
+ *
+ * Clicking a bar (or the zero line, for bars at exactly
+ * even par) opens the matching career ranking.
+ */
+function createRelativeToParBarChart(
+  canvas,
+  {
+    labels,
+    rankingStats,
+    playerFolder,
+    isCombined,
+    soloValues,
+    teamValues,
+    minAxisLimit,
+    tooltipShowsDataset,
+    evenLabelLeftOfZero,
+    pluginId
+  }
+) {
   const allValues =
     isCombined
       ? [...soloValues, ...teamValues]
@@ -5680,15 +3291,22 @@ function renderParAverageChart(
     1
   );
 
-  const axisLimit =
-    isCombined
-      ? Math.max(
-          Math.ceil(maxAbs * 10) / 10,
-          2
-        )
-      : Math.ceil(maxAbs * 10) / 10;
+  const axisLimit = Math.max(
+    Math.ceil(maxAbs * 10) / 10,
+    minAxisLimit
+  );
 
-  parAverageChart = new Chart(canvas, {
+  const bar = (label, data, color) => ({
+    label,
+    data,
+    backgroundColor: color,
+    borderRadius: 4,
+    barThickness: 12
+  });
+
+  const zeroTolerance = 14;
+
+  return new Chart(canvas, {
     type: 'bar',
 
     data: {
@@ -5696,36 +3314,11 @@ function renderParAverageChart(
 
       datasets: isCombined
         ? [
-            {
-              label: 'Solo',
-              data: soloValues,
-
-              backgroundColor: '#d9b902',
-
-              borderRadius: 4,
-              barThickness: 12
-            },
-
-            {
-              label: 'Team',
-              data: teamValues,
-
-              backgroundColor: '#1a3a1a',
-
-              borderRadius: 4,
-              barThickness: 12
-            }
+            bar('Solo', soloValues, '#d9b902'),
+            bar('Team', teamValues, '#1a3a1a')
           ]
         : [
-            {
-              label: 'Average',
-              data: soloValues,
-
-              backgroundColor: '#1a3a1a',
-
-              borderRadius: 4,
-              barThickness: 12
-            }
+            bar('Average', soloValues, '#1a3a1a')
           ]
     },
 
@@ -5739,18 +3332,12 @@ function renderParAverageChart(
       },
 
       scales: {
-
         x: {
           min: -axisLimit,
           max: axisLimit,
 
           ticks: {
-            callback: value =>
-              value === 0
-                ? 'E'
-                : value > 0
-                  ? `+${value}`
-                  : value,
+            callback: formatRelativeToParTick,
 
             font: {
               family: 'DM Sans',
@@ -5765,9 +3352,7 @@ function renderParAverageChart(
                 : 'rgba(0,0,0,.08)',
 
             lineWidth: context =>
-              context.tick.value === 0
-                ? 2
-                : 1
+              context.tick.value === 0 ? 2 : 1
           }
         },
 
@@ -5789,10 +3374,8 @@ function renderParAverageChart(
       },
 
       plugins: {
-
         legend: {
           display: isCombined,
-
           position: 'bottom',
 
           labels: {
@@ -5801,107 +3384,63 @@ function renderParAverageChart(
             },
 
             padding: 10,
-
             usePointStyle: true
           }
         },
 
         tooltip: {
           callbacks: {
-
             label: context => {
-
-              const value =
-                context.raw;
+              const value = context.raw;
 
               if (!Number.isFinite(value)) {
                 return '';
               }
 
-              return value === 0
-                ? `${context.dataset.label}: E`
-                : value > 0
-                  ? `${context.dataset.label}: +${value.toFixed(2)}`
-                  : `${context.dataset.label}: ${value.toFixed(2)}`;
+              return tooltipShowsDataset
+                ? `${context.dataset.label}: ${formatRelativeToPar(value)}`
+                : formatRelativeToPar(value);
             }
           }
         }
       },
 
-      onClick: function(event, elements) {
-
+      onClick: function(event, elements, chart) {
         let datasetIndex = null;
         let dataIndex = null;
 
         if (elements.length) {
-
-          datasetIndex =
-            elements[0].datasetIndex;
-
-          dataIndex =
-            elements[0].index;
+          datasetIndex = elements[0].datasetIndex;
+          dataIndex = elements[0].index;
 
         } else {
-
           /*
            * Zero-value bars have no width, so Chart.js
            * does not report an element click.
-           *
            * Detect clicks near the zero line manually.
            */
-          const clickX = event.x;
-          const clickY = event.y;
+          const zeroX = chart.scales.x.getPixelForValue(0);
 
-          const zeroX =
-            parAverageChart.scales.x
-              .getPixelForValue(0);
-
-          const zeroTolerance = 14;
-
-          if (
-            Math.abs(clickX - zeroX) >
-            zeroTolerance
-          ) {
+          if (Math.abs(event.x - zeroX) > zeroTolerance) {
             return;
           }
 
-          const metas =
-            parAverageChart.data.datasets.map(
-              (_, index) =>
-                parAverageChart.getDatasetMeta(index)
-            );
+          let closestDistance = Infinity;
 
-          let closestDistance =
-            Infinity;
+          chart.data.datasets.forEach((_, metaIndex) => {
+            chart.getDatasetMeta(metaIndex).data.forEach((bar, index) => {
+              const distance = Math.abs(bar.y - event.y);
 
-          metas.forEach(
-            (meta, metaIndex) => {
-
-              meta.data.forEach(
-                (bar, index) => {
-
-                  const distance =
-                    Math.abs(bar.y - clickY);
-
-                  if (
-                    distance < closestDistance &&
-                    distance < 18
-                  ) {
-                    closestDistance =
-                      distance;
-
-                    datasetIndex =
-                      metaIndex;
-
-                    dataIndex =
-                      index;
-                  }
-
-                }
-              );
-
-            }
-          );
+              if (
+                distance < closestDistance &&
+                distance < 18
+              ) {
+                closestDistance = distance;
+                datasetIndex = metaIndex;
+                dataIndex = index;
+              }
+            });
+          });
         }
 
         if (
@@ -5911,27 +3450,13 @@ function renderParAverageChart(
           return;
         }
 
-        const rankingStats = [
-          'par3_average',
-          'par4_average',
-          'par5_average'
-        ];
-
-        const stat =
-          rankingStats[dataIndex];
+        const stat = rankingStats[dataIndex];
 
         if (!stat) {
           return;
         }
 
-        /*
-         * Combined:
-         *   dataset 0 = Solo
-         *   dataset 1 = Team
-         *
-         * Solo / Team:
-         *   only one dataset exists.
-         */
+        // Combined: dataset 0 = Solo, dataset 1 = Team.
         const rankingSourceMode =
           statsMode === 'combined'
             ? datasetIndex === 1
@@ -5955,121 +3480,60 @@ function renderParAverageChart(
         );
       },
 
-      onHover: function(event, elements) {
-
+      onHover: function(event, elements, chart) {
         if (elements.length) {
-          event.native.target.style.cursor =
-            'pointer';
-
+          event.native.target.style.cursor = 'pointer';
           return;
         }
 
-        const clickX =
-          event.native.offsetX;
-
-        const zeroX =
-          parAverageChart.scales.x
-            .getPixelForValue(0);
+        // The zero line is clickable too.
+        const zeroX = chart.scales.x.getPixelForValue(0);
 
         event.native.target.style.cursor =
-          Math.abs(clickX - zeroX) <= 14
+          Math.abs(event.native.offsetX - zeroX) <= zeroTolerance
             ? 'pointer'
             : 'default';
       }
     },
 
     plugins: [{
-      id: 'parAverageValueLabels',
+      id: pluginId,
 
       afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const zeroX = chart.scales.x.getPixelForValue(0);
 
-        const zeroX =
-          chart.scales.x
-            .getPixelForValue(0);
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
 
-        chart.data.datasets.forEach(
-          (dataset, datasetIndex) => {
+          ctx.save();
+          ctx.font = '600 10px "DM Sans", sans-serif';
+          ctx.fillStyle = '#4a4a3a';
+          ctx.textBaseline = 'middle';
 
-            const meta =
-              chart.getDatasetMeta(
-                datasetIndex
-              );
+          meta.data.forEach((bar, index) => {
+            const value = Number(dataset.data[index]);
 
-            const datasetValues =
-              dataset.data;
+            if (!Number.isFinite(value)) {
+              return;
+            }
 
-            const ctx =
-              chart.ctx;
+            // Over par: label left of the zero line; under par: right.
+            const leftOfZero =
+              value > 0 ||
+              (value === 0 && evenLabelLeftOfZero);
 
-            ctx.save();
+            ctx.textAlign = leftOfZero ? 'right' : 'left';
 
-            ctx.font =
-              '600 10px "DM Sans", sans-serif';
-
-            ctx.fillStyle =
-              '#4a4a3a';
-
-            ctx.textBaseline =
-              'middle';
-
-            meta.data.forEach(
-              (bar, index) => {
-
-                const value =
-                  Number(
-                    datasetValues[index]
-                  );
-
-                if (
-                  !Number.isFinite(value)
-                ) {
-                  return;
-                }
-
-                const text =
-                  value === 0
-                    ? 'E'
-                    : value > 0
-                      ? `+${value.toFixed(2)}`
-                      : value.toFixed(2);
-
-                if (value > 0) {
-
-                  ctx.textAlign =
-                    'right';
-
-                  ctx.fillText(
-                    text,
-                    zeroX - 7,
-                    bar.y
-                  );
-
-                } else {
-
-                  /*
-                   * Negative values AND exactly-even
-                   * values get the label on the
-                   * right/left side consistently.
-                   *
-                   * For E specifically, keep it left
-                   * of the zero line.
-                   */
-                  ctx.textAlign =
-                    'left';
-
-                  ctx.fillText(
-                    text,
-                    zeroX + 7,
-                    bar.y
-                  );
-                }
-
-              }
+            ctx.fillText(
+              formatRelativeToPar(value),
+              leftOfZero ? zeroX - 7 : zeroX + 7,
+              bar.y
             );
+          });
 
-            ctx.restore();
-          }
-        );
+          ctx.restore();
+        });
       }
     }]
   });
@@ -6171,178 +3635,37 @@ async function showYearlyStat(
 
   button.classList.add('active');
 
-  // Destroy existing chart
   if (yearlyChart) {
     yearlyChart.destroy();
     yearlyChart = null;
   }
 
   try {
-    const allYears = await getAllTournamentYears();
+    const allYears = await loadCourseYears();
 
-    // ---------------------------------------------------------
-    // SELECT THE CORRECT DATASET
-    // ---------------------------------------------------------
-
-    const selectedYearly =
-      statsMode === 'solo'
-        ? yearly
-        : yearlyTeam;
-
-    // Map rows by year.
-    //
-    // Solo has one row per year.
-    // Team normally has one row per team round.
-    const selectedByYear = new Map();
-
-    selectedYearly.forEach(row => {
-      const year = Number(row.year);
-
-      // Team rows:
-      // if there are ever multiple team rounds in a year,
-      // use the first one for the yearly line.
-      if (!selectedByYear.has(year)) {
-        selectedByYear.set(year, row);
-      }
-    });
-
-    // ---------------------------------------------------------
-    // DETERMINE THE CSV FIELD
-    // ---------------------------------------------------------
-
+    // Team rows are stored in the 'score' column.
     const csvField =
       statsMode === 'team' && stat === 'team_score'
         ? 'score'
         : stat;
 
-    // ---------------------------------------------------------
-    // SELECTED PLAYER VALUES
-    // ---------------------------------------------------------
+    /*
+     * One value per tournament year (null when not played).
+     * If a year ever has multiple rows, the first one wins.
+     */
+    const valuesByYear = rows => {
+      const byYear = new Map();
 
-    const selectedValues = allYears.map(year => {
-      const row = selectedByYear.get(year);
-
-      if (!row) {
-        return null;
-      }
-
-      const value = Number(row[csvField]);
-
-      return Number.isFinite(value)
-        ? value
-        : null;
-    });
-
-    // ---------------------------------------------------------
-    // LOAD OTHER PLAYERS
-    // ---------------------------------------------------------
-
-    const otherPlayers = statsPlayers.filter(
-      player => player.folder !== playerFolder
-    );
-
-    const otherPlayerData = await Promise.all(
-      otherPlayers.map(async player => {
-
-        if (statsMode === 'solo') {
-          const response = await fetch(
-            `stats/${player.folder}/yearly_stats.csv`,
-            { cache: 'no-store' }
-          );
-
-          if (!response.ok) {
-            throw new Error(
-              `Could not load ${player.name}'s yearly statistics`
-            );
-          }
-
-          const text = await response.text();
-
-          return {
-            name: player.name,
-            yearly: parseCSV(text)
-          };
-        }
-
-        const response = await fetch(
-          `stats/${player.folder}/yearly_team_stats.csv`,
-          { cache: 'no-store' }
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Could not load ${player.name}'s team statistics`
-          );
-        }
-
-        const text = await response.text();
-
-        return {
-          name: player.name,
-          yearly: parseCSV(text)
-        };
-      })
-    );
-
-    // ---------------------------------------------------------
-    // LABEL
-    // ---------------------------------------------------------
-
-    const label =
-      statsMode === 'team'
-        ? yearlyStatLabels[stat] || stat
-        : yearlyStatLabels[stat] || stat;
-
-    title.textContent =
-      `${statsMode === 'team' ? 'Team' : 'Solo'} ${label} by Year`;
-
-    container.style.display = '';
-
-    // ---------------------------------------------------------
-    // SELECTED PLAYER DATASET
-    // ---------------------------------------------------------
-
-    const selectedPlayerName =
-      statsPlayers.find(
-        player => player.folder === playerFolder
-      )?.name || 'Selected Player';
-
-    const datasets = [
-      {
-        label: selectedPlayerName,
-
-        data: selectedValues,
-
-        borderColor: '#d9b902',
-        backgroundColor: '#d9b902',
-
-        borderWidth: 3,
-        pointRadius: 4,
-        pointHoverRadius: 5,
-
-        tension: 0.25,
-        spanGaps: false
-      }
-    ];
-
-    // ---------------------------------------------------------
-    // OTHER PLAYERS
-    // ---------------------------------------------------------
-
-    otherPlayerData.forEach(player => {
-
-      const playerByYear = new Map();
-
-      player.yearly.forEach(row => {
+      rows.forEach(row => {
         const year = Number(row.year);
 
-        if (!playerByYear.has(year)) {
-          playerByYear.set(year, row);
+        if (!byYear.has(year)) {
+          byYear.set(year, row);
         }
       });
 
-      const values = allYears.map(year => {
-        const row = playerByYear.get(year);
+      return allYears.map(year => {
+        const row = byYear.get(year);
 
         if (!row) {
           return null;
@@ -6354,27 +3677,77 @@ async function showYearlyStat(
           ? value
           : null;
       });
+    };
 
-      datasets.push({
-        label: player.name,
+    const selectedValues = valuesByYear(
+      statsMode === 'solo'
+        ? yearly
+        : yearlyTeam
+    );
 
-        data: values,
+    // ---------------------------------------------------------
+    // LOAD OTHER PLAYERS
+    // ---------------------------------------------------------
 
-        borderColor: 'rgba(0, 0, 0, 0.4)',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    const otherPlayers = statsPlayers.filter(
+      player => player.folder !== playerFolder
+    );
 
-        borderWidth: 1.5,
-        pointRadius: 2.5,
-        pointHoverRadius: 5,
+    const otherPlayerData = await Promise.all(
+      otherPlayers.map(async player => ({
+        name: player.name,
 
-        tension: 0.25,
-        spanGaps: false
+        yearly: statsMode === 'solo'
+          ? await loadData(
+              `stats/${player.folder}/yearly_stats.csv`,
+              `Could not load ${player.name}'s yearly statistics`
+            )
+          : await loadData(
+              `stats/${player.folder}/yearly_team_stats.csv`,
+              `Could not load ${player.name}'s team statistics`
+            )
+      }))
+    );
+
+    const label = yearlyStatLabels[stat] || stat;
+
+    title.textContent =
+      `${statsMode === 'team' ? 'Team' : 'Solo'} ${label} by Year`;
+
+    container.style.display = '';
+
+    const selectedPlayerName =
+      statsPlayers.find(
+        player => player.folder === playerFolder
+      )?.name || 'Selected Player';
+
+    const datasets = [
+      lineDataset(selectedPlayerName, selectedValues, '#d9b902', 3, 4, 5),
+
+      ...otherPlayerData.map(player =>
+        lineDataset(player.name, valuesByYear(player.yearly), 'rgba(0, 0, 0, 0.4)', 1.5, 2.5, 5)
+      )
+    ];
+
+    /*
+     * Players whose line passes through the hovered/clicked point.
+     * Navigation only happens when exactly one player is there.
+     */
+    const datasetsAtPoint = element => {
+      const value = Number(
+        yearlyChart.data.datasets[element.datasetIndex].data[element.index]
+      );
+
+      if (!Number.isFinite(value)) {
+        return [];
+      }
+
+      return yearlyChart.data.datasets.filter(dataset => {
+        const other = Number(dataset.data[element.index]);
+
+        return Number.isFinite(other) && other === value;
       });
-    });
-
-    // ---------------------------------------------------------
-    // CREATE CHART
-    // ---------------------------------------------------------
+    };
 
     yearlyChart = new Chart(canvas, {
       type: 'line',
@@ -6445,90 +3818,33 @@ async function showYearlyStat(
         },
 
         onClick: function(event, elements) {
-
           if (!elements.length) {
             return;
           }
 
-          const element = elements[0];
+          const playersAtPoint = datasetsAtPoint(elements[0]);
 
-          const datasetIndex =
-            element.datasetIndex;
-
-          const dataIndex =
-            element.index;
-
-          const clickedValue =
-            Number(
-              yearlyChart.data.datasets[
-                datasetIndex
-              ].data[dataIndex]
-            );
-
-          if (!Number.isFinite(clickedValue)) {
-            return;
-          }
-
-          /*
-           * Determine how many players share this
-           * exact value in this exact year.
-           */
-          const playersAtPoint =
-            yearlyChart.data.datasets.filter(dataset => {
-
-              const value =
-                Number(
-                  dataset.data[dataIndex]
-                );
-
-              return (
-                Number.isFinite(value) &&
-                value === clickedValue
-              );
-
-            });
-
-          /*
-           * Only navigate when exactly one player
-           * occupies the point.
-           */
           if (playersAtPoint.length !== 1) {
             return;
           }
 
-          const targetDataset =
-            playersAtPoint[0];
-
-          /*
-           * The dataset label is the player's name.
-           * Convert that back to the stats player entry
-           * so we can get their folder.
-           */
+          // Dataset labels are player names.
           const targetPlayer =
             statsPlayers.find(
-              player =>
-                player.name === targetDataset.label
+              player => player.name === playersAtPoint[0].label
             );
 
-          if (!targetPlayer) {
-            return;
-          }
-
-          /*
-           * Do not navigate if this is already the
-           * currently selected player.
-           */
           if (
-            targetPlayer.folder ===
-            selectedStatsPlayerFolder
+            !targetPlayer ||
+            targetPlayer.folder === selectedStatsPlayerFolder
           ) {
             return;
           }
 
           /*
            * Keep the current yearly statistic selected.
-           * renderPlayerStats() will automatically restore
-           * the chart after the new player's stats load.
+           * renderPlayerStats() restores the chart after
+           * the new player's stats load.
            */
           currentYearlyChartConfig = {
             stat,
@@ -6537,56 +3853,13 @@ async function showYearlyStat(
 
           preserveStatsScroll = true;
 
-          loadPlayerStats(
-            targetPlayer.folder
-          );
+          loadPlayerStats(targetPlayer.folder);
         },
 
         onHover: function(event, elements) {
-
-          if (!elements.length) {
-            event.native.target.style.cursor =
-              'default';
-
-            return;
-          }
-
-          const element = elements[0];
-
-          const dataIndex =
-            element.index;
-
-          const clickedValue =
-            Number(
-              yearlyChart.data.datasets[
-                element.datasetIndex
-              ].data[dataIndex]
-            );
-
-          if (!Number.isFinite(clickedValue)) {
-            event.native.target.style.cursor =
-              'default';
-
-            return;
-          }
-
-          const playersAtPoint =
-            yearlyChart.data.datasets.filter(dataset => {
-
-              const value =
-                Number(
-                  dataset.data[dataIndex]
-                );
-
-              return (
-                Number.isFinite(value) &&
-                value === clickedValue
-              );
-
-            });
-
           event.native.target.style.cursor =
-            playersAtPoint.length === 1
+            elements.length &&
+            datasetsAtPoint(elements[0]).length === 1
               ? 'pointer'
               : 'default';
         }
@@ -6610,7 +3883,6 @@ async function openScorecard(
   encodedPlayerName,
   mode = 'solo'
 ) {
-  const playerFolder = decodeURIComponent(encodedPlayerFolder);
   const playerName = decodeURIComponent(encodedPlayerName);
 
   const content = document.getElementById('scorecard-content');
@@ -6628,37 +3900,10 @@ async function openScorecard(
   `;
 
   try {
-    // ---------------------------------------------------------
-    // LOAD SOURCE DATA
-    // ---------------------------------------------------------
-
-    const [coursesResponse, roundsResponse] = await Promise.all([
-      fetch('courses.csv', {
-        cache: 'no-store'
-      }),
-
-      fetch('rounds.csv', {
-        cache: 'no-store'
-      })
+    const [courses, rounds] = await Promise.all([
+      loadData('courses.csv'),
+      loadData('rounds.csv')
     ]);
-
-    if (!coursesResponse.ok) {
-      throw new Error('Could not load courses.csv');
-    }
-
-    if (!roundsResponse.ok) {
-      throw new Error('Could not load rounds.csv');
-    }
-
-    const coursesText = await coursesResponse.text();
-    const roundsText = await roundsResponse.text();
-
-    const courses = parseCSV(coursesText);
-    const rounds = parseCSV(roundsText);
-
-    // ---------------------------------------------------------
-    // FIND COURSE
-    // ---------------------------------------------------------
 
     const course = courses.find(
       row => Number(row.year) === Number(year)
@@ -6671,60 +3916,28 @@ async function openScorecard(
     }
 
     // ---------------------------------------------------------
-    // FIND SOLO ROUND
+    // FIND SOLO / TEAM ROUNDS
     // ---------------------------------------------------------
 
-    const soloRound = rounds.find(row => {
+    const findRound = matches => rounds.find(row => {
       if (Number(row.year) !== Number(year)) {
         return false;
       }
 
-      if (!row.player) {
-        return false;
-      }
+      const roundPlayers = parseRoundPlayers(row);
 
-      try {
-        const roundPlayers = JSON.parse(row.player);
-
-        return (
-          Array.isArray(roundPlayers) &&
-          roundPlayers.length === 1 &&
-          roundPlayers[0] === playerName
-        );
-      } catch {
-        return false;
-      }
+      return Boolean(roundPlayers && matches(roundPlayers));
     });
 
-    // ---------------------------------------------------------
-    // FIND TEAM ROUND
-    // ---------------------------------------------------------
+    const soloRound = findRound(roundPlayers =>
+      roundPlayers.length === 1 &&
+      roundPlayers[0] === playerName
+    );
 
-    const teamRound = rounds.find(row => {
-      if (Number(row.year) !== Number(year)) {
-        return false;
-      }
-
-      if (!row.player) {
-        return false;
-      }
-
-      try {
-        const roundPlayers = JSON.parse(row.player);
-
-        return (
-          Array.isArray(roundPlayers) &&
-          roundPlayers.length > 1 &&
-          roundPlayers.includes(playerName)
-        );
-      } catch {
-        return false;
-      }
-    });
-
-    // ---------------------------------------------------------
-    // VERIFY REQUIRED ROUND(S)
-    // ---------------------------------------------------------
+    const teamRound = findRound(roundPlayers =>
+      roundPlayers.length > 1 &&
+      roundPlayers.includes(playerName)
+    );
 
     if (mode === 'solo' && !soloRound) {
       throw new Error(
@@ -6748,25 +3961,21 @@ async function openScorecard(
       );
     }
 
+    const teamPlayers = teamRound
+      ? parseRoundPlayers(teamRound)
+      : null;
+
     // ---------------------------------------------------------
     // HEADER
     // ---------------------------------------------------------
 
     yearLabel.textContent = year;
 
-    if (mode === 'team' && teamRound) {
-      try {
-        const teamPlayers = JSON.parse(teamRound.player);
-
-        playerLabel.textContent =
-          teamPlayers.join(' & ');
-      } catch {
-        playerLabel.textContent = playerName;
-      }
-    } else {
-      // Solo and Combined both use the individual player name.
-      playerLabel.textContent = playerName;
-    }
+    // Solo and Combined use the individual player's name.
+    playerLabel.textContent =
+      mode === 'team' && teamPlayers
+        ? teamPlayers.join(' & ')
+        : playerName;
 
     courseLabel.textContent =
       course.course_name || 'Course';
@@ -6778,28 +3987,7 @@ async function openScorecard(
       `Slope ${course.slope ?? '—'}`;
 
     // ---------------------------------------------------------
-    // COURSE DATA
-    // ---------------------------------------------------------
-
-    const holes = Array.from(
-      { length: 18 },
-      (_, i) => i + 1
-    );
-
-    const yardages = holes.map(
-      hole => course[`hole${hole}_yardage`]
-    );
-
-    const handicaps = holes.map(
-      hole => course[`hole${hole}_hdcp`]
-    );
-
-    const pars = holes.map(
-      hole => course[`hole${hole}_par`]
-    );
-
-    // ---------------------------------------------------------
-    // BUILD SCORE ROWS
+    // SCORE ROWS
     // ---------------------------------------------------------
 
     const scoreRows = [];
@@ -6821,18 +4009,8 @@ async function openScorecard(
       let teamLabel = 'Score';
 
       if (mode === 'combined') {
-        let teammateName = '';
-
-        try {
-          const teamPlayers = JSON.parse(teamRound.player);
-
-          teammateName =
-            teamPlayers.find(
-              name => name !== playerName
-            ) || '';
-        } catch {
-          teammateName = '';
-        }
+        const teammateName =
+          teamPlayers?.find(name => name !== playerName) || '';
 
         teamLabel = teammateName
           ? `Team (${teammateName})`
@@ -6846,127 +4024,88 @@ async function openScorecard(
     }
 
     // ---------------------------------------------------------
-    // TOTAL HELPERS
-    // ---------------------------------------------------------
-
-    function getScoreTotals(round) {
-      const scores = holes.map(
-        hole => round[`hole${hole}`]
-      );
-
-      const frontScore = scores
-        .slice(0, 9)
-        .reduce(
-          (sum, value) => sum + (Number(value) || 0),
-          0
-        );
-
-      const backScore = scores
-        .slice(9, 18)
-        .reduce(
-          (sum, value) => sum + (Number(value) || 0),
-          0
-        );
-
-      return {
-        scores,
-        frontScore,
-        backScore,
-        totalScore: frontScore + backScore
-      };
-    }
-
-    const frontYardage = yardages
-      .slice(0, 9)
-      .reduce(
-        (sum, value) => sum + (Number(value) || 0),
-        0
-      );
-
-    const backYardage = yardages
-      .slice(9, 18)
-      .reduce(
-        (sum, value) => sum + (Number(value) || 0),
-        0
-      );
-
-    const totalYardage =
-      frontYardage + backYardage;
-
-    const frontPar = pars
-      .slice(0, 9)
-      .reduce(
-        (sum, value) => sum + (Number(value) || 0),
-        0
-      );
-
-    const backPar = pars
-      .slice(9, 18)
-      .reduce(
-        (sum, value) => sum + (Number(value) || 0),
-        0
-      );
-
-    const totalPar =
-      frontPar + backPar;
-
-    // ---------------------------------------------------------
-    // SCORE CELL HELPER
-    // ---------------------------------------------------------
-
-    function renderScoreCells(
-      round,
-      startIndex,
-      endIndex
-    ) {
-      return holes
-        .slice(startIndex, endIndex)
-        .map((hole, localIndex) => {
-          const actualIndex =
-            startIndex + localIndex;
-
-          const score =
-            round[`hole${hole}`];
-
-          const par =
-            Number(pars[actualIndex]);
-
-          const s =
-            Number(score);
-
-          let cls = '';
-
-          if (
-            Number.isFinite(s) &&
-            Number.isFinite(par)
-          ) {
-            if (s <= par - 2) {
-              cls = 'eagle';
-            } else if (s === par - 1) {
-              cls = 'birdie';
-            } else if (s === par + 1) {
-              cls = 'bogey';
-            } else if (s >= par + 2) {
-              cls = 'double-bogey';
-            }
-          }
-
-          return `
-            <td class="score ${cls}">
-              <span class="score-mark">
-                <span class="score-number">
-                  ${score ?? '—'}
-                </span>
-              </span>
-            </td>
-          `;
-        })
-        .join('');
-    }
-
-    // ---------------------------------------------------------
     // RENDER
     // ---------------------------------------------------------
+
+    const pars = HOLE_NUMBERS.map(
+      hole => course[`hole${hole}_par`]
+    );
+
+    const total = values =>
+      values.reduce(
+        (sum, value) => sum + (Number(value) || 0),
+        0
+      );
+
+    const plainCells = values =>
+      values.map(value => `<td>${value ?? '—'}</td>`).join('');
+
+    const scoreCells = (round, holes) =>
+      holes.map(hole => {
+        const score = round[`hole${hole}`];
+        const s = Number(score);
+        const par = Number(pars[hole - 1]);
+
+        let cls = '';
+
+        if (
+          Number.isFinite(s) &&
+          Number.isFinite(par)
+        ) {
+          if (s <= par - 2) {
+            cls = 'eagle';
+          } else if (s === par - 1) {
+            cls = 'birdie';
+          } else if (s === par + 1) {
+            cls = 'bogey';
+          } else if (s >= par + 2) {
+            cls = 'double-bogey';
+          }
+        }
+
+        return `
+          <td class="score ${cls}">
+            <span class="score-mark">
+              <span class="score-number">
+                ${score ?? '—'}
+              </span>
+            </span>
+          </td>
+        `;
+      }).join('');
+
+    /*
+     * One scorecard row: label, holes 1-9, OUT, holes 10-18,
+     * IN, TOT. `renderCells` draws the hole cells for a
+     * range of holes; `summaries` are [out, in, total].
+     */
+    const scorecardRow = (label, renderCells, summaries, rowClass = '') => `
+      <tr ${rowClass ? `class="${rowClass}"` : ''}>
+        <td class="label">${label}</td>
+        ${renderCells(HOLE_NUMBERS.slice(0, 9))}
+        <td class="summary">${summaries[0]}</td>
+        ${renderCells(HOLE_NUMBERS.slice(9, 18))}
+        <td class="summary">${summaries[1]}</td>
+        <td class="summary">${summaries[2]}</td>
+      </tr>
+    `;
+
+    // Yardage / par rows: per-hole values with OUT / IN / TOT sums.
+    const courseRow = (label, field, rowClass = '') => {
+      const values = HOLE_NUMBERS.map(
+        hole => course[`hole${hole}_${field}`]
+      );
+
+      const front = total(values.slice(0, 9));
+      const back = total(values.slice(9, 18));
+
+      return scorecardRow(
+        label,
+        holes => plainCells(holes.map(hole => values[hole - 1])),
+        [front, back, front + back],
+        rowClass
+      );
+    };
 
     content.innerHTML = `
       <div class="scorecard-table-wrap">
@@ -6975,131 +4114,41 @@ async function openScorecard(
           <thead>
             <tr>
               <th class="label">Hole</th>
-
-              ${holes.slice(0, 9).map(
-                hole => `<th>${hole}</th>`
-              ).join('')}
-
+              ${HOLE_NUMBERS.slice(0, 9).map(hole => `<th>${hole}</th>`).join('')}
               <th class="summary">OUT</th>
-
-              ${holes.slice(9, 18).map(
-                hole => `<th>${hole}</th>`
-              ).join('')}
-
+              ${HOLE_NUMBERS.slice(9, 18).map(hole => `<th>${hole}</th>`).join('')}
               <th class="summary">IN</th>
               <th class="summary">TOT</th>
             </tr>
           </thead>
 
           <tbody>
+            ${courseRow('Yards', 'yardage')}
 
-            <!-- YARDAGE -->
-            <tr>
-              <td class="label">Yards</td>
+            ${scorecardRow(
+              'HDCP',
+              holes => plainCells(holes.map(hole => course[`hole${hole}_hdcp`])),
+              ['—', '—', '—']
+            )}
 
-              ${yardages.slice(0, 9).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
+            ${courseRow('Par', 'par', 'par-row')}
 
-              <td class="summary">
-                ${frontYardage}
-              </td>
-
-              ${yardages.slice(9, 18).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
-
-              <td class="summary">
-                ${backYardage}
-              </td>
-
-              <td class="summary">
-                ${totalYardage}
-              </td>
-            </tr>
-
-            <!-- HANDICAP -->
-            <tr>
-              <td class="label">HDCP</td>
-
-              ${handicaps.slice(0, 9).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
-
-              <td class="summary">—</td>
-
-              ${handicaps.slice(9, 18).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
-
-              <td class="summary">—</td>
-              <td class="summary">—</td>
-            </tr>
-
-            <!-- PAR -->
-            <tr class="par-row">
-              <td class="label">Par</td>
-
-              ${pars.slice(0, 9).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
-
-              <td class="summary">
-                ${frontPar}
-              </td>
-
-              ${pars.slice(9, 18).map(
-                value => `<td>${value ?? '—'}</td>`
-              ).join('')}
-
-              <td class="summary">
-                ${backPar}
-              </td>
-
-              <td class="summary">
-                ${totalPar}
-              </td>
-            </tr>
-
-            <!-- SCORE ROW(S) -->
             ${scoreRows.map(scoreRow => {
-              const totals =
-                getScoreTotals(scoreRow.round);
+              const scores = HOLE_NUMBERS.map(
+                hole => scoreRow.round[`hole${hole}`]
+              );
 
-              return `
-                <tr>
-                  <td class="label">
-                    ${scoreRow.label}
-                  </td>
+              const front = total(scores.slice(0, 9));
+              const back = total(scores.slice(9, 18));
 
-                  ${renderScoreCells(
-                    scoreRow.round,
-                    0,
-                    9
-                  )}
-
-                  <td class="summary">
-                    ${totals.frontScore}
-                  </td>
-
-                  ${renderScoreCells(
-                    scoreRow.round,
-                    9,
-                    18
-                  )}
-
-                  <td class="summary">
-                    ${totals.backScore}
-                  </td>
-
-                  <td class="summary">
-                    ${totals.totalScore}
-                  </td>
-                </tr>
-              `;
+              return scorecardRow(
+                scoreRow.label,
+                holes => scoreCells(scoreRow.round, holes),
+                [front, back, front + back]
+              );
             }).join('')}
-
           </tbody>
+
         </table>
       </div>
     `;
@@ -7170,10 +4219,6 @@ function formatCareerValue(
   return value.toFixed(1);
 }
 
-function getCareerRankingValue(stats, stat) {
-  return stats[stat];
-}
-
 function getTotalStatForAverageStat(stat) {
   const pairs = {
     average_gross_score: 'total_gross_score',
@@ -7183,507 +4228,50 @@ function getTotalStatForAverageStat(stat) {
   return pairs[stat] || null;
 }
 
-function renderFrontBackAverageChart(stats, playerFolder, soloStats = null, teamStats = null) {
-  const canvas =
-    document.getElementById('front-back-average-chart');
-
-  if (!canvas) return;
-
-  if (frontBackAverageChart) {
-    frontBackAverageChart.destroy();
-    frontBackAverageChart = null;
-  }
-
-  const labels = [
-    'Front 9',
-    'Back 9'
-  ];
-
-  const isCombined =
-    statsMode === 'combined' &&
-    soloStats &&
-    teamStats;
-
-  const soloValues = isCombined
-    ? [
-        Number(soloStats.front_average_relative_to_par),
-        Number(soloStats.back_average_relative_to_par)
-      ]
-    : [
-        Number(stats.front_average_relative_to_par),
-        Number(stats.back_average_relative_to_par)
-      ];
-
-  const teamValues = isCombined
-    ? [
-        Number(teamStats.front_average_relative_to_par),
-        Number(teamStats.back_average_relative_to_par)
-      ]
-    : null;
-
-  // ---------------------------------------------------------
-  // SYMMETRIC AXIS AROUND EVEN PAR
-  // ---------------------------------------------------------
-
-  const allValues = isCombined
-    ? [...soloValues, ...teamValues]
-    : soloValues;
-
-  const maxAbs = Math.max(
-    ...allValues
-      .filter(Number.isFinite)
-      .map(Math.abs),
-    1
-  );
-
-  const axisLimit =
-    Math.max(
-      Math.ceil(maxAbs * 10) / 10,
-      2
-    );
-
-  frontBackAverageChart = new Chart(canvas, {
-    type: 'bar',
-
-    data: {
-      labels,
-
-      datasets: isCombined
-        ? [
-            {
-              label: 'Solo',
-              data: soloValues,
-
-              backgroundColor: '#d9b902',
-
-              borderRadius: 4,
-              barThickness: 12
-            },
-
-            {
-              label: 'Team',
-              data: teamValues,
-
-              backgroundColor: '#1a3a1a',
-
-              borderRadius: 4,
-              barThickness: 12
-            }
-          ]
-        : [
-            {
-              label: 'Average',
-              data: soloValues,
-
-              backgroundColor: '#1a3a1a',
-
-              borderRadius: 4,
-              barThickness: 12
-            }
-          ]
-    },
-
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-
-      animation: {
-        duration: 250
-      },
-
-      scales: {
-        x: {
-          min: -axisLimit,
-          max: axisLimit,
-
-          ticks: {
-            callback: value =>
-              value === 0
-                ? 'E'
-                : value > 0
-                  ? `+${value}`
-                  : value,
-
-            font: {
-              family: 'DM Sans',
-              size: 9
-            }
-          },
-
-          grid: {
-            color: context =>
-              context.tick.value === 0
-                ? 'rgba(26,58,26,.45)'
-                : 'rgba(0,0,0,.08)',
-
-            lineWidth: context =>
-              context.tick.value === 0 ? 2 : 1
-          }
-        },
-
-        y: {
-          grid: {
-            display: false
-          },
-
-          ticks: {
-            font: {
-              family: 'DM Sans',
-              size: 10,
-              weight: 600
-            },
-
-            color: '#4a4a3a'
-          }
-        }
-      },
-
-      plugins: {
-        legend: {
-          display: isCombined,
-
-          position: 'bottom',
-
-          labels: {
-            font: {
-              family: 'DM Sans'
-            },
-
-            padding: 10,
-
-            usePointStyle: true
-          }
-        },
-
-        tooltip: {
-          callbacks: {
-            label: context => {
-              const value = context.raw;
-
-              if (!Number.isFinite(value)) return '';
-
-              return value === 0
-                ? 'E'
-                : value > 0
-                  ? `+${value.toFixed(2)}`
-                  : value.toFixed(2);
-            }
-          }
-        }
-      },
-
-      onClick: function(event, elements) {
-
-        let datasetIndex = null;
-        let dataIndex = null;
-
-        if (elements.length) {
-
-          datasetIndex =
-            elements[0].datasetIndex;
-
-          dataIndex =
-            elements[0].index;
-
-        } else {
-
-          /*
-          * Zero-value bars have no width, so Chart.js
-          * does not report an element click.
-          *
-          * Detect clicks near the zero line manually.
-          */
-          const clickX = event.x;
-          const clickY = event.y;
-
-          const zeroX =
-            frontBackAverageChart.scales.x.getPixelForValue(0);
-
-          const zeroTolerance = 14;
-
-          if (
-            Math.abs(clickX - zeroX) > zeroTolerance
-          ) {
-            return;
-          }
-
-          const metas =
-            frontBackAverageChart.data.datasets.map(
-              (_, index) =>
-                frontBackAverageChart.getDatasetMeta(index)
-            );
-
-          let closestDistance =
-            Infinity;
-
-          metas.forEach(
-            (meta, metaIndex) => {
-
-              meta.data.forEach(
-                (bar, index) => {
-
-                  const distance =
-                    Math.abs(bar.y - clickY);
-
-                  if (
-                    distance < closestDistance &&
-                    distance < 18
-                  ) {
-                    closestDistance = distance;
-                    datasetIndex = metaIndex;
-                    dataIndex = index;
-                  }
-
-                }
-              );
-
-            }
-          );
-        }
-
-        if (
-          datasetIndex == null ||
-          dataIndex == null
-        ) {
-          return;
-        }
-
-        const rankingStats = [
-          'front_average_relative_to_par',
-          'back_average_relative_to_par'
-        ];
-
-        const stat =
-          rankingStats[dataIndex];
-
-        if (!stat) {
-          return;
-        }
-
-        /*
-        * Combined:
-        *   dataset 0 = Solo
-        *   dataset 1 = Team
-        *
-        * Solo / Team:
-        *   there is only one dataset.
-        */
-        const rankingSourceMode =
-          statsMode === 'combined'
-            ? datasetIndex === 1
-              ? 'team'
-              : 'solo'
-            : statsMode;
-
-        const rankingLabel =
-          rankingSourceMode === 'team'
-            ? `Team ${getCareerStatLabel(stat)}`
-            : `Solo ${getCareerStatLabel(stat)}`;
-
-        showCareerRanking(
-          stat,
-          'lower',
-          playerFolder,
-          rankingLabel,
-          'average',
-          null,
-          rankingSourceMode
-        );
-      },
-
-      onHover: function(event, elements) {
-
-        if (elements.length) {
-          event.native.target.style.cursor = 'pointer';
-          return;
-        }
-
-        /*
-        * Also make the zero line clickable.
-        */
-        const clickX = event.native.offsetX;
-        const zeroX =
-          frontBackAverageChart.scales.x.getPixelForValue(0);
-
-        event.native.target.style.cursor =
-          Math.abs(clickX - zeroX) <= 14
-            ? 'pointer'
-            : 'default';
-      }
-    },
-
-    plugins: [{
-      id: 'frontBackAverageValueLabels',
-
-      afterDatasetsDraw(chart) {
-
-        const ctx = chart.ctx;
-
-        const zeroX =
-          chart.scales.x.getPixelForValue(0);
-
-        chart.data.datasets.forEach(
-          (dataset, datasetIndex) => {
-
-            const meta =
-              chart.getDatasetMeta(datasetIndex);
-
-            const datasetValues =
-              dataset.data;
-
-            ctx.save();
-
-            ctx.font =
-              '600 10px "DM Sans", sans-serif';
-
-            ctx.fillStyle = '#4a4a3a';
-            ctx.textBaseline = 'middle';
-
-            meta.data.forEach(
-              (bar, index) => {
-
-                const value =
-                  Number(
-                    datasetValues[index]
-                  );
-
-                if (!Number.isFinite(value)) {
-                  return;
-                }
-
-                const text =
-                  value === 0
-                    ? 'E'
-                    : value > 0
-                      ? `+${value.toFixed(2)}`
-                      : value.toFixed(2);
-
-                if (value > 0) {
-
-                  ctx.textAlign = 'right';
-
-                  ctx.fillText(
-                    text,
-                    zeroX - 7,
-                    bar.y
-                  );
-
-                } else if (value < 0) {
-
-                  ctx.textAlign = 'left';
-
-                  ctx.fillText(
-                    text,
-                    zeroX + 7,
-                    bar.y
-                  );
-
-                } else {
-
-                  ctx.textAlign = 'right';
-
-                  ctx.fillText(
-                    text,
-                    zeroX - 7,
-                    bar.y
-                  );
-                }
-              }
-            );
-
-            ctx.restore();
-          }
-        );
-      }
-    }]
-  });
-}
-
-function getCareerStatLabel(stat) {
-  const labels = {
-    solo_rounds: 'Solo Rounds',
-    team_rounds: 'Team Rounds',
-    total_rounds: 'Total Rounds',
-
-    total_paid: 'Total Paid',
+const CAREER_STAT_LABELS = {
+  solo_rounds: 'Solo Rounds',
+  team_rounds: 'Team Rounds',
+  total_rounds: 'Total Rounds',
+
+  total_paid: 'Total Paid',
   total_earned: 'Total Earned',
   net_earnings: 'Net Earnings',
 
-    solo_first_places: 'Solo 1st Places',
-    team_wins: 'Team Wins',
-    average_solo_placement: 'Avg Solo Place',
-    average_team_placement: 'Avg Team Place',
+  solo_first_places: 'Solo 1st Places',
+  team_wins: 'Team Wins',
+  average_solo_placement: 'Avg Solo Place',
+  average_team_placement: 'Avg Team Place',
 
-    average_gross_score: 'Avg Gross',
-    total_gross_score: 'Total Gross',
-    best_gross_score: 'Best Gross',
+  average_gross_score: 'Avg Gross',
+  total_gross_score: 'Total Gross',
+  best_gross_score: 'Best Gross',
 
-    average_net_score: 'Avg Net',
-    total_net_score: 'Total Net',
-    best_net_score: 'Best Net',
+  average_net_score: 'Avg Net',
+  total_net_score: 'Total Net',
+  best_net_score: 'Best Net',
 
-    birdie_percentage: 'Birdie %',
+  birdie_percentage: 'Birdie %',
 
-    par3_average: 'Par 3 Avg',
-    par4_average: 'Par 4 Avg',
-    par5_average: 'Par 5 Avg',
+  par3_average: 'Par 3 Avg',
+  par4_average: 'Par 4 Avg',
+  par5_average: 'Par 5 Avg',
 
-    total_eagles: 'Eagles',
-    total_birdies: 'Birdies',
-    total_pars: 'Pars',
-    total_bogeys: 'Bogeys',
-    total_dbl_bogeys: 'Double Bogeys',
-    total_trp_bogeys: 'Triple Bogeys',
-    total_qud_bogeys: 'Quads+',
+  most_birdies_single_round: 'Most Birdies',
 
-    par3_eagles: 'Par 3 Eagles',
-    par3_birdies: 'Par 3 Birdies',
-    par3_pars: 'Par 3 Pars',
-    par3_bogeys: 'Par 3 Bogeys',
-    par3_dbl_bogeys: 'Par 3 Double Bogeys',
-    par3_trp_bogeys: 'Par 3 Triple Bogeys',
-    par3_qud_bogeys: 'Par 3 Quads+',
+  front_average_relative_to_par: 'Average Front 9 Vs Par',
+  back_average_relative_to_par: 'Average Back 9 Vs Par'
+};
 
-    par4_eagles: 'Par 4 Eagles',
-    par4_birdies: 'Par 4 Birdies',
-    par4_pars: 'Par 4 Pars',
-    par4_bogeys: 'Par 4 Bogeys',
-    par4_dbl_bogeys: 'Par 4 Double Bogeys',
-    par4_trp_bogeys: 'Par 4 Triple Bogeys',
-    par4_qud_bogeys: 'Par 4 Quads+',
+// e.g. total_birdies -> 'Birdies', par3_dbl_bogeys -> 'Par 3 Double Bogeys'
+SCORING_SEGMENTS.forEach(segment => {
+  SCORING_CATEGORIES.forEach(category => {
+    CAREER_STAT_LABELS[`${segment.prefix}${category.field}`] =
+      `${segment.label}${category.label}`;
+  });
+});
 
-    par5_eagles: 'Par 5 Eagles',
-    par5_birdies: 'Par 5 Birdies',
-    par5_pars: 'Par 5 Pars',
-    par5_bogeys: 'Par 5 Bogeys',
-    par5_dbl_bogeys: 'Par 5 Double Bogeys',
-    par5_trp_bogeys: 'Par 5 Triple Bogeys',
-    par5_qud_bogeys: 'Par 5 Quads+',
-
-    front_eagles: 'Front 9 Eagles',
-    front_birdies: 'Front 9 Birdies',
-    front_pars: 'Front 9 Pars',
-    front_bogeys: 'Front 9 Bogeys',
-    front_dbl_bogeys: 'Front 9 Double Bogeys',
-    front_trp_bogeys: 'Front 9 Triple Bogeys',
-    front_qud_bogeys: 'Front 9 Quads+',
-
-    back_eagles: 'Back 9 Eagles',
-    back_birdies: 'Back 9 Birdies',
-    back_pars: 'Back 9 Pars',
-    back_bogeys: 'Back 9 Bogeys',
-    back_dbl_bogeys: 'Back 9 Double Bogeys',
-    back_trp_bogeys: 'Back 9 Triple Bogeys',
-    back_qud_bogeys: 'Back 9 Quads+',
-
-    most_birdies_single_round: 'Most Birdies',
-
-    front_average_relative_to_par: 'Average Front 9 Vs Par',
-    back_average_relative_to_par: 'Average Back 9 Vs Par',
-  };
-
-  return labels[stat] || stat;
+function getCareerStatLabel(stat) {
+  return CAREER_STAT_LABELS[stat] || stat;
 }
 
 /*
@@ -7797,19 +4385,9 @@ function isPersonalCareerStat(stat) {
 }
 
 async function openRankedPlayer(folder) {
-  const savedStatsMode = statsMode;
-  const savedScoringView = scoringView;
-  const savedRankingOG12 = rankingOG12;
   const savedRankingConfig = currentRankingConfig
     ? { ...currentRankingConfig }
     : null;
-
-  /*
-   * Keep the view mode and scoring view exactly as they were.
-   */
-  statsMode = savedStatsMode;
-  scoringView = savedScoringView;
-  rankingOG12 = savedRankingOG12;
 
   await loadPlayerStats(folder);
 
@@ -8012,26 +4590,14 @@ async function showCareerRanking(
 
   try {
     const allYears =
-      await getAllTournamentYears();
+      await loadCourseYears();
 
     const players =
       await Promise.all(
         statsPlayers.map(async player => {
 
-          const response =
-            await fetch(
-              `stats/${player.folder}/all_time_stats.json`,
-              { cache: 'no-store' }
-            );
-
-          if (!response.ok) {
-            throw new Error(
-              `Could not load ${player.name}'s stats`
-            );
-          }
-
           const allTimeStats =
-            await response.json();
+            await loadAllTimeStats(player);
 
           const modeData =
             getStatsModeData(
@@ -8061,13 +4627,9 @@ async function showCareerRanking(
               year => yearsPlayed.has(year)
             );
 
-          /*
-           * Number of rounds in the currently selected mode.
-           */
+          // Number of rounds in the ranking's stats mode.
           const rounds =
-            sourceStatsMode === 'team'
-              ? Number(section.team_rounds) || 0
-              : Number(section.solo_rounds) || 0;
+            getModeRounds(section, sourceStatsMode);
 
           let rankingValue;
 
@@ -8089,12 +4651,7 @@ async function showCareerRanking(
 
             rankingValue =
               rankingMode === 'total'
-                ? Number(
-                    getCareerRankingValue(
-                      section,
-                      activeStat
-                    )
-                  )
+                ? Number(section[activeStat])
                 : getAverageRankingValue(
                     section,
                     stat,
@@ -8112,22 +4669,6 @@ async function showCareerRanking(
         })
       );
 
-    /*
-     * Total mode is only available for cumulative statistics,
-     * and those rankings require complete participation.
-     */
-    /*
-     * OG 12 = twelve players with the most rounds played
-     * in the currently selected stats mode.
-     */
-    let og12Players = players;
-
-    if (rankingOG12) {
-      og12Players = [...players]
-        .filter(player => Number.isFinite(player.rounds))
-        .sort((a, b) => b.rounds - a.rounds)
-        .slice(0, 12);
-    }
 
     /*
      * Normally Total mode for cumulative statistics requires
@@ -8148,7 +4689,7 @@ async function showCareerRanking(
       );
 
     let eligiblePlayers = rankingOG12
-      ? og12Players
+      ? topTwelveByRounds(players)
       : players;
 
     if (requiresFullParticipation) {
@@ -8297,7 +4838,6 @@ async function showCareerRanking(
                 career-rank-row
                 ${selected ? 'selected' : ''}
               "
-              style="cursor:pointer;"
               onclick="openRankedPlayer('${player.folder}')"
             >
 
@@ -8355,212 +4895,8 @@ function isCareerTotalStat(stat) {
   return stat === 'total_gross_score' || stat === 'total_net_score';
 }
 
-async function getTeamPartnerStats(playerFolder) {
-  const response = await fetch(
-    `stats/${playerFolder}/yearly_team_stats.csv`,
-    { cache: 'no-store' }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Could not load team statistics for ${playerFolder}`
-    );
-  }
-
-  const text = await response.text();
-  const yearlyTeam = parseCSV(text);
-
-  const partnerCounts = {};
-
-  yearlyTeam.forEach(row => {
-    const teammate = (row.teammate || '').trim();
-
-    if (!teammate) {
-      return;
-    }
-
-    // Usually this is one name, but safely handle
-    // comma-separated teammates as separate partners.
-    teammate
-      .split(',')
-      .map(name => name.trim())
-      .filter(Boolean)
-      .forEach(name => {
-        partnerCounts[name] =
-          (partnerCounts[name] || 0) + 1;
-      });
-  });
-
-  const entries = Object.entries(partnerCounts)
-    .sort((a, b) => b[1] - a[1]);
-
-  if (!entries.length) {
-    return {
-      name: 'None',
-      count: 0
-    };
-  }
-
-  const highestCount = entries[0][1];
-
-  const tiedPlayers = entries.filter(
-    entry => entry[1] === highestCount
-  );
-
-  if (tiedPlayers.length === 1) {
-    return {
-      name: tiedPlayers[0][0],
-      count: highestCount
-    };
-  }
-
-  if (tiedPlayers.length === 2) {
-    return {
-      name: tiedPlayers
-        .map(entry => entry[0])
-        .join(' & '),
-      count: highestCount
-    };
-  }
-
-  return {
-    name: 'None',
-    count: highestCount
-  };
-}
-
-async function getMostBirdiesInRound(playerFolder) {
-  const response = await fetch(
-    `stats/${playerFolder}/yearly_team_stats.csv`,
-    { cache: 'no-store' }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Could not load team statistics for ${playerFolder}`
-    );
-  }
-
-  const text = await response.text();
-  const yearlyTeam = parseCSV(text);
-
-  const birdieCounts = yearlyTeam
-    .map(row => Number(row.birdies))
-    .filter(Number.isFinite);
-
-  return birdieCounts.length
-    ? Math.max(...birdieCounts)
-    : null;
-}
-
 function isCareerScoringDistributionStat(stat) {
-  return [
-    'total_eagles',
-    'total_birdies',
-    'total_pars',
-    'total_bogeys',
-    'total_dbl_bogeys',
-    'total_trp_bogeys',
-    'total_qud_bogeys',
-    'par3_eagles',
-    'par3_birdies',
-    'par3_pars',
-    'par3_bogeys',
-    'par3_dbl_bogeys',
-    'par3_trp_bogeys',
-    'par3_qud_bogeys',
-    'par4_eagles',
-    'par4_birdies',
-    'par4_pars',
-    'par4_bogeys',
-    'par4_dbl_bogeys',
-    'par4_trp_bogeys',
-    'par4_qud_bogeys',
-    'par5_eagles',
-    'par5_birdies',
-    'par5_pars',
-    'par5_bogeys',
-    'par5_dbl_bogeys',
-    'par5_trp_bogeys',
-    'par5_qud_bogeys',
-    'front_eagles',
-    'front_birdies',
-    'front_pars',
-    'front_bogeys',
-    'front_dbl_bogeys',
-    'front_trp_bogeys',
-    'front_qud_bogeys',
-    'back_eagles',
-    'back_birdies',
-    'back_pars',
-    'back_bogeys',
-    'back_dbl_bogeys',
-    'back_trp_bogeys',
-    'back_qud_bogeys',
-  ].includes(stat);
-}
-
-function isCareerCountingStat(stat) {
-  return [
-    'solo_rounds',
-    'team_rounds',
-    'total_rounds',
-
-    'solo_first_placements',
-    'team_wins',
-
-    'total_eagles',
-    'total_birdies',
-    'total_pars',
-    'total_bogeys',
-    'total_dbl_bogeys',
-    'total_trp_bogeys',
-    'total_qud_bogeys',
-
-    'par3_eagles',
-    'par3_birdies',
-    'par3_pars',
-    'par3_bogeys',
-    'par3_dbl_bogeys',
-    'par3_trp_bogeys',
-    'par3_qud_bogeys',
-
-    'par4_eagles',
-    'par4_birdies',
-    'par4_pars',
-    'par4_bogeys',
-    'par4_dbl_bogeys',
-    'par4_trp_bogeys',
-    'par4_qud_bogeys',
-
-    'par5_eagles',
-    'par5_birdies',
-    'par5_pars',
-    'par5_bogeys',
-    'par5_dbl_bogeys',
-    'par5_trp_bogeys',
-    'par5_qud_bogeys',
-
-    'front_eagles',
-    'front_birdies',
-    'front_pars',
-    'front_bogeys',
-    'front_dbl_bogeys',
-    'front_trp_bogeys',
-    'front_qud_bogeys',
-
-    'back_eagles',
-    'back_birdies',
-    'back_pars',
-    'back_bogeys',
-    'back_dbl_bogeys',
-    'back_trp_bogeys',
-    'back_qud_bogeys'
-  ].includes(stat);
-}
-
-async function getAllTournamentYears() {
-  return await loadCourseYears();
+  return SCORING_DISTRIBUTION_STATS.includes(stat);
 }
 
 
@@ -8571,8 +4907,6 @@ loadYear(DB.get('activeYear') || 2026);
 statsMode = DB.get('statsMode') || 'solo';
 updateStatsModePicker();
 
-renderHome();
-renderAllTimeRecords();
 loadStatsPlayers();
 </script>
 </body>

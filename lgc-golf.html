@@ -887,6 +887,198 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .insights-connector.has-focus path { opacity:.12; }
 .insights-connector.has-focus path.focus { opacity:1; stroke-width:2.5; }
 
+/* Best / worst single-hole scores */
+/* Hole cells share the width by number of chips (flex-grow set inline), so a long list of ties gets the extra room. */
+.insights-holes {
+  display:flex;
+  gap:12px;
+}
+
+.insights-holes.card {
+  padding:10px;
+}
+
+.insights-hole-cell {
+  flex:1 1 0;
+  min-width:min-content;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:var(--gp);
+  border-radius:10px;
+  padding:7px 12px;
+}
+
+.insights-hole-summary {
+  flex-shrink:0;
+}
+
+.insights-hole-summary .stat-box-label {
+  margin-bottom:1px;
+}
+
+.insights-hole-value {
+  font-family:'Playfair Display',serif;
+  /* Playfair defaults to old-style figures (the 4 dips below the line). */
+  font-variant-numeric:lining-nums;
+  font-size:20px;
+  font-weight:700;
+  color:var(--gd);
+  line-height:1.1;
+}
+
+.insights-hole-count {
+  font-family:'DM Sans',sans-serif;
+  font-size:10px;
+  font-weight:500;
+  color:var(--ts);
+  margin-left:3px;
+}
+
+/* Winners: sized to the names, never shrinks. */
+.insights-winners-cell {
+  flex:0 0 auto;
+}
+
+.insights-winners-names {
+  font-family:'Playfair Display',serif;
+  font-size:17px;
+  font-weight:700;
+  color:var(--gd);
+  line-height:1.2;
+  white-space:nowrap;
+}
+
+.insights-hole-chips {
+  flex:1;
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+
+.insights-hole-chip {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid rgba(26,58,26,.1);
+  border-radius:8px;
+  background:rgba(255,255,255,.65);
+  padding:3px 10px 3px 4px;
+  font-family:'DM Sans',sans-serif;
+  text-align:left;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:background .12s, transform .12s;
+}
+
+.insights-hole-chip:hover {
+  transform:translateY(-1px);
+}
+
+/* The scorecard's birdie / bogey marks, at nearly the same size and type so the numbers sit the same way. */
+.insights-hole-mark .score-mark {
+  width:26px;
+  height:26px;
+  font-size:14px;
+  font-weight:600;
+  line-height:1;
+  color:var(--gd);
+  font-variant-numeric:lining-nums tabular-nums;
+}
+
+/* Two-digit scores need a little more room inside the marks. */
+.insights-hole-mark.wide .score-number {
+  font-size:12px;
+  letter-spacing:-.3px;
+}
+
+.insights-hole-chip-text {
+  display:flex;
+  flex-direction:column;
+  line-height:1.2;
+}
+
+.insights-hole-chip-text span {
+  font-size:9px;
+  color:var(--ts);
+}
+
+.insights-hole-chip:hover {
+  background:white;
+}
+
+.insights-hole-chip strong {
+  font-size:11px;
+  font-weight:600;
+  color:var(--gd);
+}
+
+@media (max-width:699px) {
+  .insights-holes {
+    flex-direction:column;
+  }
+}
+
+/* Bottom row: all three cards stretch to the same height and each chart fills what's left under its title. */
+.insights-par-overview {
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);
+  gap:12px;
+}
+
+/* Year rankings: a row whose height grows with the number of years; both cards stretch to match. */
+.insights-years-row {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.insights-category-toggle {
+  flex-wrap:wrap;
+  margin:4px 0 8px;
+}
+
+.insights-par-overview .stats-chart-card,
+.insights-years-row .stats-chart-card {
+  display:flex;
+  flex-direction:column;
+}
+
+.insights-chart-fill {
+  position:relative;
+  flex:1;
+  min-height:150px;
+  margin-top:4px;
+}
+
+.insights-year-rank {
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  margin-bottom:2px;
+}
+
+.insights-year-rank-value {
+  font-family:'Playfair Display',serif;
+  font-size:22px;
+  font-weight:700;
+  color:var(--gd);
+  line-height:1;
+}
+
+.insights-year-rank-label {
+  font-size:10px;
+  color:var(--ts);
+}
+
+@media (max-width:699px) {
+  .insights-par-overview,
+  .insights-years-row {
+    grid-template-columns:1fr;
+  }
+}
+
 .insights-pot {
   font-size:11px;
   color:var(--tm);
@@ -1478,6 +1670,13 @@ let insightsYears = [];
 let insightsScoringChart = null;
 let insightsScoringView = 'overall';
 let insightsFieldStats = null;
+let insightsParChart = null;
+let insightsFrontBackChart = null;
+let insightsYearsChart = null;
+let insightsHandicapChart = null;
+let insightsCategoryChart = null;
+let insightsCategory = 'birdies';
+let insightsYearSummaries = [];
 
 function openInsightsYearPicker() {
   document.getElementById('insights-year-list').innerHTML =
@@ -1854,15 +2053,528 @@ function renderInsightsScoringChart() {
   });
 }
 
+// Scorecard mark for a hole score: circles under par, squares over.
+function scoreMarkClass(score, par) {
+  if (!Number.isFinite(score) || !Number.isFinite(par)) return '';
+  if (score <= par - 2) return 'eagle';
+  if (score === par - 1) return 'birdie';
+  if (score === par + 1) return 'bogey';
+  if (score >= par + 2) return 'double-bogey';
+  return '';
+}
+
+const SCORE_NAMES = {
+  '-3': 'Albatross',
+  '-2': 'Eagle',
+  '-1': 'Birdie',
+  '0': 'Par',
+  '1': 'Bogey',
+  '2': 'Double Bogey',
+  '3': 'Triple Bogey'
+};
+
+function scoreName(relative) {
+  return SCORE_NAMES[relative] || formatRelativeToParTick(relative);
+}
+
+/*
+ * Best hole: the best score relative to par, and of those the
+ * fewest strokes (a 2 birdie beats a 3 birdie). Worst hole is
+ * the mirror: worst relative to par, then the most strokes.
+ * Ties are ordered by hole, then player.
+ */
+function getHoleExtremes(soloRounds, course) {
+  const scores = soloRounds
+    .flatMap(round => round.holes.map((score, index) => {
+      if (score == null) return null;
+
+      const par = Number(course[`hole${index + 1}_par`]);
+
+      return { name: round.name, hole: index + 1, score, par, relative: score - par };
+    }))
+    .filter(Boolean)
+    .sort((a, b) => a.hole - b.hole || a.name.localeCompare(b.name));
+
+  if (!scores.length) return null;
+
+  const pick = (relativeOf, scoreOf) => {
+    const relative = relativeOf(...scores.map(entry => entry.relative));
+    const matching = scores.filter(entry => entry.relative === relative);
+    const score = scoreOf(...matching.map(entry => entry.score));
+
+    return matching.filter(entry => entry.score === score);
+  };
+
+  return {
+    best: pick(Math.min, Math.min),
+    worst: pick(Math.max, Math.max)
+  };
+}
+
+// Every entry shares the same score and relative to par, so also the same par.
+function holeExtremeCell(label, entries, year) {
+  return `
+    <div class="insights-hole-cell" style="flex-grow:${entries.length + 2};">
+      <div class="insights-hole-summary">
+        <div class="stat-box-label">${label}</div>
+        <div class="insights-hole-value">
+          Par ${entries[0].par} · ${scoreName(entries[0].relative)}${entries.length > 1 ? `<span class="insights-hole-count">×${entries.length}</span>` : ''}
+        </div>
+      </div>
+
+      <div class="insights-hole-chips">
+        ${entries.map(entry => `
+          <button
+            type="button"
+            class="insights-hole-chip"
+            onclick="${soloScorecardClick(year, entry.name)}"
+          >
+            <span class="score insights-hole-mark ${scoreMarkClass(entry.score, entry.par)} ${entry.score >= 10 ? 'wide' : ''}">
+              <span class="score-mark">
+                <span class="score-number">${entry.score}</span>
+              </span>
+            </span>
+
+            <span class="insights-hole-chip-text">
+              <strong>${entry.name}</strong>
+              <span>Hole ${entry.hole}</span>
+            </span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/*
+ * Team winners as "higher seed & lower seed", seeded by the
+ * year's solo gross ranking.
+ */
+function winnersCell(team, grossEntries) {
+  const seed = name => {
+    const index = grossEntries.findIndex(entry => entry.name === name);
+
+    return index === -1 ? Infinity : index;
+  };
+
+  const names = [...team.players].sort((a, b) => seed(a) - seed(b));
+
+  return `
+    <div class="insights-hole-cell insights-winners-cell">
+      <div class="insights-hole-summary">
+        <div class="stat-box-label">Winners</div>
+        <div class="insights-winners-names">🏆 ${names.join(' & ')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function ordinal(n) {
+  const suffix =
+    n % 100 >= 11 && n % 100 <= 13
+      ? 'th'
+      : { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th';
+
+  return `${n}${suffix}`;
+}
+
+/*
+ * Field averages relative to par: per hole for par 3 / 4 / 5,
+ * per round for the front and back 9.
+ */
+function getFieldRelativeToPar(soloRounds, course) {
+  const parOf = index => Number(course[`hole${index + 1}_par`]);
+  const byPar = { 3: [], 4: [], 5: [] };
+  const front = [];
+  const back = [];
+
+  soloRounds.forEach(round => {
+    let frontTotal = 0;
+    let backTotal = 0;
+
+    round.holes.forEach((score, index) => {
+      if (score == null) return;
+
+      const relative = score - parOf(index);
+
+      byPar[parOf(index)]?.push(relative);
+
+      if (index < 9) frontTotal += relative;
+      else backTotal += relative;
+    });
+
+    front.push(frontTotal);
+    back.push(backTotal);
+  });
+
+  const mean = values =>
+    values.length
+      ? values.reduce((sum, value) => sum + value, 0) / values.length
+      : null;
+
+  return {
+    parValues: [3, 4, 5].map(par => mean(byPar[par])),
+    frontBackValues: [mean(front), mean(back)]
+  };
+}
+
+/*
+ * Per-year field totals: strokes over par and the scoring
+ * distribution, for every year with solo rounds.
+ */
+function getYearSummaries(courses, rounds) {
+  return courses
+    .map(course => {
+      const year = Number(course.year);
+      const soloRounds = getYearSoloRounds(rounds, course, year);
+
+      return {
+        year,
+        rounds: soloRounds.length,
+        total: soloRounds.reduce((sum, round) => sum + round.gross - round.par, 0),
+        stats: getFieldScoringStats(soloRounds, course)
+      };
+    })
+    .filter(summary => summary.rounds);
+}
+
+/*
+ * Years ranked best first by valueOf(summary), with
+ * competition ranks (ties share a rank).
+ */
+function rankYears(summaries, valueOf, direction = 'lower') {
+  const ranked = summaries
+    .map(summary => ({ ...summary, value: valueOf(summary) }))
+    .sort((a, b) => direction === 'higher' ? b.value - a.value : a.value - b.value);
+
+  ranked.forEach(entry => {
+    entry.rank = ranked.findIndex(other => other.value === entry.value) + 1;
+    entry.tied = ranked.filter(other => other.value === entry.value).length > 1;
+  });
+
+  return ranked;
+}
+
+function yearRankBadge(entry, label) {
+  return entry
+    ? `
+      <div class="insights-year-rank">
+        <span class="insights-year-rank-value">
+          ${entry.tied ? 'T' : ''}${ordinal(entry.rank)}
+        </span>
+        <span class="insights-year-rank-label">${label}</span>
+      </div>
+    `
+    : '';
+}
+
+// Height for a year-ranking chart: grows by one bar per year.
+function yearRankingHeight(count) {
+  return 40 + count * 30;
+}
+
+/*
+ * Field average relative to par on each hole, indexed by the
+ * hole's handicap (index 0 = #1 handicap hole).
+ */
+function getFieldHandicapValues(soloRounds, course) {
+  return HOLE_NUMBERS.map(handicap => {
+    const hole = HOLE_NUMBERS.find(
+      number => Number(course[`hole${number}_hdcp`]) === handicap
+    );
+
+    if (!hole) return null;
+
+    const par = Number(course[`hole${hole}_par`]);
+    const scores = soloRounds
+      .map(round => round.holes[hole - 1])
+      .filter(score => score != null);
+
+    return scores.length
+      ? scores.reduce((sum, score) => sum + score - par, 0) / scores.length
+      : null;
+  });
+}
+
+// Switch years from a chart click without losing the scroll position.
+async function switchInsightsYear(year) {
+  const scrollY = window.scrollY;
+
+  await renderInsights(year);
+
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: scrollY, behavior: 'instant' });
+  });
+}
+
+/*
+ * Field average vs hole handicap: the selected year in gold,
+ * every other year faint black. Clicking another year's line
+ * switches the page to that year.
+ */
+function renderInsightsHandicapChart(courses, rounds, year) {
+  insightsHandicapChart?.destroy();
+
+  const canvas = document.getElementById('insights-handicap-chart');
+
+  if (!canvas) return;
+
+  const yearLines = courses
+    .map(course => {
+      const courseYear = Number(course.year);
+      const soloRounds = getYearSoloRounds(rounds, course, courseYear);
+
+      return soloRounds.length
+        ? { year: courseYear, values: getFieldHandicapValues(soloRounds, course) }
+        : null;
+    })
+    .filter(Boolean);
+
+  const selected = yearLines.find(line => line.year === year);
+  const others = yearLines.filter(line => line.year !== year);
+
+  // Selected year first so it draws on top.
+  const datasets = [
+    ...(selected
+      ? [{ ...lineDataset(String(year), selected.values, '#d9b902', 3, 3.5, 5), year }]
+      : []),
+    ...others.map(line => ({
+      ...lineDataset(String(line.year), line.values, 'rgba(0, 0, 0, 0.35)', 1.5, 2, 4),
+      year: line.year
+    }))
+  ];
+
+  insightsHandicapChart = createHandicapChart(
+    canvas,
+    datasets,
+    false,
+    dataset => switchInsightsYear(dataset.year),
+    dataset => dataset.year !== year
+  );
+}
+
+function renderInsightsParCharts(fieldRelative) {
+  [insightsParChart, insightsFrontBackChart].forEach(chart => chart?.destroy());
+
+  const sharedOptions = {
+    rankingStats: null,
+    playerFolder: null,
+    isCombined: false,
+    teamValues: null,
+    tooltipShowsDataset: false
+  };
+
+  insightsParChart = createRelativeToParBarChart(
+    document.getElementById('insights-par-chart'),
+    {
+      ...sharedOptions,
+      labels: ['Par 3', 'Par 4', 'Par 5'],
+      soloValues: fieldRelative.parValues,
+      minAxisLimit: 0,
+      evenLabelLeftOfZero: false,
+      pluginId: 'insightsParValueLabels'
+    }
+  );
+
+  insightsFrontBackChart = createRelativeToParBarChart(
+    document.getElementById('insights-front-back-chart'),
+    {
+      ...sharedOptions,
+      labels: ['Front 9', 'Back 9'],
+      soloValues: fieldRelative.frontBackValues,
+      minAxisLimit: 2,
+      evenLabelLeftOfZero: true,
+      pluginId: 'insightsFrontBackValueLabels'
+    }
+  );
+}
+
+/*
+ * Horizontal bars, one per year, ranked best (top) to worst.
+ * The selected year is gold; clicking a bar switches the page
+ * to that year.
+ */
+function createYearRankingChart(canvas, ranked, year, formatValue, tooltipLabel) {
+  return new Chart(canvas, {
+    type: 'bar',
+
+    data: {
+      labels: ranked.map(entry => entry.year),
+
+      datasets: [{
+        data: ranked.map(entry => entry.value),
+        backgroundColor: ranked.map(entry =>
+          entry.year === year ? '#c9a84c' : '#1a3a1a'
+        ),
+        borderRadius: 4,
+        maxBarThickness: 16
+      }]
+    },
+
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+
+      animation: {
+        duration: 250
+      },
+
+      layout: {
+        // Room for the value labels past the end of each bar.
+        padding: { right: 34 }
+      },
+
+      scales: {
+        x: {
+          beginAtZero: true,
+
+          ticks: {
+            callback: formatValue,
+            maxTicksLimit: 5,
+            precision: 0,
+            font: { family: 'DM Sans', size: 9 }
+          },
+
+          grid: {
+            color: 'rgba(0,0,0,.08)'
+          }
+        },
+
+        y: {
+          grid: { display: false },
+
+          ticks: {
+            font: { family: 'DM Sans', size: 10, weight: 600 },
+            color: context =>
+              ranked[context.index]?.year === year ? '#1a3a1a' : '#4a4a3a'
+          }
+        }
+      },
+
+      plugins: {
+        legend: { display: false },
+
+        tooltip: {
+          callbacks: {
+            label: context => tooltipLabel(ranked[context.dataIndex])
+          }
+        }
+      },
+
+      onClick: (event, elements) => {
+        const entry = ranked[elements[0]?.index];
+
+        if (entry && entry.year !== year) {
+          switchInsightsYear(entry.year);
+        }
+      },
+
+      onHover: setPointerCursor
+    },
+
+    plugins: [{
+      id: 'insightsYearValueLabels',
+
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+
+        ctx.save();
+        ctx.font = '600 10px "DM Sans", sans-serif';
+        ctx.fillStyle = '#4a4a3a';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+
+        chart.getDatasetMeta(0).data.forEach((bar, index) => {
+          ctx.fillText(formatValue(ranked[index].value), bar.x + 6, bar.y);
+        });
+
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function renderInsightsYearsChart(yearTotals, year) {
+  insightsYearsChart?.destroy();
+
+  const canvas = document.getElementById('insights-years-chart');
+
+  if (!canvas) return;
+
+  insightsYearsChart = createYearRankingChart(
+    canvas,
+    yearTotals,
+    year,
+    formatRelativeToParTick,
+    entry =>
+      `${formatRelativeToParTick(entry.total)} total · ${formatRelativeToPar(entry.total / entry.rounds)} per round`
+  );
+}
+
+/*
+ * Field count of the selected scoring category for every
+ * year, ranked best first (most birdies, fewest bogeys, ...).
+ */
+function renderInsightsCategoryRanking() {
+  const body = document.getElementById('insights-category-body');
+
+  if (!body) return;
+
+  const category = SCORING_CATEGORIES.find(item => item.field === insightsCategory);
+  const ranked = rankYears(
+    insightsYearSummaries,
+    summary => summary.stats[`total_${category.field}`],
+    category.direction
+  );
+  const selected = ranked.find(entry => entry.year === insightsYear);
+  const label = category.label.toLowerCase();
+
+  document
+    .querySelectorAll('#insights-category-toggle .scoring-view-button')
+    .forEach(button => {
+      button.classList.toggle('active', button.dataset.category === category.field);
+    });
+
+  body.innerHTML = `
+    ${yearRankBadge(
+      selected,
+      selected &&
+        `${category.direction === 'higher' ? 'most' : 'fewest'} ${label} of ${ranked.length} years · ${selected.value}`
+    )}
+
+    <div class="insights-chart-fill" style="min-height:${yearRankingHeight(ranked.length)}px;">
+      <canvas id="insights-category-chart"></canvas>
+    </div>
+  `;
+
+  insightsCategoryChart?.destroy();
+
+  insightsCategoryChart = createYearRankingChart(
+    document.getElementById('insights-category-chart'),
+    ranked,
+    insightsYear,
+    value => value,
+    entry => `${entry.value} ${label} · ${(entry.value / entry.rounds).toFixed(2)} per round`
+  );
+}
+
+function setInsightsCategory(field) {
+  insightsCategory = field;
+  renderInsightsCategoryRanking();
+}
+
 async function renderInsights(year = insightsYear) {
   const content = document.getElementById('insights-content');
   const yearLabel = document.getElementById('insights-year');
   const courseLabel = document.getElementById('insights-course');
 
   try {
-    const [courses, rounds] = await Promise.all([
+    const [courses, rounds, winningTeams] = await Promise.all([
       loadData('courses.csv'),
-      loadData('rounds.csv')
+      loadData('rounds.csv'),
+      // Generated by compute_stats.py; the page still works without it.
+      loadData('stats/winning_teams.json').catch(() => ({}))
     ]);
 
     const years = [...new Set(courses.map(course => Number(course.year)))]
@@ -1903,10 +2615,30 @@ async function renderInsights(year = insightsYear) {
       entry.note = formatMoneyValue(entry.payment);
     });
 
+    insightsYearSummaries = getYearSummaries(courses, rounds);
+
+    const yearTotals = rankYears(insightsYearSummaries, summary => summary.total);
+    const selectedYearTotal = yearTotals.find(entry => entry.year === year);
+
     // Engraving fee excluded, same as the per-player amounts.
     const totalPot = netEntries.reduce((sum, entry) => sum + entry.payment, 0);
 
+    const holeExtremes = getHoleExtremes(soloRounds, course);
+    const winningTeam = winningTeams[year];
+
     content.innerHTML = `
+      ${
+        holeExtremes || winningTeam
+          ? `
+            <div class="card insights-holes">
+              ${winningTeam ? winnersCell(winningTeam, grossEntries) : ''}
+              ${holeExtremes ? holeExtremeCell('Best Hole', holeExtremes.best, year) : ''}
+              ${holeExtremes ? holeExtremeCell('Worst Hole', holeExtremes.worst, year) : ''}
+            </div>
+          `
+          : ''
+      }
+
       <div class="card">
         <div class="ct">${year} Solo Round</div>
 
@@ -1990,6 +2722,80 @@ async function renderInsights(year = insightsYear) {
 
         </div>
       </div>
+
+      <div class="card">
+        <div class="ct">${year} Field Relative to Par</div>
+
+        <div class="insights-par-overview">
+
+          <div class="stats-chart-card">
+            <div class="stat-box-label">Average Relative to Par by Hole Handicap</div>
+            <div class="insights-chart-fill">
+              <canvas id="insights-handicap-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="stats-chart-card">
+            <div class="stat-box-label">Average Relative to Par by Hole Type</div>
+            <div class="insights-chart-fill">
+              <canvas id="insights-par-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="stats-chart-card">
+            <div class="stat-box-label">Average Relative to Par — Front 9 vs Back 9</div>
+            <div class="insights-chart-fill">
+              <canvas id="insights-front-back-chart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="insights-years-row">
+
+          <div class="stats-chart-card">
+            <div class="stat-box-label">Total Relative to Par — All Years</div>
+
+            ${yearRankBadge(
+              selectedYearTotal,
+              selectedYearTotal &&
+                `best of ${yearTotals.length} years · ${formatRelativeToParTick(selectedYearTotal.total)}`
+            )}
+
+            <div class="insights-chart-fill" style="min-height:${yearRankingHeight(yearTotals.length)}px;">
+              <canvas id="insights-years-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="stats-chart-card">
+            <div class="stat-box-label">Scoring Totals — All Years</div>
+
+            <div class="scoring-view-toggle insights-category-toggle" id="insights-category-toggle">
+              ${[
+                ['eagles', 'Eagles'],
+                ['birdies', 'Birdies'],
+                ['pars', 'Pars'],
+                ['bogeys', 'Bogeys'],
+                ['dbl_bogeys', 'Doubles'],
+                ['trp_bogeys', 'Triples'],
+                ['qud_bogeys', 'Quads+']
+              ].map(([field, label]) => `
+                <button
+                  type="button"
+                  class="scoring-view-button ${insightsCategory === field ? 'active' : ''}"
+                  data-category="${field}"
+                  onclick="setInsightsCategory('${field}')"
+                >
+                  ${label}
+                </button>
+              `).join('')}
+            </div>
+
+            <div id="insights-category-body" style="display:flex;flex-direction:column;flex:1;"></div>
+          </div>
+
+        </div>
+      </div>
     `;
 
     const grossGrid = document.getElementById('insights-gross-grid');
@@ -2000,6 +2806,15 @@ async function renderInsights(year = insightsYear) {
 
     insightsFieldStats = getFieldScoringStats(soloRounds, course);
     renderInsightsScoringChart();
+
+    if (soloRounds.length) {
+      renderInsightsParCharts(getFieldRelativeToPar(soloRounds, course));
+    }
+
+    // Category card first: it sets the row height the totals chart stretches to.
+    renderInsightsCategoryRanking();
+    renderInsightsYearsChart(yearTotals, year);
+    renderInsightsHandicapChart(courses, rounds, year);
 
   } catch (error) {
     console.error('Tournament insights error:', error);
@@ -3248,7 +4063,22 @@ async function renderHandicapChart(
   }
 }
 
-function createHandicapChart(canvas, datasets, showLegend) {
+/*
+ * onDatasetClick(dataset), when given, runs for a click on
+ * one of the datasets for which isClickable(dataset) is true.
+ */
+function createHandicapChart(
+  canvas,
+  datasets,
+  showLegend,
+  onDatasetClick = null,
+  isClickable = () => true
+) {
+  const clickedDataset = elements =>
+    elements
+      .map(element => datasets[element.datasetIndex])
+      .find(isClickable);
+
   return new Chart(canvas, {
     type: 'line',
 
@@ -3265,6 +4095,21 @@ function createHandicapChart(canvas, datasets, showLegend) {
         mode: 'nearest',
         intersect: true
       },
+
+      ...(onDatasetClick
+        ? {
+            onClick: (event, elements) => {
+              const dataset = clickedDataset(elements);
+
+              if (dataset) onDatasetClick(dataset);
+            },
+
+            onHover: (event, elements) => {
+              event.native.target.style.cursor =
+                clickedDataset(elements) ? 'pointer' : 'default';
+            }
+          }
+        : {}),
 
       scales: {
         x: {
@@ -3718,7 +4563,8 @@ function renderFrontBackAverageChart(
  * bars; otherwise a single "Average" bar per row.
  *
  * Clicking a bar (or the zero line, for bars at exactly
- * even par) opens the matching career ranking.
+ * even par) opens the matching career ranking; pass
+ * rankingStats: null for a chart with no click-through.
  */
 function createRelativeToParBarChart(
   canvas,
@@ -3862,6 +4708,10 @@ function createRelativeToParBarChart(
       },
 
       onClick: function(event, elements, chart) {
+        if (!rankingStats) {
+          return;
+        }
+
         let datasetIndex = null;
         let dataIndex = null;
 
@@ -3937,6 +4787,10 @@ function createRelativeToParBarChart(
       },
 
       onHover: function(event, elements, chart) {
+        if (!rankingStats) {
+          return;
+        }
+
         if (elements.length) {
           event.native.target.style.cursor = 'pointer';
           return;
@@ -4520,22 +5374,7 @@ async function openScorecard(
         const s = Number(score);
         const par = Number(pars[hole - 1]);
 
-        let cls = '';
-
-        if (
-          Number.isFinite(s) &&
-          Number.isFinite(par)
-        ) {
-          if (s <= par - 2) {
-            cls = 'eagle';
-          } else if (s === par - 1) {
-            cls = 'birdie';
-          } else if (s === par + 1) {
-            cls = 'bogey';
-          } else if (s >= par + 2) {
-            cls = 'double-bogey';
-          }
-        }
+        const cls = scoreMarkClass(s, par);
 
         return `
           <td class="score ${cls}">

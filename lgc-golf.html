@@ -5322,10 +5322,7 @@ async function renderYardageChart(playerName, playerFolder) {
         );
       },
 
-      onPick: player => {
-        preserveStatsScroll = true;
-        loadPlayerStats(player.folder);
-      }
+      onPick: player => switchStatsPlayer(player.folder)
     });
 
   } catch (error) {
@@ -6239,9 +6236,7 @@ async function showYearlyStat(
             statsMode
           };
 
-          preserveStatsScroll = true;
-
-          loadPlayerStats(targetPlayer.folder);
+          switchStatsPlayer(targetPlayer.folder);
         },
 
         onHover: function(event, elements) {
@@ -6802,10 +6797,19 @@ function isPersonalCareerStat(stat) {
   ].includes(stat);
 }
 
-async function openRankedPlayer(folder) {
+/*
+ * Open another player's record book without changing the view:
+ * the scroll position, the selected ranking and the year-by-year
+ * chart (via currentYearlyChartConfig) all carry over, as do the
+ * chart toggles, which are page-wide settings. Used by ranking
+ * rows and by clicking a player's line in a chart.
+ */
+async function switchStatsPlayer(folder) {
   const savedRankingConfig = currentRankingConfig
     ? { ...currentRankingConfig }
     : null;
+
+  preserveStatsScroll = true;
 
   await loadPlayerStats(folder);
 
@@ -6826,6 +6830,11 @@ async function openRankedPlayer(folder) {
     savedRankingConfig.totalStatOverride,
     savedRankingConfig.sourceStatsMode
   );
+}
+
+// Ranking rows: same as any other in-place player switch.
+function openRankedPlayer(folder) {
+  return switchStatsPlayer(folder);
 }
 
 async function showCareerRanking(

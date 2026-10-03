@@ -821,8 +821,95 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 /* TOURNAMENT INSIGHTS */
 .insights-overview {
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr));
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);
   gap:12px;
+}
+
+/* Every row is the same fixed height so the connector lines can be drawn by row index. */
+.insights-overview .career-rank-row {
+  height:34px;
+  padding:0;
+}
+
+/* Gross panel: handicap ranking | connector lines | gross ranking */
+.insights-gross-grid {
+  display:grid;
+  grid-template-columns:auto 64px minmax(0,1fr);
+  align-items:start;
+}
+
+.insights-hcp-row {
+  gap:5px;
+}
+
+/* Name + handicap box; the column is sized to the longest name so every box is the same width and the lines start from its right edge. */
+.insights-hcp-box {
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  height:24px;
+  padding:0 7px;
+  background:rgba(255,255,255,.6);
+  border:1px solid rgba(26,58,26,.1);
+  border-radius:6px;
+}
+
+.insights-hcp-box .career-rank-name {
+  margin-bottom:0;
+}
+
+.insights-hcp-value {
+  font-size:10px;
+  font-weight:600;
+  color:var(--tm);
+}
+
+.insights-connector {
+  display:block;
+  width:100%;
+  overflow:visible;
+  pointer-events:none;
+}
+
+.insights-connector path {
+  fill:none;
+  stroke-width:1.5;
+  vector-effect:non-scaling-stroke;
+  transition:opacity .12s, stroke-width .12s;
+}
+
+.insights-connector .gained { stroke:var(--gl); }
+.insights-connector .lost { stroke:#C94636; }
+.insights-connector .same { stroke:var(--ts); }
+
+.insights-connector.has-focus path { opacity:.12; }
+.insights-connector.has-focus path.focus { opacity:1; stroke-width:2.5; }
+
+.insights-pot {
+  font-size:11px;
+  color:var(--tm);
+}
+
+.insights-pot strong {
+  color:var(--gd);
+}
+
+.insights-connector-legend {
+  display:flex;
+  justify-content:center;
+  gap:14px;
+}
+
+.insights-connector-legend span::before {
+  content:'';
+  display:inline-block;
+  width:12px;
+  height:2px;
+  margin-right:5px;
+  vertical-align:middle;
+  background:currentColor;
 }
 
 /* Pill grows to fill the column so its bottom lines up with the rankings. */
@@ -1516,14 +1603,11 @@ function insightsRankingList(entries, year, showMedal = false) {
       8
     );
 
-    const folder =
-      statsPlayers.find(player => player.name === entry.name)?.folder ||
-      entry.name.toLowerCase();
-
     return `
       <div
         class="career-rank-row"
-        onclick="openScorecard(${year}, '${encodeURIComponent(folder)}', '${encodeURIComponent(entry.name)}', 'solo')"
+        data-player="${entry.name}"
+        onclick="${soloScorecardClick(year, entry.name)}"
       >
         <div class="career-rank-number">
           ${tied ? 'T' : ''}${rank}
@@ -1542,6 +1626,98 @@ function insightsRankingList(entries, year, showMedal = false) {
       </div>
     `;
   }).join('');
+}
+
+const INSIGHTS_ROW_HEIGHT = 34;
+
+function playerFolder(name) {
+  return (
+    statsPlayers.find(player => player.name === name)?.folder ||
+    name.toLowerCase()
+  );
+}
+
+function soloScorecardClick(year, name) {
+  return `openScorecard(${year}, '${encodeURIComponent(playerFolder(name))}', '${encodeURIComponent(name)}', 'solo')`;
+}
+
+/*
+ * Handicap ranking (lowest first, no bars). Entries share a
+ * row height with the gross list so the connector lines
+ * can join them by index.
+ */
+function insightsHandicapList(entries, year) {
+  return entries.map(entry => `
+    <div
+      class="career-rank-row insights-hcp-row"
+      data-player="${entry.name}"
+      onclick="${soloScorecardClick(year, entry.name)}"
+    >
+      <div class="career-rank-number">
+        ${isTied(entries, entry.value) ? 'T' : ''}${getCompetitionRank(entries, entry.value)}
+      </div>
+      <div class="insights-hcp-box">
+        <div class="career-rank-name">${entry.name}</div>
+        <div class="insights-hcp-value">${entry.value}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/*
+ * One curve per player from their handicap row (left) to
+ * their gross row (right): green = finished higher than
+ * their handicap rank, red = lower, grey = same spot.
+ */
+function insightsConnector(hcpEntries, grossEntries) {
+  const height = hcpEntries.length * INSIGHTS_ROW_HEIGHT;
+  const rowCenter = index => index * INSIGHTS_ROW_HEIGHT + INSIGHTS_ROW_HEIGHT / 2;
+
+  const paths = hcpEntries.map((entry, from) => {
+    const to = grossEntries.findIndex(gross => gross.name === entry.name);
+    const y1 = rowCenter(from);
+    const y2 = rowCenter(to);
+    const movement = to < from ? 'gained' : to > from ? 'lost' : 'same';
+
+    return `
+      <path
+        class="${movement}"
+        data-player="${entry.name}"
+        d="M0 ${y1} C50 ${y1}, 50 ${y2}, 100 ${y2}"
+      />
+    `;
+  }).join('');
+
+  return `
+    <svg
+      class="insights-connector"
+      viewBox="0 0 100 ${height}"
+      preserveAspectRatio="none"
+      style="height:${height}px"
+    >
+      ${paths}
+    </svg>
+  `;
+}
+
+// Hovering a player's row on either side highlights their line.
+function bindInsightsConnectorHover(grid) {
+  const svg = grid.querySelector('.insights-connector');
+
+  if (!svg) return;
+
+  const focus = name => {
+    svg.classList.toggle('has-focus', Boolean(name));
+    svg.querySelectorAll('path').forEach(path => {
+      path.classList.toggle('focus', path.dataset.player === name);
+    });
+  };
+
+  grid.addEventListener('mouseover', event => {
+    focus(event.target.closest('.career-rank-row')?.dataset.player || null);
+  });
+
+  grid.addEventListener('mouseleave', () => focus(null));
 }
 
 function getCompetitionRank(entries, value) {
@@ -1711,6 +1887,11 @@ async function renderInsights(year = insightsYear) {
       .sort(compareGrossRounds)
       .map(round => ({ ...round, value: round.gross, note: round.handicap }));
 
+    // Handicap ties are listed in gross finishing order.
+    const handicapEntries = [...grossEntries]
+      .sort((a, b) => a.handicap - b.handicap)
+      .map(entry => ({ ...entry, value: entry.handicap }));
+
     const netEntries = [...soloRounds]
       .sort((a, b) => a.net - b.net)
       .map(round => ({ ...round, value: round.net }));
@@ -1718,10 +1899,12 @@ async function renderInsights(year = insightsYear) {
     const payjumps = Number(course.payjumps);
 
     netEntries.forEach(entry => {
-      entry.note = formatMoneyValue(
-        getNetPayment(netEntries, entry.value, payjumps)
-      );
+      entry.payment = getNetPayment(netEntries, entry.value, payjumps);
+      entry.note = formatMoneyValue(entry.payment);
     });
+
+    // Engraving fee excluded, same as the per-player amounts.
+    const totalPot = netEntries.reduce((sum, entry) => sum + entry.payment, 0);
 
     content.innerHTML = `
       <div class="card">
@@ -1730,13 +1913,45 @@ async function renderInsights(year = insightsYear) {
         <div class="insights-overview">
 
           <div class="career-rank-card">
-            <div class="stat-box-label">Gross Score</div>
-            ${insightsRankingList(grossEntries, year, true)}
+            ${
+              grossEntries.length
+                ? `
+                  <div class="insights-gross-grid" id="insights-gross-grid">
+                    <div class="stat-box-label">Handicap</div>
+                    <div></div>
+                    <div class="stat-box-label">Gross Score</div>
+
+                    <div>${insightsHandicapList(handicapEntries, year)}</div>
+                    ${insightsConnector(handicapEntries, grossEntries)}
+                    <div>${insightsRankingList(grossEntries, year, true)}</div>
+                  </div>
+
+                  <div class="career-rank-note insights-connector-legend">
+                    <span style="color:var(--gl);">Gained</span>
+                    <span style="color:var(--ts);">Same</span>
+                    <span style="color:#C94636;">Lost</span>
+                  </div>
+                `
+                : `
+                  <div class="stat-box-label">Gross Score</div>
+                  ${insightsRankingList(grossEntries, year, true)}
+                `
+            }
           </div>
 
           <div class="career-rank-card">
             <div class="stat-box-label">Net Score</div>
             ${insightsRankingList(netEntries, year)}
+
+            ${
+              netEntries.length
+                ? `
+                  <div class="career-rank-note insights-pot">
+                    Total Pot: <strong>${formatMoneyValue(totalPot)}</strong>
+                  </div>
+                `
+                : ''
+            }
           </div>
 
           <div class="insights-chart-column">
@@ -1776,6 +1991,12 @@ async function renderInsights(year = insightsYear) {
         </div>
       </div>
     `;
+
+    const grossGrid = document.getElementById('insights-gross-grid');
+
+    if (grossGrid) {
+      bindInsightsConnectorHover(grossGrid);
+    }
 
     insightsFieldStats = getFieldScoringStats(soloRounds, course);
     renderInsightsScoringChart();

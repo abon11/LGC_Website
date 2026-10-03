@@ -446,6 +446,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   background: var(--gp);
 }
 
+/* Every scorecard: a faint line above and below each row (yards, HDCP, par, players). */
+.scorecard-table td {
+  border-top:1px solid rgba(26,58,26,.14);
+  border-bottom:1px solid rgba(26,58,26,.14);
+}
+
+/* Insights' Solo / Team scorecards (no section rows): a darker line between PAR and the first ranked row. */
+.scorecard-table.field:not(.sectioned) .par-row td {
+  border-bottom:2px solid var(--gd);
+}
+
+.scorecard-table .section-row td {
+  background:var(--gd);
+  color:var(--gold);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-align:left;
+  padding:5px 10px;
+}
+
 .scorecard-table .par-row td {
   font-weight: 700;
 }
@@ -1026,6 +1048,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   gap:12px;
 }
 
+/* Combined mode adds a Solo / Team legend under each chart; give the plots back that room. */
+.insights-par-overview.combined .insights-chart-fill {
+  min-height:190px;
+}
+
 /* Year rankings: a row whose height grows with the number of years; both cards stretch to match. */
 .insights-years-row {
   display:grid;
@@ -1102,6 +1129,46 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   margin-right:5px;
   vertical-align:middle;
   background:currentColor;
+}
+
+/* Team mode: team panel + leaderboard chart span the gross / net columns; the chart fills down to the pie's bottom. */
+.insights-team-column {
+  grid-column:span 2;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0;
+}
+
+.insights-team-column .career-rank-card {
+  min-height:0;
+}
+
+.insights-progress-card {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.insights-progress-card .insights-chart-fill {
+  min-height:180px;
+}
+
+/* Combined mode: team panel and leaderboard side by side in their own card. */
+.insights-team-row {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:12px;
+}
+
+@media (max-width:699px) {
+  .insights-team-column {
+    grid-column:auto;
+  }
+
+  .insights-team-row {
+    grid-template-columns:1fr;
+  }
 }
 
 /* Pill grows to fill the column so its bottom lines up with the rankings. */
@@ -1650,6 +1717,10 @@ function setStatsMode(mode) {
   if (selectedStatsPlayerFolder) {
     loadPlayerStats(selectedStatsPlayerFolder);
   }
+
+  if (document.getElementById('page-insights').classList.contains('active')) {
+    switchInsightsYear(insightsYear);
+  }
 }
 
 // NAV
@@ -1675,6 +1746,8 @@ let insightsFrontBackChart = null;
 let insightsYearsChart = null;
 let insightsHandicapChart = null;
 let insightsCategoryChart = null;
+let insightsProgressChart = null;
+let insightsProgress = null; // { year, teams, pars, highlighted }
 let insightsCategory = 'birdies';
 let insightsYearSummaries = [];
 
@@ -1753,6 +1826,65 @@ function getYearSoloRounds(rounds, course, year) {
 }
 
 /*
+ * Team (scramble) rounds for one year, shaped like the solo
+ * rounds. Players are listed higher seed first, using the
+ * year's solo gross ranking.
+ */
+function getYearTeamRounds(rounds, course, year) {
+  const par = HOLE_NUMBERS.reduce(
+    (sum, hole) => sum + Number(course[`hole${hole}_par`]),
+    0
+  );
+
+  const seeds = getYearSoloRounds(rounds, course, year)
+    .sort(compareGrossRounds)
+    .map(round => round.name);
+
+  const seed = name => {
+    const index = seeds.indexOf(name);
+
+    return index === -1 ? Infinity : index;
+  };
+
+  return rounds
+    .filter(row => Number(row.year) === year)
+    .map(row => ({ row, roundPlayers: parseRoundPlayers(row) }))
+    .filter(({ roundPlayers }) => roundPlayers?.length > 1)
+    .map(({ row, roundPlayers }) => {
+      const holes = HOLE_NUMBERS.map(hole =>
+        row[`hole${hole}`] === '' ? null : Number(row[`hole${hole}`])
+      );
+      const players = [...roundPlayers].sort((a, b) => seed(a) - seed(b));
+
+      return {
+        row,
+        name: players.join(' & '),
+        players,
+        isTeam: true,
+        holes,
+        gross: holes.reduce((sum, score) => sum + (score ?? 0), 0),
+        par
+      };
+    });
+}
+
+// Rounds behind the field stats for the header's Solo / Team / Combined picker.
+function getYearModeRounds(rounds, course, year, mode = statsMode) {
+  if (mode === 'solo') return getYearSoloRounds(rounds, course, year);
+  if (mode === 'team') return getYearTeamRounds(rounds, course, year);
+
+  return [
+    ...getYearSoloRounds(rounds, course, year),
+    ...getYearTeamRounds(rounds, course, year)
+  ];
+}
+
+// Label for the field stats in the current picker mode.
+function insightsFieldLabel() {
+  return { solo: 'Field', team: 'Team', combined: 'Combined' }[statsMode];
+}
+
+/*
  * Gross order (rules → Team Making): lower gross, then lower
  * handicap, then better front 9, then better score on the
  * #1 handicap hole, #2, ... Missing holes sort last.
@@ -1777,14 +1909,15 @@ function compareGrossRounds(a, b) {
  * rankings. Entries must already be sorted best-first;
  * ranks use competition ranking (1, T2, T2, 4) on `value`.
  * `note` is shown in parentheses after the name; showMedal
- * puts 🥇 in front of everyone ranked 1st.
+ * puts 🥇 in front of everyone ranked 1st. Rows open the
+ * entry's `click` action, or its solo scorecard by default.
  */
 function insightsRankingList(entries, year, showMedal = false) {
   if (!entries.length) {
     return `
       <div class="career-rank-empty">
         <div>—</div>
-        <span>No solo rounds recorded</span>
+        <span>No rounds recorded</span>
       </div>
     `;
   }
@@ -1806,7 +1939,7 @@ function insightsRankingList(entries, year, showMedal = false) {
       <div
         class="career-rank-row"
         data-player="${entry.name}"
-        onclick="${soloScorecardClick(year, entry.name)}"
+        onclick="${entry.click || soloScorecardClick(year, entry.name)}"
       >
         <div class="career-rank-number">
           ${tied ? 'T' : ''}${rank}
@@ -1836,8 +1969,12 @@ function playerFolder(name) {
   );
 }
 
+function scorecardClick(year, name, mode) {
+  return `openScorecard(${year}, '${encodeURIComponent(playerFolder(name))}', '${encodeURIComponent(name)}', '${mode}')`;
+}
+
 function soloScorecardClick(year, name) {
-  return `openScorecard(${year}, '${encodeURIComponent(playerFolder(name))}', '${encodeURIComponent(name)}', 'solo')`;
+  return scorecardClick(year, name, 'solo');
 }
 
 /*
@@ -1850,7 +1987,7 @@ function insightsHandicapList(entries, year) {
     <div
       class="career-rank-row insights-hcp-row"
       data-player="${entry.name}"
-      onclick="${soloScorecardClick(year, entry.name)}"
+      onclick="${entry.click || soloScorecardClick(year, entry.name)}"
     >
       <div class="career-rank-number">
         ${isTied(entries, entry.value) ? 'T' : ''}${getCompetitionRank(entries, entry.value)}
@@ -1946,12 +2083,12 @@ function getNetPayment(netEntries, value, payjumps) {
  * player's stats (total_birdies, par3_pars, front_bogeys, ...)
  * so the stats-page doughnut helpers can draw them.
  */
-function getFieldScoringStats(soloRounds, course) {
+function getFieldScoringStats(fieldRounds, course) {
   const stats = Object.fromEntries(
     SCORING_DISTRIBUTION_STATS.map(stat => [stat, 0])
   );
 
-  soloRounds.forEach(round => {
+  fieldRounds.forEach(round => {
     round.holes.forEach((score, index) => {
       if (score == null) return;
 
@@ -2081,16 +2218,24 @@ function scoreName(relative) {
  * Best hole: the best score relative to par, and of those the
  * fewest strokes (a 2 birdie beats a 3 birdie). Worst hole is
  * the mirror: worst relative to par, then the most strokes.
- * Ties are ordered by hole, then player.
+ * Ties are ordered by hole, then player / team.
  */
-function getHoleExtremes(soloRounds, course) {
-  const scores = soloRounds
+function getHoleExtremes(fieldRounds, course) {
+  const scores = fieldRounds
     .flatMap(round => round.holes.map((score, index) => {
       if (score == null) return null;
 
       const par = Number(course[`hole${index + 1}_par`]);
 
-      return { name: round.name, hole: index + 1, score, par, relative: score - par };
+      return {
+        name: round.name,
+        player: round.players?.[0] ?? round.name,
+        isTeam: Boolean(round.isTeam),
+        hole: index + 1,
+        score,
+        par,
+        relative: score - par
+      };
     }))
     .filter(Boolean)
     .sort((a, b) => a.hole - b.hole || a.name.localeCompare(b.name));
@@ -2127,7 +2272,7 @@ function holeExtremeCell(label, entries, year) {
           <button
             type="button"
             class="insights-hole-chip"
-            onclick="${soloScorecardClick(year, entry.name)}"
+            onclick="${scorecardClick(year, entry.player, entry.isTeam ? 'team' : 'solo')}"
           >
             <span class="score insights-hole-mark ${scoreMarkClass(entry.score, entry.par)} ${entry.score >= 10 ? 'wide' : ''}">
               <span class="score-mark">
@@ -2182,13 +2327,13 @@ function ordinal(n) {
  * Field averages relative to par: per hole for par 3 / 4 / 5,
  * per round for the front and back 9.
  */
-function getFieldRelativeToPar(soloRounds, course) {
+function getFieldRelativeToPar(fieldRounds, course) {
   const parOf = index => Number(course[`hole${index + 1}_par`]);
   const byPar = { 3: [], 4: [], 5: [] };
   const front = [];
   const back = [];
 
-  soloRounds.forEach(round => {
+  fieldRounds.forEach(round => {
     let frontTotal = 0;
     let backTotal = 0;
 
@@ -2220,19 +2365,20 @@ function getFieldRelativeToPar(soloRounds, course) {
 
 /*
  * Per-year field totals: strokes over par and the scoring
- * distribution, for every year with solo rounds.
+ * distribution, for every year with rounds in the current
+ * picker mode.
  */
 function getYearSummaries(courses, rounds) {
   return courses
     .map(course => {
       const year = Number(course.year);
-      const soloRounds = getYearSoloRounds(rounds, course, year);
+      const modeRounds = getYearModeRounds(rounds, course, year);
 
       return {
         year,
-        rounds: soloRounds.length,
-        total: soloRounds.reduce((sum, round) => sum + round.gross - round.par, 0),
-        stats: getFieldScoringStats(soloRounds, course)
+        rounds: modeRounds.length,
+        total: modeRounds.reduce((sum, round) => sum + round.gross - round.par, 0),
+        stats: getFieldScoringStats(modeRounds, course)
       };
     })
     .filter(summary => summary.rounds);
@@ -2277,7 +2423,7 @@ function yearRankingHeight(count) {
  * Field average relative to par on each hole, indexed by the
  * hole's handicap (index 0 = #1 handicap hole).
  */
-function getFieldHandicapValues(soloRounds, course) {
+function getFieldHandicapValues(fieldRounds, course) {
   return HOLE_NUMBERS.map(handicap => {
     const hole = HOLE_NUMBERS.find(
       number => Number(course[`hole${number}_hdcp`]) === handicap
@@ -2286,7 +2432,7 @@ function getFieldHandicapValues(soloRounds, course) {
     if (!hole) return null;
 
     const par = Number(course[`hole${hole}_par`]);
-    const scores = soloRounds
+    const scores = fieldRounds
       .map(round => round.holes[hole - 1])
       .filter(score => score != null);
 
@@ -2319,13 +2465,31 @@ function renderInsightsHandicapChart(courses, rounds, year) {
 
   if (!canvas) return;
 
+  // Combined: this year's Solo vs Team lines, as on the stats page.
+  if (statsMode === 'combined') {
+    const course = courses.find(row => Number(row.year) === year);
+    const values = mode =>
+      getFieldHandicapValues(getYearModeRounds(rounds, course, year, mode), course);
+
+    insightsHandicapChart = createHandicapChart(
+      canvas,
+      [
+        lineDataset('Solo', values('solo'), '#d9b902', 3, 3.5, 5),
+        lineDataset('Team', values('team'), '#1a3a1a', 3, 3.5, 5)
+      ],
+      true
+    );
+
+    return;
+  }
+
   const yearLines = courses
     .map(course => {
       const courseYear = Number(course.year);
-      const soloRounds = getYearSoloRounds(rounds, course, courseYear);
+      const modeRounds = getYearModeRounds(rounds, course, courseYear);
 
-      return soloRounds.length
-        ? { year: courseYear, values: getFieldHandicapValues(soloRounds, course) }
+      return modeRounds.length
+        ? { year: courseYear, values: getFieldHandicapValues(modeRounds, course) }
         : null;
     })
     .filter(Boolean);
@@ -2353,15 +2517,20 @@ function renderInsightsHandicapChart(courses, rounds, year) {
   );
 }
 
-function renderInsightsParCharts(fieldRelative) {
+/*
+ * teamRelative given (Combined mode): Solo vs Team bars, as on
+ * the stats page; otherwise one bar per row.
+ */
+function renderInsightsParCharts(fieldRelative, teamRelative = null) {
   [insightsParChart, insightsFrontBackChart].forEach(chart => chart?.destroy());
+
+  const isCombined = Boolean(teamRelative);
 
   const sharedOptions = {
     rankingStats: null,
     playerFolder: null,
-    isCombined: false,
-    teamValues: null,
-    tooltipShowsDataset: false
+    isCombined,
+    tooltipShowsDataset: isCombined
   };
 
   insightsParChart = createRelativeToParBarChart(
@@ -2370,7 +2539,8 @@ function renderInsightsParCharts(fieldRelative) {
       ...sharedOptions,
       labels: ['Par 3', 'Par 4', 'Par 5'],
       soloValues: fieldRelative.parValues,
-      minAxisLimit: 0,
+      teamValues: teamRelative?.parValues ?? null,
+      minAxisLimit: isCombined ? 2 : 0,
       evenLabelLeftOfZero: false,
       pluginId: 'insightsParValueLabels'
     }
@@ -2382,6 +2552,7 @@ function renderInsightsParCharts(fieldRelative) {
       ...sharedOptions,
       labels: ['Front 9', 'Back 9'],
       soloValues: fieldRelative.frontBackValues,
+      teamValues: teamRelative?.frontBackValues ?? null,
       minAxisLimit: 2,
       evenLabelLeftOfZero: true,
       pluginId: 'insightsFrontBackValueLabels'
@@ -2564,6 +2735,162 @@ function setInsightsCategory(field) {
   renderInsightsCategoryRanking();
 }
 
+/*
+ * Team mode: entries for the team-score ranking (best first,
+ * the champions first on a tie) and the combined-handicap
+ * ranking, which is each team's two solo handicaps added.
+ */
+function getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year) {
+  const handicaps = Object.fromEntries(
+    soloRounds.map(round => [round.name, round.handicap])
+  );
+
+  const isWinner = round =>
+    Boolean(winningTeam) &&
+    round.players.length === winningTeam.players.length &&
+    round.players.every(name => winningTeam.players.includes(name));
+
+  const scoreEntries = [...teamRounds]
+    .sort((a, b) =>
+      a.gross - b.gross ||
+      isWinner(b) - isWinner(a) ||
+      a.name.localeCompare(b.name)
+    )
+    .map(round => {
+      const handicap = round.players.reduce(
+        (sum, name) => sum + (handicaps[name] ?? 0),
+        0
+      );
+
+      return {
+        ...round,
+        value: round.gross,
+        handicap,
+        note: handicap,
+        click: scorecardClick(year, round.players[0], 'team')
+      };
+    });
+
+  // Handicap ties keep team-score order.
+  const handicapEntries = [...scoreEntries]
+    .sort((a, b) => a.handicap - b.handicap)
+    .map(entry => ({ ...entry, value: entry.handicap }));
+
+  return { scoreEntries, handicapEntries };
+}
+
+/*
+ * Each team's running score relative to par, hole by hole.
+ * The highlighted team (the champions by default) is gold;
+ * clicking another team's line highlights it instead.
+ */
+function renderInsightsProgressChart() {
+  insightsProgressChart?.destroy();
+
+  const canvas = document.getElementById('insights-progress-chart');
+
+  if (!canvas || !insightsProgress) return;
+
+  const { teams, pars, highlighted } = insightsProgress;
+
+  const label = document.getElementById('insights-progress-team');
+
+  if (label) label.textContent = highlighted;
+
+  const runningTotals = team => {
+    let total = 0;
+
+    return team.holes.map((score, index) =>
+      score == null ? null : (total += score - pars[index])
+    );
+  };
+
+  // Highlighted team first so it draws on top.
+  const ordered = [
+    ...teams.filter(team => team.name === highlighted),
+    ...teams.filter(team => team.name !== highlighted)
+  ];
+
+  const datasets = ordered.map(team =>
+    team.name === highlighted
+      ? lineDataset(team.name, runningTotals(team), '#d9b902', 3, 3.5, 5)
+      : lineDataset(team.name, runningTotals(team), 'rgba(0, 0, 0, 0.35)', 1.5, 2, 4)
+  );
+
+  const clickedTeam = elements =>
+    elements
+      .map(element => datasets[element.datasetIndex].label)
+      .find(name => name !== highlighted);
+
+  insightsProgressChart = new Chart(canvas, {
+    type: 'line',
+
+    data: {
+      labels: HOLE_NUMBERS,
+      datasets
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      interaction: {
+        mode: 'nearest',
+        intersect: true
+      },
+
+      onClick: (event, elements) => {
+        const name = clickedTeam(elements);
+
+        if (name) {
+          insightsProgress.highlighted = name;
+          renderInsightsProgressChart();
+        }
+      },
+
+      onHover: (event, elements) => {
+        event.native.target.style.cursor =
+          clickedTeam(elements) ? 'pointer' : 'default';
+      },
+
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Hole',
+            font: { family: 'DM Sans' }
+          }
+        },
+
+        y: {
+          title: {
+            display: true,
+            text: 'Relative to Par',
+            font: { family: 'DM Sans' }
+          },
+
+          ticks: {
+            precision: 0,
+            callback: formatRelativeToParTick
+          }
+        }
+      },
+
+      plugins: {
+        legend: { display: false },
+
+        tooltip: {
+          callbacks: {
+            title: context => `Through Hole ${context[0].label}`,
+            label: context =>
+              `${context.dataset.label}: ${formatRelativeToParTick(context.raw)}`
+          }
+        }
+      }
+    }
+  });
+}
+
 async function renderInsights(year = insightsYear) {
   const content = document.getElementById('insights-content');
   const yearLabel = document.getElementById('insights-year');
@@ -2623,8 +2950,71 @@ async function renderInsights(year = insightsYear) {
     // Engraving fee excluded, same as the per-player amounts.
     const totalPot = netEntries.reduce((sum, entry) => sum + entry.payment, 0);
 
-    const holeExtremes = getHoleExtremes(soloRounds, course);
+    // Field stats follow the Solo / Team / Combined picker; the gross / net rankings stay solo.
+    const fieldRounds = getYearModeRounds(rounds, course, year);
+    const fieldLabel = insightsFieldLabel();
+
+    const holeExtremes = getHoleExtremes(fieldRounds, course);
     const winningTeam = winningTeams[year];
+
+    // Team mode swaps the gross / net panels for the team panels;
+    // Combined shows both, the team panels in their own card.
+    const isTeamView = statsMode === 'team';
+    const hasTeamPanels = statsMode !== 'solo';
+    const teamRounds = hasTeamPanels ? getYearTeamRounds(rounds, course, year) : [];
+    const teamEntries = getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year);
+
+    if (hasTeamPanels) {
+      const keepHighlight =
+        insightsProgress?.year === year &&
+        teamRounds.some(team => team.name === insightsProgress.highlighted);
+
+      insightsProgress = {
+        year,
+        teams: teamRounds,
+        pars: HOLE_NUMBERS.map(hole => Number(course[`hole${hole}_par`])),
+        highlighted: keepHighlight
+          ? insightsProgress.highlighted
+          : teamEntries.scoreEntries[0]?.name
+      };
+    }
+
+    const teamPanel = `
+            <div class="career-rank-card">
+              ${
+                teamEntries.scoreEntries.length
+                  ? `
+                    <div class="insights-gross-grid" data-connector>
+                      <div class="stat-box-label">Combined Handicap</div>
+                      <div></div>
+                      <div class="stat-box-label">Team Score</div>
+
+                      <div>${insightsHandicapList(teamEntries.handicapEntries, year)}</div>
+                      ${insightsConnector(teamEntries.handicapEntries, teamEntries.scoreEntries)}
+                      <div>${insightsRankingList(teamEntries.scoreEntries, year, true)}</div>
+                    </div>
+
+                    <div class="career-rank-note insights-connector-legend">
+                      <span style="color:var(--gl);">Gained</span>
+                      <span style="color:var(--ts);">Same</span>
+                      <span style="color:#C94636;">Lost</span>
+                    </div>
+                  `
+                  : insightsRankingList([], year)
+              }
+            </div>
+    `;
+
+    const progressCard = `
+            <div class="stats-chart-card insights-progress-card">
+              <div class="stat-box-label">
+                Leaderboard by Hole · <span id="insights-progress-team"></span>
+              </div>
+              <div class="insights-chart-fill">
+                <canvas id="insights-progress-chart"></canvas>
+              </div>
+            </div>
+    `;
 
     content.innerHTML = `
       ${
@@ -2640,15 +3030,21 @@ async function renderInsights(year = insightsYear) {
       }
 
       <div class="card">
-        <div class="ct">${year} Solo Round</div>
+        <div class="ct">${year} ${isTeamView ? 'Team' : 'Solo'} Round</div>
 
         <div class="insights-overview">
 
+          ${isTeamView ? `
+          <div class="insights-team-column">
+            ${teamPanel}
+            ${progressCard}
+          </div>
+          ` : `
           <div class="career-rank-card">
             ${
               grossEntries.length
                 ? `
-                  <div class="insights-gross-grid" id="insights-gross-grid">
+                  <div class="insights-gross-grid" data-connector>
                     <div class="stat-box-label">Handicap</div>
                     <div></div>
                     <div class="stat-box-label">Gross Score</div>
@@ -2685,18 +3081,19 @@ async function renderInsights(year = insightsYear) {
                 : ''
             }
           </div>
+          `}
 
           <div class="insights-chart-column">
             <button
               type="button"
               class="year-pill played insights-scorecards-pill"
-              onclick="openScorecard(${year}, '', '', 'field')"
+              onclick="openScorecard(${year}, '', '', '${{ solo: 'field', team: 'field-team', combined: 'field-combined' }[statsMode]}')"
             >
               Show Scorecards
             </button>
 
             <div class="stats-chart-card">
-              <div class="stat-box-label">Field Scoring Distribution</div>
+              <div class="stat-box-label">${fieldLabel} Scoring Distribution</div>
               <div class="chart-wrap">
                 <canvas id="insights-scoring-chart"></canvas>
               </div>
@@ -2723,10 +3120,25 @@ async function renderInsights(year = insightsYear) {
         </div>
       </div>
 
-      <div class="card">
-        <div class="ct">${year} Field Relative to Par</div>
+      ${
+        statsMode === 'combined'
+          ? `
+            <div class="card">
+              <div class="ct">${year} Team Round</div>
 
-        <div class="insights-par-overview">
+              <div class="insights-team-row">
+                ${teamPanel}
+                ${progressCard}
+              </div>
+            </div>
+          `
+          : ''
+      }
+
+      <div class="card">
+        <div class="ct">${year} ${fieldLabel} Relative to Par</div>
+
+        <div class="insights-par-overview ${statsMode === 'combined' ? 'combined' : ''}">
 
           <div class="stats-chart-card">
             <div class="stat-box-label">Average Relative to Par by Hole Handicap</div>
@@ -2798,17 +3210,27 @@ async function renderInsights(year = insightsYear) {
       </div>
     `;
 
-    const grossGrid = document.getElementById('insights-gross-grid');
+    content
+      .querySelectorAll('.insights-gross-grid[data-connector]')
+      .forEach(bindInsightsConnectorHover);
 
-    if (grossGrid) {
-      bindInsightsConnectorHover(grossGrid);
+    if (hasTeamPanels) {
+      renderInsightsProgressChart();
+    } else {
+      insightsProgressChart?.destroy();
+      insightsProgressChart = null;
     }
 
-    insightsFieldStats = getFieldScoringStats(soloRounds, course);
+    insightsFieldStats = getFieldScoringStats(fieldRounds, course);
     renderInsightsScoringChart();
 
-    if (soloRounds.length) {
-      renderInsightsParCharts(getFieldRelativeToPar(soloRounds, course));
+    if (statsMode === 'combined') {
+      renderInsightsParCharts(
+        getFieldRelativeToPar(getYearModeRounds(rounds, course, year, 'solo'), course),
+        getFieldRelativeToPar(getYearModeRounds(rounds, course, year, 'team'), course)
+      );
+    } else if (fieldRounds.length) {
+      renderInsightsParCharts(getFieldRelativeToPar(fieldRounds, course));
     }
 
     // Category card first: it sets the row height the totals chart stretches to.
@@ -5189,8 +5611,10 @@ async function showYearlyStat(
 
 /*
  * mode: 'solo' / 'team' / 'combined' show one player's
- * rounds; 'field' shows every solo round that year in
- * gross-ranking order (player arguments are ignored).
+ * rounds. The field modes ignore the player arguments:
+ * 'field' shows every solo round that year in gross-ranking
+ * order, 'field-team' every team round best score first, and
+ * 'field-combined' both, under Solo / Team section rows.
  */
 async function openScorecard(
   year,
@@ -5276,12 +5700,26 @@ async function openScorecard(
       );
     }
 
-    const fieldRounds = mode === 'field'
-      ? getYearSoloRounds(rounds, course, Number(year)).sort(compareGrossRounds)
-      : [];
+    const isField = mode.startsWith('field');
 
-    if (mode === 'field' && !fieldRounds.length) {
-      throw new Error(`No solo rounds found for ${year}`);
+    const fieldSolo = () =>
+      getYearSoloRounds(rounds, course, Number(year)).sort(compareGrossRounds);
+
+    const fieldTeam = () =>
+      getYearTeamRounds(rounds, course, Number(year))
+        .sort((a, b) => a.gross - b.gross || a.name.localeCompare(b.name));
+
+    const fieldSections =
+      mode === 'field'
+        ? [{ rounds: fieldSolo() }]
+        : mode === 'field-team'
+          ? [{ rounds: fieldTeam() }]
+          : mode === 'field-combined'
+            ? [{ label: 'Solo', rounds: fieldSolo() }, { label: 'Team', rounds: fieldTeam() }]
+            : [];
+
+    if (isField && !fieldSections.some(section => section.rounds.length)) {
+      throw new Error(`No rounds found for ${year}`);
     }
 
     const teamPlayers = teamRound
@@ -5296,7 +5734,7 @@ async function openScorecard(
 
     // Solo and Combined use the individual player's name.
     playerLabel.textContent =
-      mode === 'field'
+      isField
         ? 'Scorecards'
         : mode === 'team' && teamPlayers
           ? teamPlayers.join(' & ')
@@ -5315,10 +5753,13 @@ async function openScorecard(
     // SCORE ROWS
     // ---------------------------------------------------------
 
-    const scoreRows = fieldRounds.map(fieldRound => ({
-      label: fieldRound.name,
-      round: fieldRound.row
-    }));
+    const scoreRows = fieldSections.flatMap(section => [
+      ...(section.label ? [{ section: section.label }] : []),
+      ...section.rounds.map(fieldRound => ({
+        label: fieldRound.name,
+        round: fieldRound.row
+      }))
+    ]);
 
     if (
       (mode === 'solo' || mode === 'combined') &&
@@ -5422,7 +5863,7 @@ async function openScorecard(
 
     content.innerHTML = `
       <div class="scorecard-table-wrap">
-        <table class="scorecard-table">
+        <table class="scorecard-table ${isField ? 'field' : ''} ${fieldSections.length > 1 ? 'sectioned' : ''}">
 
           <thead>
             <tr>
@@ -5447,6 +5888,15 @@ async function openScorecard(
             ${courseRow('Par', 'par', 'par-row')}
 
             ${scoreRows.map(scoreRow => {
+              if (scoreRow.section) {
+                // Label + 18 holes + OUT / IN / TOT
+                return `
+                  <tr class="section-row">
+                    <td colspan="22">${scoreRow.section}</td>
+                  </tr>
+                `;
+              }
+
               const scores = HOLE_NUMBERS.map(
                 hole => scoreRow.round[`hole${hole}`]
               );

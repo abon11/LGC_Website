@@ -817,6 +817,43 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 #handicap-og12-toggle.disabled .career-rank-og12-button {
   cursor: default;
 }
+
+/* TOURNAMENT INSIGHTS */
+.insights-overview {
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:12px;
+}
+
+/* Pill grows to fill the column so its bottom lines up with the rankings. */
+.insights-chart-column {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.insights-scorecards-pill {
+  flex:1;
+  min-height:44px;
+  border:none;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+}
+
+.insights-overview .career-rank-value {
+  width:58px;
+}
+
+/* Fixed line height so the 🥇 doesn't make its row taller. */
+.insights-overview .career-rank-name {
+  line-height:14px;
+}
+
+@media (max-width:699px) {
+  .insights-overview {
+    grid-template-columns:1fr;
+  }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -843,7 +880,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     Home
   </button>
 
-  <button class="ni" onclick="showPage('standings',this)">
+  <button class="ni" onclick="showPage('insights',this)">
     <!-- Trophy silhouette -->
     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
       <path d="M12 2C9.5 2 8 4 8 6.5V11c0 2.8 1.8 5 4 5.3V18h-2.5c-.5 0-1 .4-1 1v.5h7V19c0-.6-.5-1-1-1H12v-1.7c2.2-.3 4-2.5 4-5.3V6.5C16 4 14.5 2 12 2z"/>
@@ -955,17 +992,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   </div>
 </main>
 
-<!-- STANDINGS -->
-<main id="page-standings" class="pg">
-  <div class="tbr">
-    <button class="tbb active" onclick="showStTab('day1',this)">Day 1</button>
-    <button class="tbb" onclick="showStTab('day2',this)">Day 2</button>
-    <button class="tbb" onclick="showStTab('money',this)">Money</button>
+<!-- TOURNAMENT INSIGHTS -->
+<main id="page-insights" class="pg">
+  <div
+    class="sc player-header"
+    style="margin-bottom:12px;"
+    onclick="openInsightsYearPicker()"
+  >
+    <div class="sl">Tournament Insights</div>
+
+    <div class="player-header-name">
+      <span id="insights-year">—</span>
+      <span class="player-header-chevron">⌄</span>
+    </div>
+
+    <div class="sd" id="insights-course"></div>
   </div>
-  <div id="st-day1"></div>
-  <div id="st-day2" style="display:none;"></div>
-  <div id="st-money" style="display:none;"></div>
-  <button class="fab" id="st-fab" onclick="openAddScoreModal()">+</button>
+
+  <div id="insights-content"></div>
 </main>
 
 <!-- STATS -->
@@ -986,38 +1030,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 </main>
 
 <!-- MODALS -->
-<div class="mo" id="mod-score"><div class="ms"><div class="mh"></div><div class="mt">Enter Score</div>
-  <div class="fg"><label class="fl">Player</label><select class="fi" id="sc-player"><option value="">Select…</option></select></div>
-  <div class="fg"><label class="fl">Day</label><select class="fi" id="sc-day"><option value="1">Day 1 — Stroke Play</option><option value="2">Day 2 — Scramble</option></select></div>
-  <div class="fg"><label class="fl">Gross Score</label><input type="number" class="fi" id="sc-gross" placeholder="e.g. 84"></div>
-  <div class="fg"><label class="fl">Net Score</label><input type="number" class="fi" id="sc-net" placeholder="e.g. 71"></div>
-  <div class="fg"><label class="fl">Birdies</label><input type="number" class="fi" id="sc-birds" placeholder="0"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-score')">Cancel</button><button class="bp" style="flex:2;" onclick="saveScore()">Save</button></div>
-</div></div>
-
-<div class="mo" id="mod-player"><div class="ms"><div class="mh"></div><div class="mt">Add Player</div>
-  <div class="fg"><label class="fl">Name</label><input type="text" class="fi" id="pl-name"></div>
-  <div class="fg"><label class="fl">Handicap</label><input type="number" class="fi" id="pl-hcp"></div>
-  <div class="fg"><label class="fl">Buy-in ($)</label><input type="number" class="fi" id="pl-buyin"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-player')">Cancel</button><button class="bp" style="flex:2;" onclick="savePlayer()">Add</button></div>
-</div></div>
-
-<div class="mo" id="mod-money"><div class="ms"><div class="mh"></div><div class="mt">Money Info</div>
-  <div class="fg"><label class="fl">Total Pot ($)</label><input type="number" class="fi" id="m-pot"></div>
-  <div class="fg"><label class="fl">Engraving Fee ($)</label><input type="number" class="fi" id="m-eng"></div>
-  <div class="fg"><label class="fl">Each Winner Earns ($)</label><input type="number" class="fi" id="m-win"></div>
-  <div class="fg"><label class="fl">Winning Team</label><input type="text" class="fi" id="m-winners" placeholder="e.g. Bon & Baker"></div>
-  <div class="fg"><label class="fl">Notes</label><input type="text" class="fi" id="m-notes"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-money')">Cancel</button><button class="bp" style="flex:2;" onclick="saveMoney()">Save</button></div>
-</div></div>
-
-<div class="mo" id="mod-team-score"><div class="ms"><div class="mh"></div><div class="mt">Team Score</div>
-  <div class="fg"><label class="fl">Team</label><select class="fi" id="ts-team"></select></div>
-  <div class="fg"><label class="fl">Score</label><input type="number" class="fi" id="ts-score" placeholder="e.g. 67"></div>
-  <div class="fg"><label class="fl">vs Par (e.g. -5)</label><input type="number" class="fi" id="ts-rel"></div>
-  <div style="display:flex;gap:10px;"><button class="bo" style="flex:1;" onclick="closeM('mod-team-score')">Cancel</button><button class="bp" style="flex:2;" onclick="saveTeamScore()">Save</button></div>
-</div></div>
-
 <div class="mo" id="mod-scorecard">
   <div class="ms scorecard-modal">
 
@@ -1055,6 +1067,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     <div style="height:10px;"></div>
 
     <button class="bo" onclick="closeM('mod-stats-player')">
+      Close
+    </button>
+  </div>
+</div>
+
+<div class="mo" id="mod-insights-year">
+  <div class="ms">
+    <div class="mh"></div>
+    <div class="mt">Select Year</div>
+
+    <div id="insights-year-list"></div>
+
+    <div style="height:10px;"></div>
+
+    <button class="bo" onclick="closeM('mod-insights-year')">
       Close
     </button>
   </div>
@@ -1346,220 +1373,424 @@ function setStatsMode(mode) {
   }
 }
 
-let AY=2026, players=[], scores={}, teams=[];
-
 // NAV
 function showPage(n,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+n).classList.add('active');
   btn.classList.add('active');
-  if(n==='standings') renderStandings();
+  if(n==='insights') renderInsights();
 }
 
-// YEAR
-function loadYear(yr){
-  AY=yr; DB.set('activeYear',yr);
-  players =DB.get('players_'+yr) ||[];
-  scores  =DB.get('scores_'+yr)  ||{};
-  teams   =DB.get('teams_'+yr)   ||[];
+// ---------------------------------------------------------
+// TOURNAMENT INSIGHTS
+// ---------------------------------------------------------
+
+let insightsYear = null;
+let insightsYears = [];
+let insightsScoringChart = null;
+let insightsScoringView = 'overall';
+let insightsFieldStats = null;
+
+function openInsightsYearPicker() {
+  document.getElementById('insights-year-list').innerHTML =
+    insightsYears.map(year => `
+      <div
+        class="yr"
+        onclick="
+          renderInsights(${year});
+          closeM('mod-insights-year');
+        "
+      >
+        <div style="
+          font-size:15px;
+          font-weight:500;
+          color:var(--td);
+          flex:1;
+        ">
+          ${year}
+        </div>
+
+        ${
+          year === insightsYear
+            ? '<span style="color:var(--gold);font-size:18px;">✓</span>'
+            : '<span style="color:var(--ts);">›</span>'
+        }
+      </div>
+    `).join('');
+
+  openM('mod-insights-year');
 }
 
-// PLAYERS
-function savePlayer(){
-  const name=document.getElementById('pl-name').value.trim();
-  if(!name)return;
-  if(!players.find(p=>p.name===name)){
-    players.push({name,hcp:parseFloat(document.getElementById('pl-hcp').value)||0,buyin:parseFloat(document.getElementById('pl-buyin').value)||0});
-    DB.set('players_'+AY,players);
+/*
+ * Solo rounds for one year, with gross / net totals and
+ * the per-hole scores needed for the gross tiebreakers.
+ */
+function getYearSoloRounds(rounds, course, year) {
+  const par = HOLE_NUMBERS.reduce(
+    (sum, hole) => sum + Number(course[`hole${hole}_par`]),
+    0
+  );
+
+  // Hole indexes from the #1 handicap hole to the #18.
+  const handicapOrder = HOLE_NUMBERS
+    .map(hole => hole - 1)
+    .sort((a, b) =>
+      Number(course[`hole${a + 1}_hdcp`]) - Number(course[`hole${b + 1}_hdcp`])
+    );
+
+  return rounds
+    .filter(row => Number(row.year) === year)
+    .map(row => ({ row, roundPlayers: parseRoundPlayers(row) }))
+    .filter(({ row, roundPlayers }) =>
+      roundPlayers?.length === 1 && row.handicap !== ''
+    )
+    .map(({ row, roundPlayers }) => {
+      const holes = HOLE_NUMBERS.map(hole =>
+        row[`hole${hole}`] === '' ? null : Number(row[`hole${hole}`])
+      );
+      const gross = holes.reduce((sum, score) => sum + (score ?? 0), 0);
+      const handicap = Number(row.handicap);
+
+      return {
+        row,
+        name: roundPlayers[0],
+        handicap,
+        holes,
+        gross,
+        net: gross - handicap,
+        front: holes.slice(0, 9).reduce((sum, score) => sum + (score ?? 0), 0),
+        holesByHandicap: handicapOrder.map(index => holes[index]),
+        par
+      };
+    });
+}
+
+/*
+ * Gross order (rules → Team Making): lower gross, then lower
+ * handicap, then better front 9, then better score on the
+ * #1 handicap hole, #2, ... Missing holes sort last.
+ */
+function compareGrossRounds(a, b) {
+  if (a.gross !== b.gross) return a.gross - b.gross;
+  if (a.handicap !== b.handicap) return a.handicap - b.handicap;
+  if (a.front !== b.front) return a.front - b.front;
+
+  for (let i = 0; i < a.holesByHandicap.length; i++) {
+    const holeA = a.holesByHandicap[i] ?? Infinity;
+    const holeB = b.holesByHandicap[i] ?? Infinity;
+
+    if (holeA !== holeB) return holeA - holeB;
   }
-  ['pl-name','pl-hcp','pl-buyin'].forEach(id=>document.getElementById(id).value='');
-  closeM('mod-player'); renderStandings();
+
+  return 0;
 }
 
-// SCORES
-function openAddScoreModal(){
-  document.getElementById('sc-player').innerHTML='<option value="">Select…</option>'+
-    players.map(p=>`<option value="${p.name}">${p.name} (HCP ${p.hcp})</option>`).join('');
-  openM('mod-score');
+/*
+ * Ranked bar list in the same style as the stats page
+ * rankings. Entries must already be sorted best-first;
+ * ranks use competition ranking (1, T2, T2, 4) on `value`.
+ * `note` is shown in parentheses after the name; showMedal
+ * puts 🥇 in front of everyone ranked 1st.
+ */
+function insightsRankingList(entries, year, showMedal = false) {
+  if (!entries.length) {
+    return `
+      <div class="career-rank-empty">
+        <div>—</div>
+        <span>No solo rounds recorded</span>
+      </div>
+    `;
+  }
+
+  const values = entries.map(entry => entry.value);
+  const minValue = Math.min(...values);
+  const valueRange = Math.max(...values) - minValue;
+
+  return entries.map((entry, index) => {
+    const rank = getCompetitionRank(entries, entry.value);
+    const tied = isTied(entries, entry.value);
+
+    const barWidth = Math.max(
+      valueRange === 0 ? 100 : (entry.value - minValue) / valueRange * 100,
+      8
+    );
+
+    const folder =
+      statsPlayers.find(player => player.name === entry.name)?.folder ||
+      entry.name.toLowerCase();
+
+    return `
+      <div
+        class="career-rank-row"
+        onclick="openScorecard(${year}, '${encodeURIComponent(folder)}', '${encodeURIComponent(entry.name)}', 'solo')"
+      >
+        <div class="career-rank-number">
+          ${tied ? 'T' : ''}${rank}
+        </div>
+
+        <div class="career-rank-player">
+          <div class="career-rank-name">${showMedal && rank === 1 ? '🥇 ' : ''}${entry.name} (${entry.note})</div>
+          <div class="career-rank-track">
+            <div class="career-rank-bar" style="width:${barWidth}%"></div>
+          </div>
+        </div>
+
+        <div class="career-rank-value">
+          ${entry.value} (${formatRelativeToParTick(entry.value - entry.par)})
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-function saveScore(){
-  const name=document.getElementById('sc-player').value;
-  const day =document.getElementById('sc-day').value;
-  const gross=parseInt(document.getElementById('sc-gross').value)||0;
-  const net  =parseInt(document.getElementById('sc-net').value)||0;
-  const birds=parseInt(document.getElementById('sc-birds').value)||0;
-  if(!name||!gross)return;
-  const p=players.find(pl=>pl.name===name);
-  if(!scores[name])scores[name]={};
-  scores[name]['day'+day]={total:gross,net,hcp:p?p.hcp:0,birdies:birds,holes:[]};
-  DB.set('scores_'+AY,scores);
-  ['sc-gross','sc-net','sc-birds'].forEach(id=>document.getElementById(id).value='');
-  closeM('mod-score'); renderStandings();
+function getCompetitionRank(entries, value) {
+  return entries.findIndex(entry => entry.value === value) + 1;
 }
 
-// TEAMS
-function generateTeams(){
-  const d1=players.map(p=>({name:p.name,hcp:p.hcp,total:scores[p.name]?.day1?.total||999}))
-    .filter(p=>p.total<999).sort((a,b)=>a.total-b.total);
-  if(d1.length<2){alert('Need Day 1 scores first.');return;}
-  teams=[];
-  const n=Math.floor(d1.length/2);
-  for(let i=0;i<n;i++) teams.push({captain:d1[i].name,crew:d1[d1.length-1-i].name,captainScore:d1[i].total,crewScore:d1[d1.length-1-i].total,teamScore:null,scrambleRel:null});
-  if(d1.length%2!==0) teams[teams.length-1].extra=d1[Math.floor(d1.length/2)].name;
-  DB.set('teams_'+AY,teams); renderStandings();
+/*
+ * Money paid into the pot (engraving fee excluded), same as
+ * compute_stats.py: payjumps × net place, with tied players
+ * splitting the payments for every place the tie occupies.
+ */
+function getNetPayment(netEntries, value, payjumps) {
+  const place = getCompetitionRank(netEntries, value);
+  const tieCount = netEntries.filter(entry => entry.value === value).length;
+
+  let total = 0;
+
+  for (let position = place; position < place + tieCount; position++) {
+    total += payjumps * position;
+  }
+
+  return total / tieCount;
 }
 
-function openTeamScoreModal(){
-  document.getElementById('ts-team').innerHTML=teams.map((t,i)=>`<option value="${i}">T${i+1}: ${t.captain} & ${t.crew}</option>`).join('');
-  openM('mod-team-score');
+/*
+ * Field-wide scoring counts for the year, keyed like a
+ * player's stats (total_birdies, par3_pars, front_bogeys, ...)
+ * so the stats-page doughnut helpers can draw them.
+ */
+function getFieldScoringStats(soloRounds, course) {
+  const stats = Object.fromEntries(
+    SCORING_DISTRIBUTION_STATS.map(stat => [stat, 0])
+  );
+
+  soloRounds.forEach(round => {
+    round.holes.forEach((score, index) => {
+      if (score == null) return;
+
+      const par = Number(course[`hole${index + 1}_par`]);
+
+      // Eagle or better → 0, birdie → 1, ... quad or worse → 6
+      const { field } =
+        SCORING_CATEGORIES[Math.min(Math.max(score - par + 2, 0), 6)];
+
+      ['total_', `par${par}_`, index < 9 ? 'front_' : 'back_']
+        .forEach(prefix => stats[`${prefix}${field}`]++);
+    });
+  });
+
+  return stats;
 }
 
-function saveTeamScore(){
-  const i=parseInt(document.getElementById('ts-team').value);
-  const s=parseInt(document.getElementById('ts-score').value)||0;
-  const r=parseInt(document.getElementById('ts-rel').value)||0;
-  if(!s)return;
-  teams[i].teamScore=s; teams[i].scrambleRel=r;
-  DB.set('teams_'+AY,teams); closeM('mod-team-score'); renderStandings();
+function setInsightsScoringView(view) {
+  insightsScoringView = view;
+
+  document
+    .querySelectorAll('#insights-scoring-toggle .scoring-view-button')
+    .forEach(button => {
+      button.classList.toggle('active', button.dataset.view === view);
+    });
+
+  renderInsightsScoringChart();
 }
 
-// STANDINGS
-function showStTab(tab,btn){
-  document.querySelectorAll('#page-standings .tbb').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  ['day1','day2','money'].forEach(t=>document.getElementById('st-'+t).style.display=t===tab?'':'none');
-  const fab=document.getElementById('st-fab');
-  if(fab) fab.style.display=(tab==='day1'||tab==='day2')?'':'none';
-}
+function renderInsightsScoringChart() {
+  if (insightsScoringChart) {
+    insightsScoringChart.destroy();
+    insightsScoringChart = null;
+  }
 
-function renderStandings(){
-  renderStDay1(); renderStDay2(); renderStMoney();
-}
+  const canvas = document.getElementById('insights-scoring-chart');
+  const stats = insightsFieldStats;
 
-function renderStDay1(){
-  const el=document.getElementById('st-day1');
-  const hasScores=players.some(p=>scores[p.name]?.day1);
-  if(!hasScores){
-    const prev=DB.get('players_'+(AY-1))||players;
-    if(!prev.length){el.innerHTML=`<div class="es"><div class="ei">🏌️</div><div class="et">No players yet</div></div>`;return;}
-    el.innerHTML=`<div class="card"><div class="ct">${AY} Roster &amp; Handicaps</div>
-      <table class="ht"><thead><tr><th>Player</th><th>HCP</th></tr></thead>
-      <tbody>${prev.map(p=>`<tr><td>${p.name}</td><td>${p.hcp}</td></tr>`).join('')}</tbody></table></div>
-      <button class="bo" style="margin-top:4px;" onclick="openAddScoreModal()">+ Enter Scores</button>
-      <div style="height:10px;"></div><button class="bo" onclick="openM('mod-player')">+ Add Player</button>
-      <div style="height:70px;"></div>`;
+  if (!canvas || !stats) return;
+
+  if (insightsScoringView === 'par') {
+    insightsScoringChart = createSegmentRingChart(canvas, stats, [
+      { label: 'Par 5', prefix: 'par5_' },
+      { label: 'Par 4', prefix: 'par4_' },
+      { label: 'Par 3', prefix: 'par3_' }
+    ], null);
     return;
   }
-  const sorted=players.map(p=>({name:p.name,hcp:p.hcp,d:scores[p.name]?.day1})).filter(e=>e.d).sort((a,b)=>a.d.total-b.d.total);
-  el.innerHTML=`<div class="card"><div class="ct">Day 1 — Stroke Play · ${AY}</div>
-    <table class="ht"><thead><tr><th>#</th><th>Player</th><th>HCP</th><th>Gross</th><th>Net</th></tr></thead>
-    <tbody>${sorted.map((e,i)=>{
-      const rc=i===0?'var(--gold)':i===1?'#9a9a9a':i===2?'#c07840':'var(--ts)';
-      return `<tr><td style="font-weight:700;color:${rc};font-family:'Playfair Display',serif;">${i+1}</td>
-        <td style="font-weight:${i<3?'600':'400'}">${e.name}</td><td>${e.hcp}</td><td>${e.d.total}</td><td>${e.d.net}</td></tr>`;
-    }).join('')}</tbody></table></div>
-    <button class="bo" style="margin-top:4px;" onclick="openAddScoreModal()">+ Add / Edit Score</button>
-    <div style="height:70px;"></div>`;
-}
 
-function renderStDay2(){
-  const el=document.getElementById('st-day2');
-  if(!teams.length){
-    el.innerHTML=`<div class="es"><div class="ei">⛳</div><div class="et">See you Sunday ⛳</div>
-      <div class="esub">Come back after Day 1 wraps — teams get set and the real tournament begins.</div></div>
-      <div style="height:12px;"></div><button class="bp" onclick="generateTeams()">Generate Teams from Day 1</button>
-      <div style="height:70px;"></div>`;
+  if (insightsScoringView === 'frontback') {
+    insightsScoringChart = createSegmentRingChart(canvas, stats, [
+      { label: 'Back 9', prefix: 'back_' },
+      { label: 'Front 9', prefix: 'front_' }
+    ], null);
     return;
   }
-  const sorted=[...teams].sort((a,b)=>(a.teamScore||999)-(b.teamScore||999));
-  const rc=['var(--gold)','#9a9a9a','#c07840'];
-  el.innerHTML=`<div class="card"><div class="ct">Day 2 — Scramble · ${AY}</div>
-    ${sorted.map((t,i)=>{
-      const rel=t.scrambleRel!=null?(t.scrambleRel===0?'E':t.scrambleRel>0?'+'+t.scrambleRel:t.scrambleRel):'—';
-      const relCls=t.scrambleRel<0?' u':t.scrambleRel>0?' o':'';
-      return `<div class="lbr">
-        <div class="rk" style="color:${rc[i]||'var(--ts)'};">${i+1}</div>
-        <div style="flex:1;"><div class="pn">${t.captain} &amp; ${t.crew}</div></div>
-        <div class="sr"><div class="sm">${t.teamScore||'—'}</div><div class="ss${relCls}">${rel}</div></div>
-      </div>`;
-    }).join('')}</div>
-    <button class="bo" style="margin-top:4px;" onclick="openTeamScoreModal()">+ Add Team Score</button>
-    <div style="height:70px;"></div>`;
+
+  const overallData = SCORING_CATEGORIES
+    .map(category => ({
+      ...category,
+      value: stats[`total_${category.field}`]
+    }))
+    .filter(item => item.value > 0);
+
+  insightsScoringChart = new Chart(canvas, {
+    type: 'doughnut',
+
+    data: {
+      labels: overallData.map(item => item.label),
+
+      datasets: [{
+        data: overallData.map(item => item.value),
+        backgroundColor: overallData.map(item => item.color),
+        borderColor: '#FFFFFF',
+        borderWidth: 2
+      }]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: 'DM Sans' },
+            padding: 12
+          }
+        },
+
+        tooltip: {
+          callbacks: {
+            label: context => percentLabel(context, context.label)
+          }
+        }
+      }
+    }
+  });
 }
 
-function renderStMoney(){
-  const el=document.getElementById('st-money');
-  const m=DB.get('money_'+AY);
-  const pl=DB.get('players_'+AY)||[];
-  if(!m||!m.totalPot){
-    el.innerHTML=`<div class="es"><div class="ei">💰</div><div class="et">No money info yet</div></div>
-      <div style="height:12px;"></div><button class="bo" onclick="openMoneyModal()">+ Add Money Info</button>
-      <div style="height:70px;"></div>`;
-    return;
+async function renderInsights(year = insightsYear) {
+  const content = document.getElementById('insights-content');
+  const yearLabel = document.getElementById('insights-year');
+  const courseLabel = document.getElementById('insights-course');
+
+  try {
+    const [courses, rounds] = await Promise.all([
+      loadData('courses.csv'),
+      loadData('rounds.csv')
+    ]);
+
+    const years = [...new Set(courses.map(course => Number(course.year)))]
+      .sort((a, b) => b - a);
+
+    if (!years.includes(year)) {
+      year = years[0];
+    }
+
+    insightsYear = year;
+    insightsYears = years;
+    yearLabel.textContent = year;
+
+    const course = courses.find(row => Number(row.year) === year);
+    const soloRounds = getYearSoloRounds(rounds, course, year);
+    const par = soloRounds[0]?.par;
+
+    courseLabel.textContent =
+      `${course.course_name}${par ? ` · Par ${par}` : ''}`;
+
+    const grossEntries = [...soloRounds]
+      .sort(compareGrossRounds)
+      .map(round => ({ ...round, value: round.gross, note: round.handicap }));
+
+    const netEntries = [...soloRounds]
+      .sort((a, b) => a.net - b.net)
+      .map(round => ({ ...round, value: round.net }));
+
+    const payjumps = Number(course.payjumps);
+
+    netEntries.forEach(entry => {
+      entry.note = formatMoneyValue(
+        getNetPayment(netEntries, entry.value, payjumps)
+      );
+    });
+
+    content.innerHTML = `
+      <div class="card">
+        <div class="ct">${year} Solo Round</div>
+
+        <div class="insights-overview">
+
+          <div class="career-rank-card">
+            <div class="stat-box-label">Gross Score</div>
+            ${insightsRankingList(grossEntries, year, true)}
+          </div>
+
+          <div class="career-rank-card">
+            <div class="stat-box-label">Net Score</div>
+            ${insightsRankingList(netEntries, year)}
+          </div>
+
+          <div class="insights-chart-column">
+            <button
+              type="button"
+              class="year-pill played insights-scorecards-pill"
+              onclick="openScorecard(${year}, '', '', 'field')"
+            >
+              Show Scorecards
+            </button>
+
+            <div class="stats-chart-card">
+              <div class="stat-box-label">Field Scoring Distribution</div>
+              <div class="chart-wrap">
+                <canvas id="insights-scoring-chart"></canvas>
+              </div>
+
+              <div class="scoring-view-toggle" id="insights-scoring-toggle">
+                ${[
+                  ['overall', 'Overall'],
+                  ['par', 'Par 3 / 4 / 5'],
+                  ['frontback', 'Front 9 / Back 9']
+                ].map(([view, label]) => `
+                  <button
+                    type="button"
+                    class="scoring-view-button ${insightsScoringView === view ? 'active' : ''}"
+                    data-view="${view}"
+                    onclick="setInsightsScoringView('${view}')"
+                  >
+                    ${label}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    insightsFieldStats = getFieldScoringStats(soloRounds, course);
+    renderInsightsScoringChart();
+
+  } catch (error) {
+    console.error('Tournament insights error:', error);
+
+    content.innerHTML = `
+      <div class="es">
+        <div class="ei">⚠️</div>
+        <div class="et">Insights unavailable</div>
+        <div class="esub">${error.message}</div>
+      </div>
+    `;
   }
-  const wn=(m.winners||[]).join(' & ');
-  const rows=pl.filter(p=>p.buyin||(m.winners||[]).includes(p.name)).map(p=>{
-    const isW=(m.winners||[]).includes(p.name);
-    const earned=isW?(m.perWinner||0):0;
-    return{...p,isW,earned,net:earned-p.buyin};
-  }).sort((a,b)=>b.net-a.net);
-
-  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-    <div class="sc"><div class="sl">Total Pot</div><div class="sv">$${m.totalPot}</div></div>
-    <div class="sc"><div class="sl">Each Winner</div><div class="sv">$${m.perWinner||'—'}</div><div class="sd">${wn}</div></div>
-  </div>
-  ${wn?`<div style="display:flex;align-items:center;gap:12px;background:var(--gold);border-radius:14px;padding:13px 15px;margin-bottom:12px;">
-    <span style="font-size:22px;">🏆</span>
-    <div><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gd);opacity:.65;margin-bottom:2px;">Champions</div>
-    <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gd);">${wn}</div></div>
-  </div>`:''}
-  <div class="card"><div class="ct">Paid In / Earnings</div>
-    <div style="display:grid;grid-template-columns:1fr auto auto;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border);">
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);">Player</div>
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;padding-right:10px;">Paid</div>
-      <div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-align:right;">Net</div>
-    </div>
-    ${rows.map(r=>{
-      const nc=r.net>0?'np':r.net<0?'nn':'nz';
-      const ns=r.net>0?'+$'+r.net.toFixed(2):r.net<0?'-$'+Math.abs(r.net).toFixed(2):'$0';
-      return `<div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;padding:9px 0;border-top:1px solid var(--border);">
-        <div style="font-size:13px;font-weight:${r.isW?'600':'400'};color:var(--td);">${r.name}${r.isW?' 🏆':''}</div>
-        <div style="font-size:12px;color:var(--ts);text-align:right;padding-right:10px;">-$${r.buyin.toFixed(2)}</div>
-        <div style="font-size:13px;text-align:right;min-width:62px;" class="${nc}">${ns}</div>
-      </div>`;
-    }).join('')}
-  </div>
-  ${m.notes?`<div style="font-size:12px;color:var(--ts);padding:6px 0;">${m.notes}</div>`:''}
-  <button class="bo" style="margin-top:8px;" onclick="openMoneyModal()">✏️ Edit Money Info</button>
-  <div style="height:70px;"></div>`;
-}
-
-// MONEY
-function openMoneyModal(){
-  const m=DB.get('money_'+AY)||{};
-  document.getElementById('m-pot').value=m.totalPot||'';
-  document.getElementById('m-eng').value=m.engraving||'';
-  document.getElementById('m-win').value=m.perWinner||'';
-  document.getElementById('m-winners').value=(m.winners||[]).join(' & ');
-  document.getElementById('m-notes').value=m.notes||'';
-  openM('mod-money');
-}
-
-function saveMoney(){
-  const m=DB.get('money_'+AY)||{};
-  m.totalPot =parseFloat(document.getElementById('m-pot').value)||0;
-  m.engraving=parseFloat(document.getElementById('m-eng').value)||0;
-  m.perWinner=parseFloat(document.getElementById('m-win').value)||0;
-  const ws=document.getElementById('m-winners').value.trim();
-  m.winners=ws?ws.split(/[&,]/).map(s=>s.trim()).filter(Boolean):[];
-  m.notes=document.getElementById('m-notes').value.trim();
-  DB.set('money_'+AY,m);
-  const all=DB.get('years')||[];
-  const y=all.find(y=>y.year===AY);
-  if(y&&m.winners.length){y.winner=m.winners.join(' & ');DB.set('years',all);}
-  closeM('mod-money'); renderStMoney();
 }
 
 // MODALS
@@ -2373,7 +2604,7 @@ function percentLabel(context, label) {
  * Multi-ring doughnut: one ring per entry in `rings`
  * (dataset 0 is drawn innermost), one slice per
  * scoring category. Clicking a slice calls
- * onSelect(ring, category).
+ * onSelect(ring, category) when one is given.
  */
 function createScoringRingChart(
   canvas,
@@ -2409,7 +2640,7 @@ function createScoringRingChart(
       ...(cutout ? { cutout } : {}),
 
       onClick: function(event, elements) {
-        if (!elements.length) {
+        if (!elements.length || !onSelect) {
           return;
         }
 
@@ -2423,7 +2654,7 @@ function createScoringRingChart(
         onSelect(ring, category);
       },
 
-      onHover: setPointerCursor,
+      onHover: onSelect ? setPointerCursor : undefined,
 
       plugins: {
         legend: {
@@ -2474,7 +2705,23 @@ function createScoringRingChart(
  * Only categories that appear in at least one ring get
  * a legend entry.
  */
-function createSegmentRingChart(canvas, stats, segments) {
+function createSegmentRingChart(
+  canvas,
+  stats,
+  segments,
+  onSelect = (ring, category) => {
+    const stat = `${ring.prefix}${category.field}`;
+
+    showCareerRanking(
+      stat,
+      category.direction,
+      selectedStatsPlayerFolder,
+      `${ring.label} ${category.label}`,
+      'average',
+      stat
+    );
+  }
+) {
   const rings = segments.map(segment => ({
     ...segment,
     data: SCORING_CATEGORIES.map(
@@ -2488,19 +2735,7 @@ function createSegmentRingChart(canvas, stats, segments) {
 
   return createScoringRingChart(canvas, rings, {
     legendIndexes,
-
-    onSelect: (ring, category) => {
-      const stat = `${ring.prefix}${category.field}`;
-
-      showCareerRanking(
-        stat,
-        category.direction,
-        selectedStatsPlayerFolder,
-        `${ring.label} ${category.label}`,
-        'average',
-        stat
-      );
-    }
+    onSelect
   });
 }
 
@@ -3877,6 +4112,11 @@ async function showYearlyStat(
   }
 }
 
+/*
+ * mode: 'solo' / 'team' / 'combined' show one player's
+ * rounds; 'field' shows every solo round that year in
+ * gross-ranking order (player arguments are ignored).
+ */
 async function openScorecard(
   year,
   encodedPlayerFolder,
@@ -3961,6 +4201,14 @@ async function openScorecard(
       );
     }
 
+    const fieldRounds = mode === 'field'
+      ? getYearSoloRounds(rounds, course, Number(year)).sort(compareGrossRounds)
+      : [];
+
+    if (mode === 'field' && !fieldRounds.length) {
+      throw new Error(`No solo rounds found for ${year}`);
+    }
+
     const teamPlayers = teamRound
       ? parseRoundPlayers(teamRound)
       : null;
@@ -3973,9 +4221,11 @@ async function openScorecard(
 
     // Solo and Combined use the individual player's name.
     playerLabel.textContent =
-      mode === 'team' && teamPlayers
-        ? teamPlayers.join(' & ')
-        : playerName;
+      mode === 'field'
+        ? 'Scorecards'
+        : mode === 'team' && teamPlayers
+          ? teamPlayers.join(' & ')
+          : playerName;
 
     courseLabel.textContent =
       course.course_name || 'Course';
@@ -3990,7 +4240,10 @@ async function openScorecard(
     // SCORE ROWS
     // ---------------------------------------------------------
 
-    const scoreRows = [];
+    const scoreRows = fieldRounds.map(fieldRound => ({
+      label: fieldRound.name,
+      round: fieldRound.row
+    }));
 
     if (
       (mode === 'solo' || mode === 'combined') &&
@@ -4902,7 +5155,6 @@ function isCareerScoringDistributionStat(stat) {
 
 
 // INIT
-loadYear(DB.get('activeYear') || 2026);
 
 statsMode = DB.get('statsMode') || 'solo';
 updateStatsModePicker();

@@ -1048,8 +1048,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   gap:12px;
 }
 
-/* Combined mode adds a Solo / Team legend under each chart; give the plots back that room. */
-.insights-par-overview.combined .insights-chart-fill {
+/* Legends (Combined's Solo / Team, the yardage chart's par types) take room under the charts; give the plots it back. */
+.insights-par-overview.has-legend .insights-chart-fill {
   min-height:190px;
 }
 
@@ -1503,6 +1503,7 @@ let currentRankingConfig = null;
 let handicapChart = null;
 let frontBackAverageChart = null;
 let handicapOG12 = false;
+let holeChartView = 'yardage'; // 'yardage' | 'handicap' — stats page hole chart
 let currentYearlyChartConfig = null;
 let preserveStatsScroll = false;
 
@@ -1760,6 +1761,8 @@ let insightsParChart = null;
 let insightsFrontBackChart = null;
 let insightsYearsChart = null;
 let insightsHandicapChart = null;
+let insightsHoleView = 'yardage'; // 'yardage' | 'handicap'
+let insightsHoleData = null; // { courses, rounds } behind the hole chart
 let insightsCategoryChart = null;
 let insightsProgressChart = null;
 let insightsProgress = null; // { year, teams, pars, highlighted }
@@ -2473,6 +2476,134 @@ async function switchInsightsYear(year) {
  * every other year faint black. Clicking another year's line
  * switches the page to that year.
  */
+function insightsHoleTitle() {
+  return `Average Relative to Par by Hole ${insightsHoleView === 'yardage' ? 'Length' : 'Handicap'}`;
+}
+
+// Hole length (default) or hole handicap, for the year on screen.
+function renderInsightsHoleChart() {
+  if (!insightsHoleData) return;
+
+  const { courses, rounds } = insightsHoleData;
+
+  if (insightsHoleView === 'yardage') {
+    renderInsightsYardageChart(courses, rounds, insightsYear);
+  } else {
+    renderInsightsHandicapChart(courses, rounds, insightsYear);
+  }
+}
+
+// Swaps just this chart in place; the rest of the page stays put.
+function setInsightsHoleView(view) {
+  if (view === insightsHoleView) return;
+
+  insightsHoleView = view;
+
+  document.getElementById('insights-hole-title').textContent = insightsHoleTitle();
+
+  document.querySelectorAll('[data-insights-hole-view]').forEach(button => {
+    button.classList.toggle('active', button.dataset.insightsHoleView === view);
+  });
+
+  document
+    .getElementById('insights-par-overview')
+    .classList.toggle('has-legend', statsMode === 'combined' || view === 'yardage');
+
+  renderInsightsHoleChart();
+}
+
+// Every hole in these rounds, as { x: yards, y: strokes vs par }, split by par 3 / 4 / 5.
+function getFieldYardagePoints(fieldRounds, course) {
+  const points = { 3: [], 4: [], 5: [] };
+
+  fieldRounds.forEach(round => {
+    round.holes.forEach((score, index) => {
+      const par = Number(course[`hole${index + 1}_par`]);
+      const yardage = Number(course[`hole${index + 1}_yardage`]);
+
+      if (score != null && points[par] && Number.isFinite(yardage)) {
+        points[par].push({ x: yardage, y: score - par });
+      }
+    });
+  });
+
+  return points;
+}
+
+/*
+ * Insights hole chart, yardage view. Solo / Team: this year's
+ * field lines in par colors over every other year's (faint);
+ * clicking another year's line switches to that year (cycling
+ * through overlapping lines). Combined: this year's team
+ * (solid) vs solo (dashed) lines.
+ */
+function renderInsightsYardageChart(courses, rounds, year) {
+  insightsHandicapChart?.destroy();
+  insightsHandicapChart = null;
+
+  const canvas = document.getElementById('insights-handicap-chart');
+
+  if (!canvas) return;
+
+  const isCombined = statsMode === 'combined';
+  const course = courses.find(row => Number(row.year) === year);
+
+  if (!course) return;
+
+  const yearPoints = (courseRow, mode) =>
+    getFieldYardagePoints(
+      getYearModeRounds(rounds, courseRow, Number(courseRow.year), mode),
+      courseRow
+    );
+
+  let lines;
+
+  if (isCombined) {
+    const solo = yearPoints(course, 'solo');
+    const team = yearPoints(course, 'team');
+
+    lines = [
+      ...[3, 4, 5].map(par => ({ year, kind: 'Team', par, points: team[par], selected: true })),
+      ...[3, 4, 5].map(par => ({ year, kind: 'Solo', par, points: solo[par], selected: true, dashed: true }))
+    ];
+
+  } else {
+    const selected = yearPoints(course);
+
+    // This year's lines first so they draw on top.
+    lines = [
+      ...[3, 4, 5].map(par => ({ year, par, points: selected[par], selected: true })),
+      ...courses
+        .filter(row => Number(row.year) !== year)
+        .flatMap(row => {
+          const points = yearPoints(row);
+
+          return [3, 4, 5].map(par => ({ year: Number(row.year), par, points: points[par], selected: false }));
+        })
+    ];
+  }
+
+  insightsHandicapChart = createYardageChart(canvas, lines, {
+    combinedLegend: isCombined,
+
+    describe: line => line.kind ? `${line.year} · ${line.kind}` : String(line.year),
+
+    // Overlapping lines: cycle through their years, oldest first.
+    pickNext: atPoint => {
+      if (isCombined) return null;
+
+      const next = nextInCycle(
+        [...new Set(atPoint.map(line => line.year))].sort((a, b) => a - b),
+        year
+      );
+
+      return next == null ? null : { year: next };
+    },
+
+    onPick: line => switchInsightsYear(line.year)
+  });
+}
+
 function renderInsightsHandicapChart(courses, rounds, year) {
   insightsHandicapChart?.destroy();
 
@@ -3167,10 +3298,28 @@ async function renderInsights(year = insightsYear) {
       <div class="card">
         <div class="ct">${year} ${fieldLabel} Relative to Par</div>
 
-        <div class="insights-par-overview ${statsMode === 'combined' ? 'combined' : ''}">
+        <div class="insights-par-overview ${statsMode === 'combined' || insightsHoleView === 'yardage' ? 'has-legend' : ''}" id="insights-par-overview">
 
           <div class="stats-chart-card">
-            <div class="stat-box-label">Average Relative to Par by Hole Handicap</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+              <div class="stat-box-label" id="insights-hole-title" style="margin-bottom:0;">
+                ${insightsHoleTitle()}
+              </div>
+
+              <span class="career-rank-toggle">
+                ${[['yardage', 'Yards'], ['handicap', 'HDCP']].map(([view, label]) => `
+                  <button
+                    type="button"
+                    class="career-rank-toggle-button ${insightsHoleView === view ? 'active' : ''}"
+                    data-insights-hole-view="${view}"
+                    onclick="setInsightsHoleView('${view}')"
+                  >
+                    ${label}
+                  </button>
+                `).join('')}
+              </span>
+            </div>
+
             <div class="insights-chart-fill">
               <canvas id="insights-handicap-chart"></canvas>
             </div>
@@ -3265,7 +3414,8 @@ async function renderInsights(year = insightsYear) {
     // Category card first: it sets the row height the totals chart stretches to.
     renderInsightsCategoryRanking();
     renderInsightsYearsChart(yearTotals, year);
-    renderInsightsHandicapChart(courses, rounds, year);
+    insightsHoleData = { courses, rounds };
+    renderInsightsHoleChart();
 
   } catch (error) {
     console.error('Tournament insights error:', error);
@@ -3588,6 +3738,65 @@ function getMostCommonTeammate(yearlyTeam) {
     : 'None';
 }
 
+/*
+ * Hole chart card with the Yards / HDCP switch (and, for Solo /
+ * Team, the OG 12 filter). Combined has no field to filter.
+ */
+function holeChartTitle() {
+  return `Average Relative to Par by Hole ${holeChartView === 'yardage' ? 'Length' : 'Handicap'}`;
+}
+
+function holeChartCard(showOG12, height = 220) {
+  return `
+    <div class="stats-chart-card" style="margin-top:6px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+        <div class="stat-box-label" id="hole-chart-title" style="margin-bottom:0;">
+          ${holeChartTitle()}
+        </div>
+
+        <span class="career-rank-controls">
+          <span class="career-rank-toggle">
+            ${[['yardage', 'Yards'], ['handicap', 'HDCP']].map(([view, label]) => `
+              <button
+                type="button"
+                class="career-rank-toggle-button ${holeChartView === view ? 'active' : ''}"
+                data-hole-view="${view}"
+                onclick="setHoleChartView('${view}')"
+              >
+                ${label}
+              </button>
+            `).join('')}
+          </span>
+
+          ${
+            showOG12
+              ? `
+                <span
+                  id="handicap-og12-toggle"
+                  class="career-rank-og12 ${handicapOG12 ? 'active' : ''}"
+                >
+                  <button
+                    id="handicap-og12-button"
+                    type="button"
+                    class="career-rank-og12-button"
+                    onclick="toggleHandicapOG12()"
+                  >
+                    OG 12
+                  </button>
+                </span>
+              `
+              : ''
+          }
+        </span>
+      </div>
+
+      <div style="position:relative;width:100%;height:${height}px;margin-top:6px;">
+        <canvas id="handicap-chart"></canvas>
+      </div>
+    </div>
+  `;
+}
+
 function chartCard(
   title,
   canvasId,
@@ -3751,7 +3960,7 @@ function renderPlayerStats(
       ${statBox('Total Earned', allTime.personal?.total_earned, 'total_earned', 'higher', formatMoneyValue)}
     </div>
 
-    ${chartCard('Average Relative to Par by Hole Handicap', 'handicap-chart', 240, 8, 'margin-top:6px;')}
+    ${holeChartCard(false, 240)}
     ${chartCard('Average Relative to Par by Hole Type', 'par-average-chart', 200, 4, 'margin-top:6px;')}
   `;
 
@@ -3828,49 +4037,7 @@ function renderPlayerStats(
       }
     </div>
 
-    <!-- HANDICAP CHART -->
-    <div
-      class="stats-chart-card"
-      style="margin-top:6px;"
-    >
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:4px;
-        "
-      >
-        <div class="stat-box-label" style="margin-bottom:0;">
-          Average Relative to Par by Hole Handicap
-        </div>
-
-        <span
-          id="handicap-og12-toggle"
-          class="career-rank-og12 ${handicapOG12 ? 'active' : ''}"
-        >
-          <button
-            id="handicap-og12-button"
-            type="button"
-            class="career-rank-og12-button"
-            onclick="toggleHandicapOG12()"
-          >
-            OG 12
-          </button>
-        </span>
-      </div>
-
-      <div
-        style="
-          position:relative;
-          width:100%;
-          height:220px;
-          margin-top:6px;
-        "
-      >
-        <canvas id="handicap-chart"></canvas>
-      </div>
-    </div>
+    ${holeChartCard(true)}
 
     ${chartCard('Average Relative to Par — Front 9 vs Back 9', 'front-back-average-chart', 80, 4, 'margin-top:6px;')}
   `;
@@ -4047,7 +4214,7 @@ function renderPlayerStats(
   // CHARTS
   // ---------------------------------------------------------
 
-  renderHandicapChart(playerName, playerFolder);
+  renderHoleChart(playerName, playerFolder);
   renderFrontBackAverageChart(stats, playerFolder, solo, team);
   renderParAverageChart(stats, playerFolder, solo, team);
   renderYearsPlayed(allTime, playerFolder, playerName);
@@ -4359,6 +4526,90 @@ function renderScoringChart(stats, solo, team) {
   }
 }
 
+/*
+ * OG 12 for the Solo / Team hole chart: works out the twelve
+ * players with the most rounds in this mode and enables the
+ * OG 12 button only when the selected player is one of them
+ * (switching to a non-OG 12 player turns the filter off).
+ */
+async function syncHoleChartOG12(playerFolder) {
+  const playerRoundCounts =
+    await Promise.all(
+      statsPlayers.map(async player => {
+        const allTime = await loadAllTimeStats(player);
+
+        return {
+          ...player,
+          rounds: getModeRounds(
+            getStatsModeData(allTime).section,
+            statsMode
+          )
+        };
+      })
+    );
+
+  const og12Folders =
+    topTwelveByRounds(playerRoundCounts)
+      .map(player => player.folder);
+
+  // -------------------------------------------------------
+  // ENABLE / DISABLE OG12 BUTTON
+  // -------------------------------------------------------
+
+  const selectedPlayerIsOG12 =
+    og12Folders.includes(playerFolder);
+
+  const og12Toggle =
+    document.getElementById('handicap-og12-toggle');
+
+  const og12Button =
+    document.getElementById('handicap-og12-button');
+
+  if (og12Toggle && og12Button) {
+    // Non-OG12 players cannot activate the OG12 filter.
+    og12Button.disabled = !selectedPlayerIsOG12;
+
+    og12Toggle.classList.toggle(
+      'disabled',
+      !selectedPlayerIsOG12
+    );
+
+    // Switching to a non-OG12 player turns the filter off.
+    if (!selectedPlayerIsOG12) {
+      handicapOG12 = false;
+      og12Toggle.classList.remove('active');
+    }
+  }
+
+  return og12Folders;
+}
+
+// Hole length (default) or hole handicap, in every stats mode.
+function renderHoleChart(playerName, playerFolder) {
+  return holeChartView === 'yardage'
+    ? renderYardageChart(playerName, playerFolder)
+    : renderHandicapChart(playerName, playerFolder);
+}
+
+// Swaps just this chart in place, so rankings, tables and scroll stay as they are.
+function setHoleChartView(view) {
+  if (view === holeChartView) return;
+
+  holeChartView = view;
+
+  document.getElementById('hole-chart-title').textContent = holeChartTitle();
+
+  document.querySelectorAll('[data-hole-view]').forEach(button => {
+    button.classList.toggle('active', button.dataset.holeView === view);
+  });
+
+  const player = statsPlayers.find(p => p.folder === selectedStatsPlayerFolder);
+
+  if (player) {
+    renderHoleChart(player.name, player.folder);
+  }
+}
+
 async function renderHandicapChart(
   playerName,
   playerFolder
@@ -4376,57 +4627,7 @@ async function renderHandicapChart(
   }
 
   try {
-    // -------------------------------------------------------
-    // DETERMINE OG 12
-    // -------------------------------------------------------
-
-    const playerRoundCounts =
-      await Promise.all(
-        statsPlayers.map(async player => {
-          const allTime = await loadAllTimeStats(player);
-
-          return {
-            ...player,
-            rounds: getModeRounds(
-              getStatsModeData(allTime).section,
-              statsMode
-            )
-          };
-        })
-      );
-
-    const og12Folders =
-      topTwelveByRounds(playerRoundCounts)
-        .map(player => player.folder);
-
-    // -------------------------------------------------------
-    // ENABLE / DISABLE OG12 BUTTON
-    // -------------------------------------------------------
-
-    const selectedPlayerIsOG12 =
-      og12Folders.includes(playerFolder);
-
-    const og12Toggle =
-      document.getElementById('handicap-og12-toggle');
-
-    const og12Button =
-      document.getElementById('handicap-og12-button');
-
-    if (og12Toggle && og12Button) {
-      // Non-OG12 players cannot activate the OG12 filter.
-      og12Button.disabled = !selectedPlayerIsOG12;
-
-      og12Toggle.classList.toggle(
-        'disabled',
-        !selectedPlayerIsOG12
-      );
-
-      // Switching to a non-OG12 player turns the filter off.
-      if (!selectedPlayerIsOG12) {
-        handicapOG12 = false;
-        og12Toggle.classList.remove('active');
-      }
-    }
+    const og12Folders = await syncHoleChartOG12(playerFolder);
 
     const buildValues = totals =>
       HOLE_NUMBERS.map(handicap => {
@@ -4632,11 +4833,12 @@ function createHandicapChart(
   });
 }
 
-async function getPlayerHandicapTotals(
-  playerName,
-  mode = statsMode
-) {
-  const errorMessage = 'Could not load handicap chart data';
+/*
+ * Calls fn({ score, par, handicap, yardage }) for every hole
+ * the player played in this mode's rounds.
+ */
+async function forEachPlayerHole(playerName, mode, fn) {
+  const errorMessage = 'Could not load hole chart data';
 
   const [courses, rounds] = await Promise.all([
     loadData('courses.csv', errorMessage),
@@ -4646,15 +4848,6 @@ async function getPlayerHandicapTotals(
   const coursesByYear = new Map(
     courses.map(course => [Number(course.year), course])
   );
-
-  const totals = {};
-
-  HOLE_NUMBERS.forEach(handicap => {
-    totals[handicap] = {
-      sum: 0,
-      count: 0
-    };
-  });
 
   rounds.forEach(round => {
     if (Number(round.year) === 0) {
@@ -4690,24 +4883,453 @@ async function getPlayerHandicapTotals(
     HOLE_NUMBERS.forEach(hole => {
       const score = Number(round[`hole${hole}`]);
       const par = Number(course[`hole${hole}_par`]);
-      const handicap = Number(course[`hole${hole}_hdcp`]);
 
       if (
+        round[`hole${hole}`] === '' ||
         !Number.isFinite(score) ||
-        !Number.isFinite(par) ||
-        !Number.isFinite(handicap) ||
-        handicap < 1 ||
-        handicap > 18
+        !Number.isFinite(par)
       ) {
         return;
       }
 
-      totals[handicap].sum += score - par;
-      totals[handicap].count++;
+      fn({
+        score,
+        par,
+        handicap: Number(course[`hole${hole}_hdcp`]),
+        yardage: Number(course[`hole${hole}_yardage`])
+      });
     });
+  });
+}
+
+async function getPlayerHandicapTotals(
+  playerName,
+  mode = statsMode
+) {
+  const totals = {};
+
+  HOLE_NUMBERS.forEach(handicap => {
+    totals[handicap] = {
+      sum: 0,
+      count: 0
+    };
+  });
+
+  await forEachPlayerHole(playerName, mode, ({ score, par, handicap }) => {
+    if (
+      !Number.isFinite(handicap) ||
+      handicap < 1 ||
+      handicap > 18
+    ) {
+      return;
+    }
+
+    totals[handicap].sum += score - par;
+    totals[handicap].count++;
   });
 
   return totals;
+}
+
+// Every hole played, as { x: yards, y: strokes vs par }, split by par 3 / 4 / 5.
+async function getPlayerYardagePoints(playerName, mode = statsMode) {
+  const points = { 3: [], 4: [], 5: [] };
+
+  await forEachPlayerHole(playerName, mode, ({ score, par, yardage }) => {
+    if (points[par] && Number.isFinite(yardage)) {
+      points[par].push({ x: yardage, y: score - par });
+    }
+  });
+
+  return points;
+}
+
+// Gaussian smoothing width per par type, in yards.
+const YARDAGE_BANDWIDTH = { 3: 20, 4: 30, 5: 30 };
+
+/*
+ * Kernel-weighted moving average of strokes vs par across
+ * hole length, sampled every few yards from the shortest to
+ * the longest hole in `points`.
+ */
+function smoothByYardage(points, bandwidth, step = 3) {
+  if (!points.length) return [];
+
+  const xs = points.map(point => point.x);
+  const min = Math.min(...xs);
+  const max = Math.max(...xs);
+  const curve = [];
+
+  for (let x = min; ; x = Math.min(x + step, max)) {
+    let weightSum = 0;
+    let valueSum = 0;
+
+    points.forEach(point => {
+      const weight = Math.exp(-0.5 * ((x - point.x) / bandwidth) ** 2);
+
+      weightSum += weight;
+      valueSum += weight * point.y;
+    });
+
+    curve.push({ x, y: valueSum / weightSum });
+
+    if (x === max) break;
+  }
+
+  return curve;
+}
+
+const YARDAGE_PAR_COLORS = { 3: '#d9b902', 4: '#4a8c3f', 5: '#C94636' };
+
+/*
+ * Yardage x-axis with breaks: where the yardages of two par
+ * types are more than 50 yards apart (e.g. the longest par 3
+ * and the shortest par 4), the empty stretch is squeezed to a
+ * narrow gap. Charts plot "display" x values; ticks and
+ * tooltips convert back to real yards.
+ */
+function buildYardageAxis(rangesByPar) {
+  const ranges = Object.values(rangesByPar).sort((a, b) => a.min - b.min);
+  const breaks = [];
+
+  ranges.slice(1).forEach((range, index) => {
+    const previousMax = Math.max(...ranges.slice(0, index + 1).map(r => r.max));
+
+    if (range.min - previousMax > 50) {
+      breaks.push({ start: previousMax + 10, end: range.min - 10 });
+    }
+  });
+
+  const GAP = 16; // yards of display space left for each break
+
+  const toDisplay = yards =>
+    breaks.reduce(
+      (x, gap) => yards >= gap.end ? x - (gap.end - gap.start - GAP) : x,
+      yards
+    );
+
+  const fromDisplay = x => {
+    let yards = x;
+
+    breaks.forEach(gap => {
+      if (yards >= toDisplay(gap.start) + GAP) {
+        yards += gap.end - gap.start - GAP;
+      }
+    });
+
+    return yards;
+  };
+
+  const min = Math.floor(Math.min(...ranges.map(r => r.min)) / 50) * 50;
+  const max = Math.ceil(Math.max(...ranges.map(r => r.max)) / 50) * 50;
+
+  // Ticks every 50 real yards, skipping any inside a break or
+  // squeezed up against the previous one across a break.
+  const ticks = [];
+
+  for (let yards = min; yards <= max; yards += 50) {
+    const x = toDisplay(yards);
+
+    if (
+      !breaks.some(gap => yards > gap.start && yards < gap.end) &&
+      (!ticks.length || x - ticks[ticks.length - 1] >= 35)
+    ) {
+      ticks.push(x);
+    }
+  }
+
+  return {
+    toDisplay,
+    fromDisplay,
+    min: toDisplay(min),
+    max: toDisplay(max),
+    ticks,
+    breakCenters: breaks.map(gap => toDisplay(gap.start) + GAP / 2)
+  };
+}
+
+/*
+ * Draws a "//" break mark on the x-axis and blanks the grid at
+ * each break — after the lines but before the tooltip, so it
+ * never cuts through a hover box.
+ */
+const yardageBreakPlugin = {
+  id: 'yardageAxisBreaks',
+
+  afterDatasetsDraw(chart) {
+    const centers = chart.options.plugins.yardageAxisBreaks?.centers || [];
+    const { ctx, chartArea, scales } = chart;
+
+    centers.forEach(center => {
+      const x = scales.x.getPixelForValue(center);
+
+      ctx.save();
+
+      ctx.fillStyle = '#e8f0e4'; // card background (--gp)
+      ctx.fillRect(x - 4, chartArea.top, 8, chartArea.bottom - chartArea.top + 1);
+
+      ctx.strokeStyle = '#4a4a3a';
+      ctx.lineWidth = 1.2;
+
+      [-3, 3].forEach(offset => {
+        ctx.beginPath();
+        ctx.moveTo(x + offset - 3, chartArea.bottom + 5);
+        ctx.lineTo(x + offset + 3, chartArea.bottom - 5);
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    });
+  }
+};
+
+/*
+ * Smoothed strokes-vs-par by hole length, shared by the stats
+ * page and the insights page. Each line is { par, points,
+ * selected, dashed, ...anything describe / pick need }:
+ * selected lines are drawn in par 3 / 4 / 5 colors (dashed =
+ * Solo in Combined), the rest faint black behind them. Lines
+ * have no points; hovering one shows describe(line). A click
+ * calls onPick(pickNext(linesUnderPointer)) when that's a line.
+ */
+function createYardageChart(canvas, lines, { describe, pickNext = () => null, onPick, combinedLegend = false }) {
+  const shownLines = lines
+    .map(line => ({ ...line, curve: smoothByYardage(line.points, YARDAGE_BANDWIDTH[line.par]) }))
+    .filter(line => line.curve.length);
+
+  // Yardage span of each par type across every line shown.
+  const rangesByPar = {};
+
+  shownLines.forEach(line => {
+    const range = rangesByPar[line.par] ??= { min: Infinity, max: -Infinity };
+
+    range.min = Math.min(range.min, line.curve[0].x);
+    range.max = Math.max(range.max, line.curve[line.curve.length - 1].x);
+  });
+
+  const axis = buildYardageAxis(rangesByPar);
+
+  const datasets = shownLines.map(line => {
+    const color = line.selected ? YARDAGE_PAR_COLORS[line.par] : 'rgba(0, 0, 0, 0.25)';
+
+    return {
+      line,
+      data: line.curve.map(point => ({ x: axis.toDisplay(point.x), y: point.y, yards: point.x })),
+      borderColor: color,
+      backgroundColor: color,
+      borderWidth: line.selected ? 4 : 1.25,
+      borderDash: line.dashed ? [6, 4] : [],
+      pointRadius: 0,
+      pointHitRadius: 5,
+      pointHoverRadius: line.selected ? 4 : 3,
+      tension: 0.3
+    };
+  });
+
+  const picked = elements =>
+    pickNext(elements.map(element => datasets[element.datasetIndex].line));
+
+  const legendLabels = [
+    ...[3, 4, 5].map(par => ({ text: `Par ${par}`, color: YARDAGE_PAR_COLORS[par] })),
+    ...(combinedLegend
+      ? [
+          { text: 'Team', color: '#4a4a3a' },
+          { text: 'Solo', color: '#4a4a3a', dash: [4, 3] }
+        ]
+      : [])
+  ];
+
+  return new Chart(canvas, {
+    type: 'line',
+
+    data: { datasets },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      interaction: {
+        mode: 'nearest',
+        intersect: true
+      },
+
+      onClick: (event, elements) => {
+        const line = picked(elements);
+
+        if (line) onPick(line);
+      },
+
+      onHover: (event, elements) => {
+        event.native.target.style.cursor = picked(elements) ? 'pointer' : 'default';
+      },
+
+      scales: {
+        x: {
+          type: 'linear',
+          min: axis.min,
+          max: axis.max,
+
+          afterBuildTicks: scale => {
+            scale.ticks = axis.ticks.map(value => ({ value }));
+          },
+
+          ticks: {
+            callback: value => Math.round(axis.fromDisplay(value))
+          },
+
+          title: {
+            display: true,
+            text: 'Hole Length (yards)',
+            font: { family: 'DM Sans' }
+          }
+        },
+
+        y: {
+          // Always show at least -1 to +2.
+          suggestedMin: -1,
+          suggestedMax: 2,
+
+          title: {
+            display: true,
+            text: 'Relative to Par',
+            font: { family: 'DM Sans' }
+          },
+
+          ticks: {
+            callback: formatRelativeToParTick
+          },
+
+          // Even par darker, to get your bearings.
+          grid: {
+            color: context =>
+              context.tick.value === 0 ? 'rgba(0, 0, 0, 0.55)' : 'rgba(0, 0, 0, 0.1)'
+          }
+        }
+      },
+
+      plugins: {
+        yardageAxisBreaks: { centers: axis.breakCenters },
+
+        legend: {
+          position: 'bottom',
+          onClick: () => {},
+
+          labels: {
+            font: { family: 'DM Sans' },
+            padding: 10,
+            usePointStyle: true,
+            pointStyle: 'line',
+
+            generateLabels: () => legendLabels.map(item => ({
+              text: item.text,
+              strokeStyle: item.color,
+              fillStyle: item.color,
+              lineWidth: 3,
+              lineDash: item.dash || [],
+              pointStyle: 'line',
+              hidden: false
+            }))
+          }
+        },
+
+        tooltip: {
+          callbacks: {
+            title: context => `${Math.round(context[0].raw.yards)} yds`,
+            label: context =>
+              `${describe(context.dataset.line)} · Par ${context.dataset.line.par}s: ${formatRelativeToPar(context.raw.y)}`
+          }
+        }
+      }
+    },
+
+    plugins: [yardageBreakPlugin]
+  });
+}
+
+/*
+ * Stats page hole chart, yardage view. Solo / Team: the
+ * selected player's lines over the rest of the field's;
+ * clicking a line opens that player (cycling through lines
+ * that overlap). Combined: the player's own team (solid) vs
+ * solo (dashed) lines.
+ */
+async function renderYardageChart(playerName, playerFolder) {
+  const canvas = document.getElementById('handicap-chart');
+
+  if (!canvas) {
+    return;
+  }
+
+  if (handicapChart) {
+    handicapChart.destroy();
+    handicapChart = null;
+  }
+
+  try {
+    const isCombined = statsMode === 'combined';
+    let lines;
+
+    if (isCombined) {
+      const [solo, team] = await Promise.all([
+        getPlayerYardagePoints(playerName, 'solo'),
+        getPlayerYardagePoints(playerName, 'team')
+      ]);
+
+      lines = [
+        ...[3, 4, 5].map(par => ({ player: playerName, kind: 'Team', par, points: team[par], selected: true })),
+        ...[3, 4, 5].map(par => ({ player: playerName, kind: 'Solo', par, points: solo[par], selected: true, dashed: true }))
+      ];
+
+    } else {
+      const og12Folders = await syncHoleChartOG12(playerFolder);
+
+      const fieldPlayers = statsPlayers.filter(player =>
+        player.folder !== playerFolder &&
+        (!handicapOG12 || og12Folders.includes(player.folder))
+      );
+
+      const [selectedPoints, ...fieldPoints] = await Promise.all([
+        getPlayerYardagePoints(playerName),
+        ...fieldPlayers.map(player => getPlayerYardagePoints(player.name))
+      ]);
+
+      // Selected player's lines first so they draw on top.
+      lines = [
+        ...[3, 4, 5].map(par => ({ player: playerName, par, points: selectedPoints[par], selected: true })),
+        ...fieldPlayers.flatMap((player, index) =>
+          [3, 4, 5].map(par => ({ player: player.name, par, points: fieldPoints[index][par], selected: false }))
+        )
+      ];
+    }
+
+    handicapChart = createYardageChart(canvas, lines, {
+      combinedLegend: isCombined,
+
+      describe: line => line.kind ? `${line.player} · ${line.kind}` : line.player,
+
+      // Overlapping lines: cycle through their players in players.json order.
+      pickNext: atPoint => {
+        if (isCombined) return null;
+
+        const names = atPoint.map(line => line.player);
+        const candidates = statsPlayers.filter(player => names.includes(player.name));
+
+        return nextInCycle(
+          candidates,
+          candidates.find(player => player.folder === playerFolder)
+        );
+      },
+
+      onPick: player => {
+        preserveStatsScroll = true;
+        loadPlayerStats(player.folder);
+      }
+    });
+
+  } catch (error) {
+    console.error('Yardage chart error:', error);
+    handicapChart = null;
+  }
 }
 
 function playerAwards(allTime) {
@@ -5334,7 +5956,7 @@ function toggleHandicapOG12() {
     return;
   }
 
-  renderHandicapChart(
+  renderHoleChart(
     player.name,
     player.folder
   );

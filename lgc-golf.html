@@ -792,6 +792,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   font-size:15px;
   line-height:1;
   white-space:nowrap;
+  /* Centering leaves the emoji sitting high; drop them onto the name's baseline. */
+  transform:translateY(3px);
 }
 
 .player-header-chevron {

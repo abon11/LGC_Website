@@ -1926,11 +1926,11 @@ function compareGrossRounds(a, b) {
  * Ranked bar list in the same style as the stats page
  * rankings. Entries must already be sorted best-first;
  * ranks use competition ranking (1, T2, T2, 4) on `value`.
- * `note` is shown in parentheses after the name; showMedal
- * puts 🥇 in front of everyone ranked 1st. Rows open the
+ * `note` is shown in parentheses after the name; firstPlaceIcon
+ * (🥇 solo, 🏆 team) goes in front of everyone ranked 1st. Rows open the
  * entry's `click` action, or its solo scorecard by default.
  */
-function insightsRankingList(entries, year, showMedal = false) {
+function insightsRankingList(entries, year, firstPlaceIcon = '') {
   if (!entries.length) {
     return `
       <div class="career-rank-empty">
@@ -1964,7 +1964,7 @@ function insightsRankingList(entries, year, showMedal = false) {
         </div>
 
         <div class="career-rank-player">
-          <div class="career-rank-name">${showMedal && rank === 1 ? '🥇 ' : ''}${entry.name} (${entry.note})</div>
+          <div class="career-rank-name">${firstPlaceIcon && rank === 1 ? `${firstPlaceIcon} ` : ''}${entry.name} (${entry.note})</div>
           <div class="career-rank-track">
             <div class="career-rank-bar" style="width:${barWidth}%"></div>
           </div>
@@ -3151,7 +3151,7 @@ async function renderInsights(year = insightsYear) {
 
                       <div>${insightsHandicapList(teamEntries.handicapEntries, year)}</div>
                       ${insightsConnector(teamEntries.handicapEntries, teamEntries.scoreEntries)}
-                      <div>${insightsRankingList(teamEntries.scoreEntries, year, true)}</div>
+                      <div>${insightsRankingList(teamEntries.scoreEntries, year, '🏆')}</div>
                     </div>
 
                     <div class="career-rank-note insights-connector-legend">
@@ -3211,7 +3211,7 @@ async function renderInsights(year = insightsYear) {
 
                     <div>${insightsHandicapList(handicapEntries, year)}</div>
                     ${insightsConnector(handicapEntries, grossEntries)}
-                    <div>${insightsRankingList(grossEntries, year, true)}</div>
+                    <div>${insightsRankingList(grossEntries, year, '🥇')}</div>
                   </div>
 
                   <div class="career-rank-note insights-connector-legend">
@@ -3222,7 +3222,7 @@ async function renderInsights(year = insightsYear) {
                 `
                 : `
                   <div class="stat-box-label">Gross Score</div>
-                  ${insightsRankingList(grossEntries, year, true)}
+                  ${insightsRankingList(grossEntries, year, '🥇')}
                 `
             }
           </div>

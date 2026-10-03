@@ -1673,6 +1673,21 @@ function lineDataset(
   };
 }
 
+/*
+ * Clicking where several lines share a point cycles through
+ * them: `candidates` are the lines at that point in a fixed
+ * order, and this returns the one after `current` (wrapping
+ * around), or the first when `current` isn't among them.
+ * Returns null when no other line is there.
+ */
+function nextInCycle(candidates, current) {
+  if (!candidates.length) return null;
+
+  const next = candidates[(candidates.indexOf(current) + 1) % candidates.length];
+
+  return next === current ? null : next;
+}
+
 function openStatsModePicker() {
   updateStatsModePicker();
   openM('mod-stats-mode');
@@ -2513,7 +2528,15 @@ function renderInsightsHandicapChart(courses, rounds, year) {
     datasets,
     false,
     dataset => switchInsightsYear(dataset.year),
-    dataset => dataset.year !== year
+    // Overlapping lines: cycle through their years in order.
+    atPoint => {
+      const next = nextInCycle(
+        atPoint.map(dataset => dataset.year).sort((a, b) => a - b),
+        year
+      );
+
+      return atPoint.find(dataset => dataset.year === next) ?? null;
+    }
   );
 }
 
@@ -2817,10 +2840,16 @@ function renderInsightsProgressChart() {
       : lineDataset(team.name, runningTotals(team), 'rgba(0, 0, 0, 0.35)', 1.5, 2, 4)
   );
 
+  // Overlapping lines: cycle through their teams in leaderboard-data order.
+  const teamOrder = teams.map(team => team.name);
+
   const clickedTeam = elements =>
-    elements
-      .map(element => datasets[element.datasetIndex].label)
-      .find(name => name !== highlighted);
+    nextInCycle(
+      elements
+        .map(element => datasets[element.datasetIndex].label)
+        .sort((a, b) => teamOrder.indexOf(a) - teamOrder.indexOf(b)),
+      highlighted
+    );
 
   insightsProgressChart = new Chart(canvas, {
     type: 'line',
@@ -4486,20 +4515,19 @@ async function renderHandicapChart(
 }
 
 /*
- * onDatasetClick(dataset), when given, runs for a click on
- * one of the datasets for which isClickable(dataset) is true.
+ * onDatasetClick(dataset), when given, runs for a click on a
+ * line: pickDataset(datasetsAtPoint) chooses which of the
+ * lines under the pointer (null for none).
  */
 function createHandicapChart(
   canvas,
   datasets,
   showLegend,
   onDatasetClick = null,
-  isClickable = () => true
+  pickDataset = atPoint => atPoint[0] ?? null
 ) {
   const clickedDataset = elements =>
-    elements
-      .map(element => datasets[element.datasetIndex])
-      .find(isClickable);
+    pickDataset(elements.map(element => datasets[element.datasetIndex]));
 
   return new Chart(canvas, {
     type: 'line',
@@ -5463,7 +5491,6 @@ async function showYearlyStat(
 
     /*
      * Players whose line passes through the hovered/clicked point.
-     * Navigation only happens when exactly one player is there.
      */
     const datasetsAtPoint = element => {
       const value = Number(
@@ -5479,6 +5506,21 @@ async function showYearlyStat(
 
         return Number.isFinite(other) && other === value;
       });
+    };
+
+    /*
+     * Where several players share a point, each click moves to
+     * the next of them (players.json order), wrapping around.
+     * Dataset labels are player names.
+     */
+    const nextPlayerAtPoint = element => {
+      const namesAtPoint = datasetsAtPoint(element).map(dataset => dataset.label);
+      const candidates = statsPlayers.filter(player => namesAtPoint.includes(player.name));
+
+      return nextInCycle(
+        candidates,
+        candidates.find(player => player.folder === selectedStatsPlayerFolder)
+      );
     };
 
     yearlyChart = new Chart(canvas, {
@@ -5554,17 +5596,7 @@ async function showYearlyStat(
             return;
           }
 
-          const playersAtPoint = datasetsAtPoint(elements[0]);
-
-          if (playersAtPoint.length !== 1) {
-            return;
-          }
-
-          // Dataset labels are player names.
-          const targetPlayer =
-            statsPlayers.find(
-              player => player.name === playersAtPoint[0].label
-            );
+          const targetPlayer = nextPlayerAtPoint(elements[0]);
 
           if (
             !targetPlayer ||
@@ -5590,8 +5622,7 @@ async function showYearlyStat(
 
         onHover: function(event, elements) {
           event.native.target.style.cursor =
-            elements.length &&
-            datasetsAtPoint(elements[0]).length === 1
+            elements.length && nextPlayerAtPoint(elements[0])
               ? 'pointer'
               : 'default';
         }

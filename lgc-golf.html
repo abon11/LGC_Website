@@ -1502,6 +1502,7 @@ let statsMode = 'solo';
 let scoringView = 'overall';
 let rankingOG12 = false;
 let currentRankingConfig = null;
+let rankingScoreRange = 'exact'; // 'better' | 'exact' | 'worse' — scoring-distribution rankings
 let handicapChart = null;
 let frontBackAverageChart = null;
 let handicapOG12 = false;
@@ -4373,7 +4374,7 @@ function createSegmentRingChart(
       category.direction,
       selectedStatsPlayerFolder,
       `${ring.label} ${category.label}`,
-      'average',
+      getScoringSliceRankingMode(),
       stat
     );
   }
@@ -4446,7 +4447,7 @@ function renderScoringChart(stats, solo, team) {
             selected.direction,
             selectedStatsPlayerFolder,
             selected.label,
-            'average',
+            getScoringSliceRankingMode(),
             selected.stat
           );
         },
@@ -4519,7 +4520,7 @@ function renderScoringChart(stats, solo, team) {
           category.direction,
           selectedStatsPlayerFolder,
           `${ring.label} ${category.label}`,
-          'average',
+          getScoringSliceRankingMode(),
           stat,
           ring.mode
         );
@@ -6771,6 +6772,86 @@ function getAverageRankingValue(
   return value / rounds;
 }
 
+/*
+ * "Or better" / "or worse" for scoring-distribution rankings.
+ * Returns a copy of `section` where `stat` (e.g. par4_pars) is
+ * replaced by the sum of that score and every better (or worse)
+ * score in the same segment (par4_eagles + par4_birdies + par4_pars).
+ * Missing counts are zero; if every count is missing, the stat
+ * stays missing, just like the exact stat would.
+ */
+function applyScoreRange(section, stat, range) {
+  if (range === 'exact' || !isCareerScoringDistributionStat(stat)) {
+    return section;
+  }
+
+  const segment = SCORING_SEGMENTS.find(({ prefix }) =>
+    SCORING_CATEGORIES.some(category => stat === `${prefix}${category.field}`)
+  );
+
+  const index = SCORING_CATEGORIES.findIndex(
+    category => stat === `${segment.prefix}${category.field}`
+  );
+
+  const fields = (
+    range === 'better'
+      ? SCORING_CATEGORIES.slice(0, index + 1)
+      : SCORING_CATEGORIES.slice(index)
+  ).map(category => section[`${segment.prefix}${category.field}`]);
+
+  return {
+    ...section,
+    [stat]: fields.every(value => value == null)
+      ? undefined
+      : fields.reduce((sum, value) => sum + (Number(value) || 0), 0)
+  };
+}
+
+// More holes at a score "or better" is always good; "or worse" always bad.
+function getScoreRangeDirection(stat, direction, range) {
+  if (!isCareerScoringDistributionStat(stat) || range === 'exact') {
+    return direction;
+  }
+
+  return range === 'better' ? 'higher' : 'lower';
+}
+
+const SCORE_RANGE_LABELS = {
+  better: ' or Better',
+  exact: '',
+  worse: ' or Worse'
+};
+
+/*
+ * Clicking a scoring-chart slice keeps AVG / TOTAL from the
+ * ranking on screen when that's also a score count (like the
+ * range switch and OG 12 carry over); otherwise it opens in AVG.
+ */
+function getScoringSliceRankingMode() {
+  return currentRankingConfig &&
+    isCareerScoringDistributionStat(currentRankingConfig.stat)
+    ? currentRankingConfig.rankingMode
+    : 'average';
+}
+
+function setRankingScoreRange(range) {
+  rankingScoreRange = range;
+
+  if (!currentRankingConfig) {
+    return;
+  }
+
+  showCareerRanking(
+    currentRankingConfig.stat,
+    currentRankingConfig.direction,
+    currentRankingConfig.selectedFolder,
+    currentRankingConfig.labelOverride,
+    currentRankingConfig.rankingMode,
+    currentRankingConfig.totalStatOverride,
+    currentRankingConfig.sourceStatsMode
+  );
+}
+
 function setRankingOG12(enabled) {
   rankingOG12 = enabled;
 
@@ -6897,9 +6978,21 @@ async function showCareerRanking(
    * Use the explicit label supplied by a donut,
    * otherwise derive it from the stat name.
    */
+  const isScoringStat =
+    isCareerScoringDistributionStat(activeStat);
+
+  const scoreRange =
+    isScoringStat
+      ? rankingScoreRange
+      : 'exact';
+
   const label =
-    labelOverride ||
-    getCareerStatLabel(activeStat);
+    (labelOverride || getCareerStatLabel(activeStat)) +
+    SCORE_RANGE_LABELS[scoreRange];
+
+  // "Or better" / "or worse" rankings have their own direction.
+  const rankingDirection =
+    getScoreRangeDirection(activeStat, direction, scoreRange);
 
   /*
    * Highlight the corresponding left-side card.
@@ -6936,13 +7029,36 @@ async function showCareerRanking(
   title.innerHTML = `
     <div style="
       display:flex;
+      flex-wrap:wrap;
       align-items:center;
       justify-content:space-between;
-      gap:8px;
+      gap:6px 8px;
     ">
-      <span>${label}</span>
+      <!--
+        Score rankings have the extra range switch, so the title
+        takes its own line and the buttons stay put below it.
+      -->
+      <span style="${isScoringStat ? 'flex-basis:100%;' : ''}">${label}</span>
 
       <div class="career-rank-controls">
+
+        ${
+          isScoringStat
+            ? `
+              <span class="career-rank-toggle">
+                ${[['better', '≤ BETTER'], ['exact', 'EXACT'], ['worse', '≥ WORSE']].map(([range, text]) => `
+                  <button
+                    type="button"
+                    class="career-rank-toggle-button ${scoreRange === range ? 'active' : ''}"
+                    onclick="setRankingScoreRange('${range}')"
+                  >
+                    ${text}
+                  </button>
+                `).join('')}
+              </span>
+            `
+            : ''
+        }
 
         ${
           hasTotalView
@@ -6994,6 +7110,7 @@ async function showCareerRanking(
             : ''
         }
 
+
         <span class="career-rank-og12 ${rankingOG12 ? 'active' : ''}">
           <button
             type="button"
@@ -7032,8 +7149,13 @@ async function showCareerRanking(
               sourceStatsMode
             );
 
+          // With "or better" / "or worse", the stat holds the summed count.
           const section =
-            modeData.section;
+            applyScoreRange(
+              modeData.section,
+              activeStat,
+              scoreRange
+            );
 
           const rankingSection =
             isPersonalCareerStat(stat)
@@ -7135,7 +7257,7 @@ async function showCareerRanking(
      * Sort according to whether higher or lower is better.
      */
     valid.sort((a, b) =>
-      direction === 'higher'
+      rankingDirection === 'higher'
         ? b.value - a.value
         : a.value - b.value
     );

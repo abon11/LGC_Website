@@ -1,0 +1,34 @@
+{
+  "2023": {
+    "players": [
+      "Bon",
+      "Maycock"
+    ],
+    "score": 73,
+    "course": "Rogues Roost Golf Club"
+  },
+  "2024": {
+    "players": [
+      "James",
+      "Raymond"
+    ],
+    "score": 69,
+    "course": "Amsterdam Municipal Golf Course"
+  },
+  "2025": {
+    "players": [
+      "Bon",
+      "Baker"
+    ],
+    "score": 67,
+    "course": "Pocono Manor Golf Course"
+  },
+  "2026": {
+    "players": [
+      "Bon",
+      "Don"
+    ],
+    "score": 70,
+    "course": "Tarry Brae Golf Course"
+  }
+}

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10mm"
+   height="10mm"
+   viewBox="0 0 10 10"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="LGC_flag.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="10.403156"
+     inkscape:cx="12.54427"
+     inkscape:cy="9.1318438"
+     inkscape:window-width="1512"
+     inkscape:window-height="921"
+     inkscape:window-x="0"
+     inkscape:window-y="61"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g1"
+       transform="translate(-113.24167,-179.18096)">
+      <rect
+         style="fill:#4a390f;fill-opacity:1;stroke:none;stroke-width:0.0554175;stroke-dasharray:none;stroke-opacity:0"
+         id="rect351"
+         width="0.14803217"
+         height="5.0851312"
+         x="113.24167"
+         y="174.09583" />
+      <path
+         style="fill:#c20000;fill-opacity:1;stroke:#c40000;stroke-width:0.529167;stroke-opacity:1"
+         inkscape:label="Triangle"
+         d="m 113.64415,174.50527 v 1.05833 l 1.21247,-0.52916 z"
+         id="path351" />
+      <text
+         xml:space="preserve"
+         style="font-size:0.987777px;writing-mode:lr-tb;direction:ltr;fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.0341312;stroke-dasharray:none;stroke-opacity:1"
+         x="113.39252"
+         y="175.39427"
+         id="text351"><tspan
+           sodipodi:role="line"
+           id="tspan351"
+           x="113.39252"
+           y="175.39427"
+           style="font-size:0.987777px;stroke-width:0.0341312">30</tspan></text>
+    </g>
+  </g>
+</svg>

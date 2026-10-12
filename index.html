@@ -1202,6 +1202,58 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     grid-template-columns:1fr;
   }
 }
+
+/* HOME */
+#page-home.active{
+  display:flex;gap:12px;
+  height:calc(100dvh - var(--hdr-h,84px) - 72px - var(--sb));
+  min-height:520px;
+}
+.home-roster{flex:none;width:190px;display:flex;flex-direction:column;padding:14px 8px 8px;overflow-y:auto;}
+.home-roster-head{display:flex;justify-content:space-between;padding:0 8px;margin-bottom:6px;}
+.home-roster-head .sl{margin-bottom:0;}
+.home-roster-row{
+  flex:1;min-height:30px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:0 8px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;
+}
+.home-roster-row:hover{background:rgba(255,255,255,0.08);}
+.home-roster-hcp{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--gold);}
+.home-roster-divider{flex:none;height:1px;margin:6px 8px;background:rgba(255,255,255,0.18);}
+.home-stats{display:flex;flex-direction:column;gap:10px;flex:none;width:190px;}
+.home-stats .sc{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.home-stats .sv{overflow-wrap:anywhere;}
+.home-map{
+  flex:1;min-width:0;min-height:0;position:relative;overflow:hidden;
+  background:var(--cb);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.home-map svg{display:block;width:100%;height:100%;font-family:sans-serif;}
+.home-flag{cursor:pointer;}
+.home-flag-tip{
+  position:absolute;z-index:2;pointer-events:none;display:none;
+  transform:translate(-50%,-100%);width:max-content;max-width:240px;
+  background:var(--gd);color:white;border-radius:12px;padding:10px 12px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.25);font-size:12px;line-height:1.45;
+}
+.home-flag-tip.open{display:block;}
+.home-flag-tip-year{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);line-height:1.1;margin-bottom:3px;}
+.home-flag-tip-course{font-weight:600;}
+.home-flag-tip-line{opacity:.7;}
+.home-flag-tip-winners{margin-top:4px;color:var(--gold);font-weight:500;}
+.home-map .es{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+@media (max-width:899px) {
+  .home-roster,.home-stats{width:150px;}
+}
+@media (max-width:699px) {
+  #page-home.active{flex-direction:column;height:auto;min-height:0;}
+  .home-stats{order:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:auto;}
+  .home-stats .sc{padding:11px 10px;}
+  .home-stats .sl{font-size:8px;letter-spacing:1px;}
+  .home-stats .sv{font-size:20px;}
+  .home-stats .sd{font-size:10px;}
+  .home-map{order:2;flex:none;aspect-ratio:5/4;}
+  .home-roster{order:3;width:auto;overflow:visible;margin-bottom:10px;}
+  .home-roster-row{flex:none;height:38px;}
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -1260,7 +1312,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 </nav>
 
 <!-- HOME -->
-<main id="page-home" class="pg active"></main>
+<main id="page-home" class="pg active">
+  <div class="sc home-roster" id="home-roster"></div>
+  <div class="home-map" id="home-map"></div>
+  <div class="home-stats" id="home-stats"></div>
+</main>
 
 <!-- RULES -->
 <main id="page-rules" class="pg">
@@ -1355,6 +1411,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
     </div>
 
     <div class="sd" id="insights-course"></div>
+    <div class="sd" id="insights-location"></div>
   </div>
 
   <div id="insights-content"></div>
@@ -1749,6 +1806,450 @@ function showPage(n,btn){
   document.getElementById('page-'+n).classList.add('active');
   btn.classList.add('active');
   if(n==='insights') renderInsights();
+}
+
+// ---------------------------------------------------------
+// HOME
+// ---------------------------------------------------------
+
+const HOME_MAP_FILE = 'LGCMAP.svg';
+const HOME_MAP_PADDING = 10; // map units kept around the drawn shapes
+const HOME_FLAG_FILE = 'LGC_flag.svg';
+// The flag is drawn in mm and the map in px, so this is the
+// flag's true size on the map. Raise it for bigger flags.
+const HOME_FLAG_SCALE = 96 / 25.4;
+
+/**
+ * The home page fills the space between the header and the
+ * bottom nav, so the header's real height is handed to CSS.
+ */
+function syncHeaderHeight() {
+  const header = document.querySelector('.hdr');
+
+  document.documentElement.style.setProperty(
+    '--hdr-h',
+    `${header.offsetHeight}px`
+  );
+}
+
+/** Everyone tied for the highest value of a stat. */
+function homeLeaders(players, getValue) {
+  const best = Math.max(0, ...players.map(getValue));
+
+  return {
+    count: best,
+    names: best > 0
+      ? players.filter(p => getValue(p) === best).map(p => p.name)
+      : []
+  };
+}
+
+function homeLeaderTile(label, leader, unit) {
+  return `
+    <div class="sc">
+      <div class="sl">${label}</div>
+      <div class="sv">${leader.names.join(' & ') || '—'}</div>
+      <div class="sd">${leader.count} ${unit}${leader.count === 1 ? '' : 's'}</div>
+    </div>
+  `;
+}
+
+function homeTotalTile(label, value, detail) {
+  return `
+    <div class="sc">
+      <div class="sl">${label}</div>
+      <div class="sv">${value}</div>
+      <div class="sd">${detail}</div>
+    </div>
+  `;
+}
+
+/**
+ * Everyone who has played, by current handicap: the twelve
+ * with the most rounds first, then the rest below a divider.
+ * A player's current handicap is the one on their most
+ * recent solo round.
+ */
+function renderHomeRoster(players, rounds) {
+  const latest = new Map();
+
+  rounds.forEach(round => {
+    const names = JSON.parse(round.player);
+    if (names.length !== 1 || round.handicap === '') return;
+
+    const year = Number(round.year);
+
+    if (!latest.has(names[0]) || year >= latest.get(names[0]).year) {
+      latest.set(names[0], { year, handicap: Number(round.handicap) });
+    }
+  });
+
+  const byHandicap = (a, b) =>
+    (a.handicap ?? Infinity) - (b.handicap ?? Infinity) ||
+    a.name.localeCompare(b.name);
+
+  const roster = players.map(player => ({
+    ...player,
+    handicap: latest.get(player.name)?.handicap ?? null
+  }));
+
+  const regulars = topTwelveByRounds(roster);
+  const others = roster.filter(player => !regulars.includes(player));
+
+  const rows = group => group.sort(byHandicap).map(player => `
+    <div class="home-roster-row" onclick="openPlayerStats('${player.folder}')">
+      <span>${player.name}</span>
+      <span class="home-roster-hcp">${player.handicap ?? '—'}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('home-roster').innerHTML = `
+    <div class="home-roster-head">
+      <div class="sl">Players</div>
+      <div class="sl">Hdcp</div>
+    </div>
+    ${rows(regulars)}
+    ${others.length ? '<div class="home-roster-divider"></div>' : ''}
+    ${rows(others)}
+  `;
+}
+
+/** "Town, ST" for a course, from whichever parts are filled in. */
+function courseLocation(course) {
+  return [course.town, course.state].filter(Boolean).join(', ');
+}
+
+/** Jump from the home page straight to a year's Tournament Insights. */
+function openTournamentInsights(year) {
+  insightsYear = year;
+  showPage('insights', document.querySelector('.ni[onclick*="\'insights\'"]'));
+  window.scrollTo(0, 0);
+}
+
+/**
+ * The card shown above a flag while the mouse is over it:
+ * year, course, town and state, host and the winning team.
+ */
+function showHomeFlagTip(tip, flag, course, winners) {
+  const line = (className, text) => {
+    if (!text) return;
+
+    const row = document.createElement('div');
+    row.className = className;
+    row.textContent = text;
+    tip.appendChild(row);
+  };
+
+  tip.replaceChildren();
+
+  line('home-flag-tip-year', course.year);
+  line('home-flag-tip-course', course.course_name);
+  line('home-flag-tip-line', courseLocation(course));
+  line('home-flag-tip-line', course.host ? `Hosted by ${course.host}` : '');
+  line('home-flag-tip-winners', winners?.length ? `🏆 ${winners.join(' & ')}` : '');
+
+  tip.classList.add('open');
+
+  // Sit just above the flag, kept inside the map card; if
+  // there is no room above, drop below the flag instead.
+  const card = tip.parentNode.getBoundingClientRect();
+  const box = flag.getBoundingClientRect();
+  const half = tip.offsetWidth / 2 + 6;
+  const above = box.top - card.top - 8 >= tip.offsetHeight;
+
+  const centre = Math.min(
+    Math.max(box.left + box.width / 2 - card.left, half),
+    Math.max(card.width - half, half)
+  );
+
+  tip.style.left = `${centre}px`;
+  tip.style.top = `${(above ? box.top - 6 : box.bottom + 6 + tip.offsetHeight) - card.top}px`;
+}
+
+/**
+ * One flag per tournament, planted at the map_x / map_y from
+ * courses.csv (the map's own coordinates, as Inkscape shows
+ * them). Every flag is a copy of the single flag drawing with
+ * its placeholder number swapped for the tournament's number:
+ * 1 for the first year, 2 for the second, and so on. The
+ * bottom of the pole sits at the flag file's origin, so that
+ * is the point that lands on the coordinates.
+ */
+async function renderHomeFlags(map) {
+  try {
+    const [courses, winningTeams, response] = await Promise.all([
+      loadData('courses.csv'),
+      loadData('stats/winning_teams.json').catch(() => ({})),
+      fetch(HOME_FLAG_FILE)
+    ]);
+
+    if (!response.ok) throw new Error(`Could not load ${HOME_FLAG_FILE}`);
+
+    const flagFile = new DOMParser()
+      .parseFromString(await response.text(), 'image/svg+xml')
+      .documentElement;
+
+    const artwork = [...flagFile.children].filter(
+      child => child.nodeName === 'g'
+    );
+
+    const years = [...new Set(courses.map(course => Number(course.year)))]
+      .sort((a, b) => a - b);
+
+    const layer = document.createElementNS(map.namespaceURI, 'g');
+    layer.setAttribute('id', 'home-flags');
+    map.appendChild(layer);
+
+    const tip = document.createElement('div');
+    tip.className = 'home-flag-tip';
+    map.parentNode.appendChild(tip);
+
+    courses.forEach(course => {
+      const x = Number(course.map_x);
+      const y = Number(course.map_y);
+
+      if (
+        course.map_x === '' || course.map_y === '' ||
+        Number.isNaN(x) || Number.isNaN(y)
+      ) return;
+
+      const flag = document.createElementNS(map.namespaceURI, 'g');
+
+      flag.setAttribute(
+        'transform',
+        `translate(${x} ${y}) scale(${HOME_FLAG_SCALE})`
+      );
+
+      artwork.forEach(part => {
+        flag.appendChild(document.importNode(part, true));
+      });
+
+      // Copies would otherwise all share the same ids.
+      flag.querySelectorAll('[id]').forEach(node => {
+        node.removeAttribute('id');
+      });
+
+      layer.appendChild(flag);
+
+      // The pole is too thin to hover, so the whole flag's
+      // footprint (plus a little slack) reacts to the mouse.
+      const area = flag.getBBox();
+      const hit = document.createElementNS(map.namespaceURI, 'rect');
+
+      hit.setAttribute('x', area.x - 0.5);
+      hit.setAttribute('y', area.y - 0.5);
+      hit.setAttribute('width', area.width + 1);
+      hit.setAttribute('height', area.height + 1);
+      hit.setAttribute('fill', 'transparent');
+      flag.appendChild(hit);
+
+      flag.setAttribute('class', 'home-flag');
+
+      flag.addEventListener('mouseenter', () => {
+        showHomeFlagTip(tip, flag, course, winningTeams[course.year]?.players);
+      });
+      flag.addEventListener('mouseleave', () => tip.classList.remove('open'));
+      flag.addEventListener('click', () => {
+        tip.classList.remove('open');
+        openTournamentInsights(Number(course.year));
+      });
+
+      // Centre the number where the placeholder was drawn, so
+      // one- and two-digit numbers both sit in the same spot.
+      const text = flag.querySelector('text');
+      if (!text) return;
+
+      const label = text.querySelector('tspan') || text;
+      const box = text.getBBox();
+      const centre = box.x + box.width / 2;
+
+      label.textContent = years.indexOf(Number(course.year)) + 1;
+
+      [text, label].forEach(node => {
+        node.setAttribute('x', centre);
+        node.style.textAnchor = 'middle';
+      });
+    });
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+/** Jump from the home page straight to a player's stats page. */
+function openPlayerStats(folder) {
+  showPage('stats', document.querySelector('.ni[onclick*="\'stats\'"]'));
+  window.scrollTo(0, 0);
+  loadPlayerStats(folder);
+}
+
+async function renderHomeStats() {
+  const container = document.getElementById('home-stats');
+
+  try {
+    const [courses, rounds, playerList] = await Promise.all([
+      loadData('courses.csv'),
+      loadData('rounds.csv'),
+      loadData('stats/players.json')
+    ]);
+
+    const players = await Promise.all(
+      playerList.map(async player => {
+        const allTime = await loadData(
+          `stats/${player.folder}/all_time_stats.json`
+        ).catch(() => ({}));
+
+        return {
+          name: player.name,
+          folder: player.folder,
+          rounds:
+            (Number(allTime.solo?.solo_rounds) || 0) +
+            (Number(allTime.team?.team_rounds) || 0),
+          wins: Number(allTime.team?.team_wins) || 0,
+          soloWins: Number(allTime.solo?.solo_first_places) || 0
+        };
+      })
+    );
+
+    const courseById = new Map(
+      courses.map(course => [course.course_id, course])
+    );
+
+    // rounds.csv has one row per scorecard, so a team round is
+    // a single row and its holes are only counted once.
+    let birdies = 0;
+    let quads = 0;
+    let lowSolo = null;
+
+    rounds.forEach(round => {
+      const course = courseById.get(round.course_id);
+      if (!course) return;
+
+      let total = 0;
+      let holes = 0;
+
+      for (let hole = 1; hole <= 18; hole++) {
+        const score = Number(round[`hole${hole}`]);
+        const par = Number(course[`hole${hole}_par`]);
+        if (!score || !par) continue;
+
+        total += score;
+        holes++;
+
+        if (score - par <= -1) birdies++;
+        if (score - par >= 4) quads++;
+      }
+
+      const names = JSON.parse(round.player);
+
+      if (
+        names.length === 1 &&
+        holes === 18 &&
+        (!lowSolo || total < lowSolo.score)
+      ) {
+        lowSolo = { score: total, name: names[0], year: round.year };
+      }
+    });
+
+    const years = new Set(rounds.map(round => round.year));
+
+    renderHomeRoster(players, rounds);
+
+    container.innerHTML = [
+      homeLeaderTile(
+        'Most Wins', homeLeaders(players, p => p.wins), 'win'
+      ),
+      homeLeaderTile(
+        'Most Solo Wins', homeLeaders(players, p => p.soloWins), 'solo win'
+      ),
+      homeTotalTile(
+        'Tournaments', years.size, `${Math.min(...years)} – ${Math.max(...years)}`
+      ),
+      homeTotalTile('Birdies or Better', birdies, 'all rounds'),
+      homeTotalTile('Quads or Worse', quads, 'all rounds'),
+      homeTotalTile(
+        'Low Solo Round',
+        lowSolo ? lowSolo.score : '—',
+        lowSolo ? `${lowSolo.name}, ${lowSolo.year}` : ''
+      )
+    ].join('');
+
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '';
+  }
+}
+
+/**
+ * The map is inlined (rather than used as an <img>) so that
+ * markers can later be drawn straight into it using the same
+ * coordinates Inkscape shows for the file.
+ */
+async function renderHomeMap() {
+  const container = document.getElementById('home-map');
+
+  try {
+    const response = await fetch(HOME_MAP_FILE);
+    if (!response.ok) throw new Error(`Could not load ${HOME_MAP_FILE}`);
+
+    const svg = new DOMParser()
+      .parseFromString(await response.text(), 'image/svg+xml')
+      .documentElement;
+
+    if (svg.nodeName !== 'svg') throw new Error('Map is not a valid SVG');
+
+    // A <title> shows up as a browser tooltip on hover.
+    svg.querySelectorAll('title').forEach(title => title.remove());
+
+    // Hidden layers (e.g. the tracing underlay) are never drawn.
+    [...svg.children].forEach(child => {
+      if (child.style?.display === 'none') child.remove();
+    });
+
+    const width = parseFloat(svg.getAttribute('width'));
+    const height = parseFloat(svg.getAttribute('height'));
+
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    container.replaceChildren(document.importNode(svg, true));
+
+    // Zoom in on the drawn shapes rather than the whole page.
+    // Their bounding box ignores the blurred fade around the
+    // map, which is left to run off the edges of the card.
+    // Only the viewBox changes, so the file's own coordinate
+    // system (what Inkscape shows) still applies.
+    const box = container.firstElementChild.getBBox();
+
+    if (box.width > 0 && box.height > 0) {
+      const x1 = Math.max(0, box.x - HOME_MAP_PADDING);
+      const y1 = Math.max(0, box.y - HOME_MAP_PADDING);
+      const x2 = Math.min(width, box.x + box.width + HOME_MAP_PADDING);
+      const y2 = Math.min(height, box.y + box.height + HOME_MAP_PADDING);
+
+      container.firstElementChild.setAttribute(
+        'viewBox',
+        `${x1} ${y1} ${x2 - x1} ${y2 - y1}`
+      );
+    }
+
+    renderHomeFlags(container.firstElementChild);
+
+  } catch (error) {
+    console.error(error);
+
+    container.innerHTML = `
+      <div class="es">
+        <div class="ei">⚠️</div>
+        <div class="et">Map unavailable</div>
+        <div class="esub">
+          Make sure ${HOME_MAP_FILE} is beside the HTML file.
+        </div>
+      </div>
+    `;
+  }
 }
 
 // ---------------------------------------------------------
@@ -3084,6 +3585,11 @@ async function renderInsights(year = insightsYear) {
 
     courseLabel.textContent =
       `${course.course_name}${par ? ` · Par ${par}` : ''}`;
+
+    document.getElementById('insights-location').textContent = [
+      courseLocation(course),
+      course.host ? `Hosted by ${course.host}` : ''
+    ].filter(Boolean).join(' · ');
 
     const grossEntries = [...soloRounds]
       .sort(compareGrossRounds)
@@ -7456,6 +7962,11 @@ statsMode = DB.get('statsMode') || 'solo';
 updateStatsModePicker();
 
 loadStatsPlayers();
+
+syncHeaderHeight();
+window.addEventListener('resize', syncHeaderHeight);
+renderHomeStats();
+renderHomeMap();
 </script>
 </body>
 </html>

@@ -1637,6 +1637,49 @@ function parseRoundPlayers(round) {
   }
 }
 
+/*
+ * A round's playoff holes, in order. rounds.csv keeps them in
+ * the p1, p2, ... columns as "{hole, score}": the hole that
+ * was replayed and the score on it. They break ties between
+ * teams and count toward hole-by-hole stats, but are never
+ * part of a round's 18-hole score.
+ */
+function parseRoundPlayoff(row) {
+  return Object.keys(row)
+    .filter(key => /^p\d+$/.test(key))
+    .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
+    .map(key => (String(row[key]).match(/\d+/g) || []).map(Number))
+    .filter(entry => entry.length === 2 && entry[0] >= 1 && entry[0] <= 18)
+    .map(([hole, score]) => ({ hole, score }));
+}
+
+/*
+ * Every hole an insights round counts toward hole-by-hole
+ * stats: the holes it has a score for, then its playoff holes.
+ */
+function roundHoleScores(round) {
+  return [
+    ...round.holes
+      .map((score, index) => ({ hole: index + 1, score, playoff: false }))
+      .filter(entry => entry.score != null),
+    ...(round.playoff || []).map(entry => ({ ...entry, playoff: true }))
+  ];
+}
+
+// Lower is better: the first playoff hole the two differ on. No score for a hole loses.
+function comparePlayoff(a, b) {
+  const holes = Math.max(a.playoff?.length || 0, b.playoff?.length || 0);
+
+  for (let i = 0; i < holes; i++) {
+    const scoreA = a.playoff?.[i]?.score ?? Infinity;
+    const scoreB = b.playoff?.[i]?.score ?? Infinity;
+
+    if (scoreA !== scoreB) return scoreA - scoreB;
+  }
+
+  return 0;
+}
+
 function getModeRounds(section, mode) {
   return mode === 'team'
     ? Number(section.team_rounds) || 0
@@ -2140,6 +2183,15 @@ async function renderHomeStats() {
         if (score - par >= 4) quads++;
       }
 
+      // Playoff holes count toward the totals, not the round's score.
+      parseRoundPlayoff(round).forEach(({ hole: playoffHole, score }) => {
+        const par = Number(course[`hole${playoffHole}_par`]);
+        if (!par) return;
+
+        if (score - par <= -1) birdies++;
+        if (score - par >= 4) quads++;
+      });
+
       const names = JSON.parse(round.player);
 
       if (
@@ -2338,6 +2390,7 @@ function getYearSoloRounds(rounds, course, year) {
         name: roundPlayers[0],
         handicap,
         holes,
+        playoff: parseRoundPlayoff(row),
         gross,
         net: gross - handicap,
         front: holes.slice(0, 9).reduce((sum, score) => sum + (score ?? 0), 0),
@@ -2384,6 +2437,7 @@ function getYearTeamRounds(rounds, course, year) {
         players,
         isTeam: true,
         holes,
+        playoff: parseRoundPlayoff(row),
         gross: holes.reduce((sum, score) => sum + (score ?? 0), 0),
         par
       };
@@ -2433,6 +2487,8 @@ function compareGrossRounds(a, b) {
  * `note` is shown in parentheses after the name; firstPlaceIcon
  * (🥇 solo, 🏆 team) goes in front of everyone ranked 1st. Rows open the
  * entry's `click` action, or its solo scorecard by default.
+ * An entry can carry its own `rank` / `tied` (teams split by
+ * a playoff share a value but not a rank).
  */
 function insightsRankingList(entries, year, firstPlaceIcon = '') {
   if (!entries.length) {
@@ -2449,8 +2505,8 @@ function insightsRankingList(entries, year, firstPlaceIcon = '') {
   const valueRange = Math.max(...values) - minValue;
 
   return entries.map((entry, index) => {
-    const rank = getCompetitionRank(entries, entry.value);
-    const tied = isTied(entries, entry.value);
+    const rank = entry.rank ?? getCompetitionRank(entries, entry.value);
+    const tied = entry.tied ?? isTied(entries, entry.value);
 
     const barWidth = Math.max(
       valueRange === 0 ? 100 : (entry.value - minValue) / valueRange * 100,
@@ -2611,16 +2667,14 @@ function getFieldScoringStats(fieldRounds, course) {
   );
 
   fieldRounds.forEach(round => {
-    round.holes.forEach((score, index) => {
-      if (score == null) return;
-
-      const par = Number(course[`hole${index + 1}_par`]);
+    roundHoleScores(round).forEach(({ hole, score }) => {
+      const par = Number(course[`hole${hole}_par`]);
 
       // Eagle or better → 0, birdie → 1, ... quad or worse → 6
       const { field } =
         SCORING_CATEGORIES[Math.min(Math.max(score - par + 2, 0), 6)];
 
-      ['total_', `par${par}_`, index < 9 ? 'front_' : 'back_']
+      ['total_', `par${par}_`, hole <= 9 ? 'front_' : 'back_']
         .forEach(prefix => stats[`${prefix}${field}`]++);
     });
   });
@@ -2744,22 +2798,20 @@ function scoreName(relative) {
  */
 function getHoleExtremes(fieldRounds, course) {
   const scores = fieldRounds
-    .flatMap(round => round.holes.map((score, index) => {
-      if (score == null) return null;
-
-      const par = Number(course[`hole${index + 1}_par`]);
+    .flatMap(round => roundHoleScores(round).map(({ hole, score, playoff }) => {
+      const par = Number(course[`hole${hole}_par`]);
 
       return {
         name: round.name,
         player: round.players?.[0] ?? round.name,
         isTeam: Boolean(round.isTeam),
-        hole: index + 1,
+        hole,
+        playoff,
         score,
         par,
         relative: score - par
       };
     }))
-    .filter(Boolean)
     .sort((a, b) => a.hole - b.hole || a.name.localeCompare(b.name));
 
   if (!scores.length) return null;
@@ -2804,7 +2856,7 @@ function holeExtremeCell(label, entries, year) {
 
             <span class="insights-hole-chip-text">
               <strong>${entry.name}</strong>
-              <span>Hole ${entry.hole}</span>
+              <span>${entry.playoff ? 'Playoff · ' : ''}Hole ${entry.hole}</span>
             </span>
           </button>
         `).join('')}
@@ -2831,6 +2883,7 @@ function winnersCell(team, grossEntries) {
       <div class="insights-hole-summary">
         <div class="stat-box-label">Winners</div>
         <div class="insights-winners-names">🏆 ${names.join(' & ')}</div>
+        ${team.playoff ? '<div style="font-size:11px;color:var(--ts);margin-top:2px;">Won in a playoff</div>' : ''}
       </div>
     </div>
   `;
@@ -2846,8 +2899,8 @@ function ordinal(n) {
 }
 
 /*
- * Field averages relative to par: per hole for par 3 / 4 / 5,
- * per round for the front and back 9.
+ * Field averages relative to par: per hole for par 3 / 4 / 5
+ * (playoff holes included), per round for the front and back 9.
  */
 function getFieldRelativeToPar(fieldRounds, course) {
   const parOf = index => Number(course[`hole${index + 1}_par`]);
@@ -2872,6 +2925,11 @@ function getFieldRelativeToPar(fieldRounds, course) {
 
     front.push(frontTotal);
     back.push(backTotal);
+
+    // Playoff holes count as holes of their par, not toward either nine.
+    (round.playoff || []).forEach(({ hole, score }) => {
+      byPar[parOf(hole - 1)]?.push(score - parOf(hole - 1));
+    });
   });
 
   const mean = values =>
@@ -2954,9 +3012,11 @@ function getFieldHandicapValues(fieldRounds, course) {
     if (!hole) return null;
 
     const par = Number(course[`hole${hole}_par`]);
-    const scores = fieldRounds
-      .map(round => round.holes[hole - 1])
-      .filter(score => score != null);
+    const scores = fieldRounds.flatMap(round =>
+      roundHoleScores(round)
+        .filter(entry => entry.hole === hole)
+        .map(entry => entry.score)
+    );
 
     return scores.length
       ? scores.reduce((sum, score) => sum + score - par, 0) / scores.length
@@ -3021,11 +3081,11 @@ function getFieldYardagePoints(fieldRounds, course) {
   const points = { 3: [], 4: [], 5: [] };
 
   fieldRounds.forEach(round => {
-    round.holes.forEach((score, index) => {
-      const par = Number(course[`hole${index + 1}_par`]);
-      const yardage = Number(course[`hole${index + 1}_yardage`]);
+    roundHoleScores(round).forEach(({ hole, score }) => {
+      const par = Number(course[`hole${hole}_par`]);
+      const yardage = Number(course[`hole${hole}_yardage`]);
 
-      if (score != null && points[par] && Number.isFinite(yardage)) {
+      if (points[par] && Number.isFinite(yardage)) {
         points[par].push({ x: yardage, y: score - par });
       }
     });
@@ -3395,9 +3455,31 @@ function setInsightsCategory(field) {
 
 /*
  * Team mode: entries for the team-score ranking (best first,
- * the champions first on a tie) and the combined-handicap
+ * ties split by playoff holes, then the champions first) and the combined-handicap
  * ranking, which is each team's two solo handicaps added.
  */
+/*
+ * One line per playoff hole under the team ranking, e.g.
+ * "Playoff · Hole 18: Bon & Don 4, James & Brett 5".
+ * Empty when nobody went to a playoff.
+ */
+function insightsPlayoffNote(teamEntries) {
+  const holes = Math.max(0, ...teamEntries.map(team => team.playoff.length));
+
+  if (!holes) return '';
+
+  const lines = Array.from({ length: holes }, (_, index) => {
+    const played = teamEntries.filter(team => team.playoff[index]);
+    const label = holes > 1 ? `Playoff ${index + 1}` : 'Playoff';
+
+    return `${label} · Hole ${played[0].playoff[index].hole}: ${
+      played.map(team => `${team.name} ${team.playoff[index].score}`).join(', ')
+    }`;
+  });
+
+  return `<div class="career-rank-note">${lines.join('<br>')}</div>`;
+}
+
 function getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year) {
   const handicaps = Object.fromEntries(
     soloRounds.map(round => [round.name, round.handicap])
@@ -3408,13 +3490,17 @@ function getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year) {
     round.players.length === winningTeam.players.length &&
     round.players.every(name => winningTeam.players.includes(name));
 
+  // Level on score and through every playoff hole.
+  const level = (a, b) => a.gross === b.gross && comparePlayoff(a, b) === 0;
+
   const scoreEntries = [...teamRounds]
     .sort((a, b) =>
       a.gross - b.gross ||
+      comparePlayoff(a, b) ||
       isWinner(b) - isWinner(a) ||
       a.name.localeCompare(b.name)
     )
-    .map(round => {
+    .map((round, index, sorted) => {
       const handicap = round.players.reduce(
         (sum, name) => sum + (handicaps[name] ?? 0),
         0
@@ -3423,6 +3509,8 @@ function getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year) {
       return {
         ...round,
         value: round.gross,
+        rank: sorted.findIndex(other => level(other, round)) + 1,
+        tied: sorted.filter(other => level(other, round)).length > 1,
         handicap,
         note: handicap,
         click: scorecardClick(year, round.players[0], 'team')
@@ -3432,7 +3520,12 @@ function getTeamInsightsEntries(teamRounds, soloRounds, winningTeam, year) {
   // Handicap ties keep team-score order.
   const handicapEntries = [...scoreEntries]
     .sort((a, b) => a.handicap - b.handicap)
-    .map(entry => ({ ...entry, value: entry.handicap }));
+    .map(entry => ({
+      ...entry,
+      value: entry.handicap,
+      rank: undefined,
+      tied: undefined
+    }));
 
   return { scoreEntries, handicapEntries };
 }
@@ -3455,12 +3548,27 @@ function renderInsightsProgressChart() {
 
   if (label) label.textContent = highlighted;
 
+  // Playoff holes carry on after the 18th as P1, P2, ...
+  const playoffHoles = Math.max(0, ...teams.map(team => team.playoff.length));
+
+  const playoffLabels = Array.from(
+    { length: playoffHoles },
+    (_, index) => `P${index + 1}`
+  );
+
   const runningTotals = team => {
     let total = 0;
 
-    return team.holes.map((score, index) =>
-      score == null ? null : (total += score - pars[index])
-    );
+    return [
+      ...team.holes.map((score, index) =>
+        score == null ? null : (total += score - pars[index])
+      ),
+      ...playoffLabels.map((_, index) => {
+        const entry = team.playoff[index];
+
+        return entry ? (total += entry.score - pars[entry.hole - 1]) : null;
+      })
+    ];
   };
 
   // Highlighted team first so it draws on top.
@@ -3490,7 +3598,7 @@ function renderInsightsProgressChart() {
     type: 'line',
 
     data: {
-      labels: HOLE_NUMBERS,
+      labels: [...HOLE_NUMBERS, ...playoffLabels],
       datasets
     },
 
@@ -3545,7 +3653,10 @@ function renderInsightsProgressChart() {
 
         tooltip: {
           callbacks: {
-            title: context => `Through Hole ${context[0].label}`,
+            title: context =>
+              String(context[0].label).startsWith('P')
+                ? `After Playoff Hole ${String(context[0].label).slice(1)}`
+                : `Through Hole ${context[0].label}`,
             label: context =>
               `${context.dataset.label}: ${formatRelativeToParTick(context.raw)}`
           }
@@ -3668,6 +3779,8 @@ async function renderInsights(year = insightsYear) {
                       <span style="color:var(--ts);">Same</span>
                       <span style="color:#C94636;">Lost</span>
                     </div>
+
+                    ${insightsPlayoffNote(teamEntries.scoreEntries)}
                   `
                   : insightsRankingList([], year)
               }
@@ -5408,6 +5521,20 @@ async function forEachPlayerHole(playerName, mode, fn) {
         yardage: Number(course[`hole${hole}_yardage`])
       });
     });
+
+    // Playoff holes count as extra holes played.
+    parseRoundPlayoff(round).forEach(({ hole, score }) => {
+      const par = Number(course[`hole${hole}_par`]);
+
+      if (!Number.isFinite(par)) return;
+
+      fn({
+        score,
+        par,
+        handicap: Number(course[`hole${hole}_hdcp`]),
+        yardage: Number(course[`hole${hole}_yardage`])
+      });
+    });
   });
 }
 
@@ -7071,6 +7198,18 @@ async function openScorecard(
 
         </table>
       </div>
+
+      ${scoreRows.map(scoreRow => {
+        const playoff = scoreRow.round ? parseRoundPlayoff(scoreRow.round) : [];
+
+        return playoff.length
+          ? `
+            <div class="career-rank-note">
+              ${scoreRow.label} playoff: ${playoff.map(entry => `Hole ${entry.hole} — ${entry.score}`).join(', ')}
+            </div>
+          `
+          : '';
+      }).join('')}
     `;
 
   } catch (error) {

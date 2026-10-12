@@ -5,17 +5,27 @@ Usage:
     python3 compute_stats.py courses.csv rounds.csv stats
 
 The input CSVs remain raw. Generated files are safe to delete and recreate.
+
+Playoff holes: rounds.csv may have columns p1, p2, ... after hole18. Each
+holds "{hole, score}" (the hole replayed, then the score on it) for a team
+that went to a playoff, and is blank for everyone else. Playoff holes break
+ties in the team ranking and count toward hole-by-hole statistics (scoring
+distribution, par-type averages, birdie percentage) but never toward a
+round's 18-hole score.
 """
 
 import argparse
 import ast
 import csv
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 
 
 HOLES = range(1, 19)
+
+PLAYOFF_COLUMN = re.compile(r"^p(\d+)$")
 
 
 def main():
@@ -63,6 +73,39 @@ def parse_players(value):
         return [str(player).strip() for player in players]
     except (ValueError, SyntaxError):
         raise ValueError(f"Invalid player list: {value!r}")
+
+
+def parse_playoff(row):
+    """Read a round's playoff columns (p1, p2, ...) in order.
+
+    Each filled column holds the hole played and the score on it, such
+    as {18, 4}. Returns [{"hole": 18, "score": 4}, ...].
+    """
+    columns = sorted(
+        (int(match.group(1)), name)
+        for name in row
+        if name and (match := PLAYOFF_COLUMN.match(name.strip().lower()))
+    )
+
+    playoff = []
+
+    for _, name in columns:
+        value = (row[name] or "").strip()
+
+        if not value:
+            continue
+
+        numbers = [int(number) for number in re.findall(r"\d+", value)]
+
+        if len(numbers) != 2 or numbers[0] not in HOLES:
+            raise ValueError(
+                f"Round {row['round_id']} has an invalid playoff entry "
+                f"in {name}: {value!r} (expected {{hole, score}})"
+            )
+
+        playoff.append({"hole": numbers[0], "score": numbers[1]})
+
+    return playoff
 
 
 def load_courses(path):
@@ -142,6 +185,7 @@ def load_rounds(path, courses):
                 "players": players,
                 "handicap": handicap,
                 "holes": holes,
+                "playoff": parse_playoff(row),
                 "gross": gross,
                 "par": par,
                 "net": gross - handicap if handicap is not None else None,
@@ -222,6 +266,8 @@ def empty_player():
         "gross_scores": [],
         "net_scores": [],
 
+        "playoff_holes": 0,
+
         "front_relative_to_par": [],
         "back_relative_to_par": [],
 
@@ -285,6 +331,8 @@ def empty_player():
 
         "team_gross_scores": [],
 
+        "team_playoff_holes": 0,
+
         # Stroke statistics
         "par5_strokes": 0,
         "par5_holes": 0,
@@ -306,9 +354,17 @@ def empty_player():
 
 
 def calculate_round_metrics(round_data, course):
-    """Calculate stroke-based statistics for one round."""
+    """Calculate stroke-based statistics for one round.
+
+    Playoff holes are counted like any other hole here, but are not
+    part of the round's gross score or score relative to par.
+    """
+
+    playoff = round_data.get("playoff", [])
 
     metrics = {
+        "playoff_holes": len(playoff),
+
         "gross_score": round_data["gross"],
         "net_score": round_data["net"],
         "relative_to_par": round_data["relative_to_par"],
@@ -343,8 +399,15 @@ def calculate_round_metrics(round_data, course):
         "quad_bogeys": "qud_bogeys",
     }
 
-    for hole in HOLES:
-        strokes = round_data["holes"][hole]
+    holes_played = [
+        (hole, round_data["holes"][hole])
+        for hole in HOLES
+    ] + [
+        (entry["hole"], entry["score"])
+        for entry in playoff
+    ]
+
+    for hole, strokes in holes_played:
         par = course["par"][hole]
 
         if strokes is None or par is None:
@@ -450,7 +513,7 @@ def calculate_all(rounds, courses):
     winning_rounds = {}
 
     for year, team_rounds in team_rounds_by_year.items():
-        ranked_teams = rank_items(team_rounds, "gross")
+        ranked_teams = rank_teams(team_rounds)
 
         if ranked_teams:
             winning_rounds[year] = ranked_teams[0][0]
@@ -554,6 +617,8 @@ def calculate_all(rounds, courses):
                     summary[f"team_par{par}_strokes"] += metrics[f"par{par}_strokes"]
                     summary[f"team_par{par}_holes"] += metrics[f"par{par}_holes"]
 
+                summary["team_playoff_holes"] += metrics["playoff_holes"]
+
                 # Yearly team placement
                 yearly[player][year]["team_placement"] = placement
 
@@ -651,10 +716,7 @@ def calculate_all(rounds, courses):
         team_rounds = team_rounds_by_year.get(year, [])
 
         if team_rounds:
-            ranked_teams = rank_items(
-                team_rounds,
-                "gross"
-            )
+            ranked_teams = rank_teams(team_rounds)
 
             if ranked_teams:
                 winning_team = ranked_teams[0][0]
@@ -793,6 +855,8 @@ def calculate_all(rounds, courses):
             summary[f"par{par}_strokes"] += metrics[f"par{par}_strokes"]
             summary[f"par{par}_holes"] += metrics[f"par{par}_holes"]
 
+        summary["playoff_holes"] += metrics["playoff_holes"]
+
     # Count first-place finishes for both formats.
     for player in players:
         players[player]["solo_first_placements"] = (
@@ -826,6 +890,41 @@ def rank_items(items, key):
             previous = item[key]
 
         result.append((item, place))
+
+    return result
+
+
+def rank_teams(team_rounds):
+    """Rank team rounds by gross score, with ties broken by playoff holes.
+
+    Tied teams are compared on their first playoff hole, then their
+    second, and so on; a team with no score for a playoff hole loses
+    to one that has it. Teams still level after that share a place.
+    """
+    playoff_length = max(
+        (len(team_round["playoff"]) for team_round in team_rounds),
+        default=0,
+    )
+
+    def sort_key(team_round):
+        scores = [entry["score"] for entry in team_round["playoff"]]
+        padding = [float("inf")] * (playoff_length - len(scores))
+
+        return (team_round["gross"], *scores, *padding)
+
+    result = []
+    previous = None
+    place = 0
+
+    for index, team_round in enumerate(
+        sorted(team_rounds, key=sort_key),
+        start=1,
+    ):
+        if sort_key(team_round) != previous:
+            place = index
+            previous = sort_key(team_round)
+
+        result.append((team_round, place))
 
     return result
 
@@ -959,7 +1058,7 @@ def build_solo_stats(summary):
                 summary["total_birdies"]
                 + summary["total_eagles"]
             )
-            / (solo_rounds * 18)
+            / (solo_rounds * 18 + summary["playoff_holes"])
             * 100,
             2,
         )
@@ -1107,7 +1206,7 @@ def build_team_stats(summary):
                 summary["total_team_birdies"]
                 + summary["total_team_eagles"]
             )
-            / (team_rounds * 18)
+            / (team_rounds * 18 + summary["team_playoff_holes"])
             * 100,
             2,
         )
@@ -1154,10 +1253,7 @@ def build_yearly_team_stats_csv(player, rounds, courses, output_path):
     ranked_team_rounds = {}
 
     for year, year_rounds in team_rounds_by_year.items():
-        ranked_team_rounds[year] = rank_items(
-            year_rounds,
-            "gross",
-        )
+        ranked_team_rounds[year] = rank_teams(year_rounds)
 
     # ---------------------------------------------------------
     # Write only the rows involving this player.
@@ -1357,6 +1453,8 @@ def write_outputs(output_dir, yearly, players, winning_rounds, rounds, courses):
                         row["gross"]
                     ),
                     "course": row["course_name"],
+                    # Only present when the title took a playoff.
+                    **({"playoff": True} if row["playoff"] else {}),
                 }
                 for year, row in sorted(
                     winning_rounds.items()

@@ -1044,6 +1044,35 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   .insights-holes {
     flex-direction:column;
   }
+
+  /*
+   * Summary and chips flow as one wrapping line: the first chip
+   * sits beside "Par 5 · Eagle ×2", the rest wrap underneath,
+   * left-aligned. Chips never get wider than the cell.
+   */
+  .insights-hole-cell {
+    flex-wrap:wrap;
+    min-width:0;
+    gap:5px 10px;
+  }
+
+  .insights-hole-chips {
+    display:contents;
+  }
+
+  .insights-hole-chip {
+    max-width:100%;
+    min-width:0;
+  }
+
+  .insights-hole-chip-text {
+    min-width:0;
+  }
+
+  .insights-hole-chip strong {
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
 }
 
 /* Bottom row: all three cards stretch to the same height and each chart fills what's left under its title. */
@@ -1195,6 +1224,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   width:58px;
 }
 
+/* Stacked team names are mobile-only (see insightsEntryName). */
+.insights-team-name {
+  display:none;
+}
+
 /* Fixed line height so the 🥇 doesn't make its row taller. */
 .insights-overview .career-rank-name {
   line-height:14px;
@@ -1204,6 +1238,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
   .insights-overview {
     grid-template-columns:1fr;
   }
+
+  /* Handicap | lines | score: thinner lines and tighter rows leave the names room. */
+  .insights-gross-grid {
+    grid-template-columns:auto 22px minmax(0,1fr);
+  }
+
+  .insights-gross-grid .career-rank-row {
+    gap:5px;
+  }
+
+  .insights-gross-grid .career-rank-number {
+    width:18px;
+  }
+
+  .insights-hcp-box {
+    gap:6px;
+    height:auto;
+    min-height:24px;
+    padding:2px 5px;
+  }
+
+  /* Team names stack one player per line; rows stay 34px tall for the connector lines. */
+  .insights-team-inline {
+    display:none;
+  }
+
+  .insights-team-name {
+    display:flex;
+    flex-direction:column;
+    line-height:11px;
+  }
+
+  .insights-team-line {
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
 }
 
 /* PAGE BLURB (header) + HELPER HINTS */
@@ -1212,6 +1282,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .yr-btn.hidden{visibility:hidden;}
 .hint{float:right;font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--ts);}
 .home-map-hint{position:absolute;left:14px;bottom:10px;z-index:1;font-size:10px;color:var(--ts);pointer-events:none;}
+@media (max-width:699px) {
+  .home-map-hint{top:10px;bottom:auto;}
+  .home-map-hint-hover{display:none;}
+}
 @media (max-width:699px) {
   .hdr-in{flex-wrap:wrap;}
   .hdr-blurb{order:3;flex-basis:100%;margin:10px 0 0;font-size:11px;}
@@ -2112,7 +2186,9 @@ async function renderHomeFlags(map) {
 
     const hint = document.createElement('div');
     hint.className = 'home-map-hint';
-    hint.textContent = 'Each flag is a tournament · hover for details, click to open it';
+    // Phones have no hover, so mobile CSS hides that part.
+    hint.innerHTML =
+      'Each flag is a tournament · <span class="home-map-hint-hover">hover for details, </span>click to open it';
     map.parentNode.appendChild(hint);
 
     courses.forEach(course => {
@@ -2552,7 +2628,7 @@ function compareGrossRounds(a, b) {
  * Ranked bar list in the same style as the stats page
  * rankings. Entries must already be sorted best-first;
  * ranks use competition ranking (1, T2, T2, 4) on `value`.
- * `note` is shown in parentheses after the name; firstPlaceIcon
+ * `note`, if set, is shown in parentheses after the name; firstPlaceIcon
  * (🥇 solo, 🏆 team) goes in front of everyone ranked 1st. Rows open the
  * entry's `click` action, or its solo scorecard by default.
  * An entry can carry its own `rank` / `tied` (teams split by
@@ -2592,7 +2668,11 @@ function insightsRankingList(entries, year, firstPlaceIcon = '') {
         </div>
 
         <div class="career-rank-player">
-          <div class="career-rank-name">${firstPlaceIcon && rank === 1 ? `${firstPlaceIcon} ` : ''}${entry.name} (${entry.note})</div>
+          <div class="career-rank-name">${insightsEntryName(
+            entry,
+            firstPlaceIcon && rank === 1 ? `${firstPlaceIcon} ` : '',
+            entry.note != null ? ` (${entry.note})` : ''
+          )}</div>
           <div class="career-rank-track">
             <div class="career-rank-bar" style="width:${barWidth}%"></div>
           </div>
@@ -2607,6 +2687,28 @@ function insightsRankingList(entries, year, firstPlaceIcon = '') {
 }
 
 const INSIGHTS_ROW_HEIGHT = 34;
+
+/*
+ * A ranking-row name. `before` / `after` are the 🏆 and the
+ * handicap. Teams also get a stacked copy, one player per line
+ * ("🏆 Bon &" / "Don (22)"): CSS shows the plain "Bon & Don"
+ * on desktop and the stacked one on mobile.
+ */
+function insightsEntryName(entry, before = '', after = '') {
+  const inline = `${before}${entry.name}${after}`;
+
+  if (!(entry.players?.length > 1)) {
+    return inline;
+  }
+
+  const lines = entry.players.map((name, index, players) =>
+    `<span class="insights-team-line">${index === 0 ? before : ''}${name}${
+      index < players.length - 1 ? ' &amp;' : after
+    }</span>`
+  );
+
+  return `<span class="insights-team-inline">${inline}</span><span class="insights-team-name">${lines.join('')}</span>`;
+}
 
 function playerFolder(name) {
   return (
@@ -2639,7 +2741,7 @@ function insightsHandicapList(entries, year) {
         ${isTied(entries, entry.value) ? 'T' : ''}${getCompetitionRank(entries, entry.value)}
       </div>
       <div class="insights-hcp-box">
-        <div class="career-rank-name">${entry.name}</div>
+        <div class="career-rank-name">${insightsEntryName(entry)}</div>
         <div class="insights-hcp-value">${entry.value}</div>
       </div>
     </div>
@@ -3772,7 +3874,7 @@ async function renderInsights(year = insightsYear) {
 
     const grossEntries = [...soloRounds]
       .sort(compareGrossRounds)
-      .map(round => ({ ...round, value: round.gross, note: round.handicap }));
+      .map(round => ({ ...round, value: round.gross }));
 
     // Handicap ties are listed in gross finishing order.
     const handicapEntries = [...grossEntries]

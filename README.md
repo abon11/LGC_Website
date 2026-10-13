@@ -9,9 +9,9 @@ four tabs:
 
 - **Home** — every player by current handicap, a map with a numbered flag for
   each year's tournament, and all-time totals.
-- **Tournament Insights** — one year at a time: winners, rankings, scorecards
+- **Tournament Stats** — one year at a time: winners, rankings, scorecards
   and field statistics.
-- **Stats** — one player at a time: their record book, charts and rankings.
+- **Player Stats** — one player at a time: their record book, charts and rankings.
 - **Rules** — the tournament rules.
 
 ## What is in this repo
@@ -100,7 +100,7 @@ packages.
 ### 5. Check it, then push
 
 Look at the site locally (see above): the new flag on the home page, the new
-year in Tournament Insights, and a player or two in Stats. Then:
+year in Tournament Stats, and a player or two in Player Stats. Then:
 
 ```
 git add -A
@@ -143,7 +143,7 @@ What a playoff changes:
 - **Not the round's score.** The 18-hole score, score relative to par and the
   front / back nine totals never include playoff holes.
 
-On Tournament Insights (in Team or Combined mode) a playoff shows as
+On Tournament Stats (in Team or Combined mode) a playoff shows as
 "Won in a playoff" under the winners, a line under the team ranking with each
 team's playoff score, and extra `P1`, `P2`, ... points on the Leaderboard by
 Hole chart. It is also noted under the team's scorecard.

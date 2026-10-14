@@ -1282,6 +1282,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
 .hdr-blurb strong{font-weight:600;color:rgba(255,255,255,0.85);}
 .hdr-blurb{flex:1;min-width:0;margin:0 28px;font-size:12px;line-height:1.4;color:rgba(255,255,255,0.55);}
 .yr-btn.hidden{visibility:hidden;}
+/* COUNTDOWN (home takes the Solo / Team picker's place in the header) */
+.hdr-countdown{display:none;flex:none;text-align:center;}
+.hdr.home .hdr-countdown{display:block;}
+.hdr.home .yr-btn{display:none;}
+.hdr-countdown-units{display:flex;justify-content:center;gap:10px;}
+.hdr-countdown-unit{min-width:30px;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.4);}
+/* Playfair defaults to old-style figures; lining + tabular keeps the digits level and stops them shifting each second. */
+.hdr-countdown-value{display:block;font-family:'Playfair Display',serif;font-variant-numeric:lining-nums tabular-nums;font-size:20px;font-weight:700;color:var(--gold);line-height:1.1;}
+.hdr-countdown-live{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);line-height:1.3;}
+.hdr-countdown-date{margin-top:4px;font-size:10px;color:rgba(255,255,255,0.55);}
 .hint{float:right;font-size:10px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--ts);}
 .home-map-hint{position:absolute;left:14px;bottom:10px;z-index:1;font-size:10px;color:var(--ts);pointer-events:none;}
 @media (max-width:699px) {
@@ -1360,6 +1370,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--td);mi
         <path d="M8 11L2 5h12z"/>
       </svg>
     </button>
+    <div class="hdr-countdown" id="lgc-countdown"></div>
   </div>
 </header>
 
@@ -1977,6 +1988,11 @@ function updatePageHeader(n) {
     .getElementById('stats-mode-button')
     .classList.toggle('hidden', n !== 'insights' && n !== 'stats');
 
+  // Home shows the countdown to the next LGC in the picker's place.
+  document
+    .querySelector('.hdr')
+    .classList.toggle('home', n === 'home');
+
   // The blurb can change the header's height.
   syncHeaderHeight();
 }
@@ -1988,6 +2004,66 @@ function showPage(n,btn){
   btn.classList.add('active');
   updatePageHeader(n);
   if(n==='insights') renderInsights();
+}
+
+// ---------------------------------------------------------
+// COUNTDOWN
+// ---------------------------------------------------------
+
+/**
+ * LGC is the second weekend of August, and a weekend only
+ * counts once its Saturday is in August (so Sunday 8/1 is not
+ * the first weekend, but Saturday 8/1 is). Returns midnight at
+ * the start of that weekend's Friday, in the viewer's time.
+ */
+function lgcFriday(year) {
+  const augustFirst = new Date(year, 7, 1);
+  const firstSaturday = 1 + (6 - augustFirst.getDay() + 7) % 7;
+
+  return new Date(year, 7, firstSaturday + 6);
+}
+
+/** This year's LGC Friday until the weekend is over (Monday), then next year's. */
+function nextLgcFriday(now) {
+  const friday = lgcFriday(now.getFullYear());
+  const monday = new Date(friday.getFullYear(), 7, friday.getDate() + 3);
+
+  return now < monday
+    ? friday
+    : lgcFriday(now.getFullYear() + 1);
+}
+
+function renderCountdown() {
+  const now = new Date();
+  const friday = nextLgcFriday(now);
+  const seconds = Math.floor((friday - now) / 1000);
+
+  const units = [
+    ['Days', Math.floor(seconds / 86400)],
+    ['Hrs', Math.floor(seconds / 3600) % 24],
+    ['Min', Math.floor(seconds / 60) % 60],
+    ['Sec', seconds % 60]
+  ];
+
+  const date = friday.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  // From Friday until Monday the tournament is being played.
+  const body = seconds < 0
+    ? `<div class="hdr-countdown-live">LGC ${friday.getFullYear()} is live!</div>`
+    : `<div class="hdr-countdown-units">${units.map(([label, value]) => `
+        <div class="hdr-countdown-unit">
+          <span class="hdr-countdown-value">${label === 'Days' ? value : String(value).padStart(2, '0')}</span>
+          ${label}
+        </div>
+      `).join('')}</div>`;
+
+  document.getElementById('lgc-countdown').innerHTML =
+    `${body}<div class="hdr-countdown-date"> until ${date}</div>`;
 }
 
 // ---------------------------------------------------------
@@ -8273,6 +8349,9 @@ statsMode = DB.get('statsMode') || 'solo';
 updateStatsModePicker();
 
 loadStatsPlayers();
+
+renderCountdown();
+setInterval(renderCountdown, 1000);
 
 updatePageHeader('home');
 window.addEventListener('resize', syncHeaderHeight);
